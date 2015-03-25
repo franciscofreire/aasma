@@ -23,7 +23,11 @@ public class FloorGrid : MonoBehaviour {
 			List<FloorTile> rowList = new List<FloorTile>(columns);
 			tileMatrix.Add(rowList);
 			for(int column=0; column < columns; column++) {
-				GameObject tile = (GameObject) Object.Instantiate(tilePrefab.gameObject, Vector3.right * row + Vector3.forward * column, tileRotation);
+				GameObject tile = (GameObject)
+						Object.Instantiate(
+							tilePrefab.gameObject, 
+							Vector3.right * row + Vector3.forward * column,
+							tileRotation);
 				tile.transform.parent = transform;
 				FloorTile floorTile = tile.GetComponent<FloorTile>();
 				floorTile.initTile(row, column);
