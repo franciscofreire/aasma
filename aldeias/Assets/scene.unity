@@ -192,7 +192,7 @@ GameObject:
   - 23: {fileID: 336828149}
   - 114: {fileID: 336828148}
   m_Layer: 0
-  m_Name: Tile
+  m_Name: Floor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -247,34 +247,34 @@ Transform:
   m_PrefabParentObject: {fileID: 456456, guid: 8feadf9bb0911d34f88bf8bed671931e, type: 2}
   m_PrefabInternal: {fileID: 786014828}
   m_GameObject: {fileID: 336828147}
-  m_LocalRotation: {x: .707106829, y: 0, z: 0, w: .707106829}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 3.57999992, y: -0, z: -.140000015}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_Father: {fileID: 1319875394}
+  m_RootOrder: 0
 --- !u!1001 &786014828
 Prefab:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
-    m_TransformParent: {fileID: 0}
+    m_TransformParent: {fileID: 1319875394}
     m_Modifications:
     - target: {fileID: 456456, guid: 8feadf9bb0911d34f88bf8bed671931e, type: 2}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 3.57999992
       objectReference: {fileID: 0}
     - target: {fileID: 456456, guid: 8feadf9bb0911d34f88bf8bed671931e, type: 2}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 456456, guid: 8feadf9bb0911d34f88bf8bed671931e, type: 2}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -.140000015
       objectReference: {fileID: 0}
     - target: {fileID: 456456, guid: 8feadf9bb0911d34f88bf8bed671931e, type: 2}
       propertyPath: m_LocalRotation.x
-      value: .707106829
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 456456, guid: 8feadf9bb0911d34f88bf8bed671931e, type: 2}
       propertyPath: m_LocalRotation.y
@@ -286,17 +286,49 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 456456, guid: 8feadf9bb0911d34f88bf8bed671931e, type: 2}
       propertyPath: m_LocalRotation.w
-      value: .707106829
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 456456, guid: 8feadf9bb0911d34f88bf8bed671931e, type: 2}
       propertyPath: m_RootOrder
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 156456, guid: 8feadf9bb0911d34f88bf8bed671931e, type: 2}
+      propertyPath: m_Name
+      value: Floor
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 8feadf9bb0911d34f88bf8bed671931e, type: 2}
   m_RootGameObject: {fileID: 336828147}
   m_IsPrefabParent: 0
   m_IsExploded: 1
+--- !u!1 &1319875393
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 1319875394}
+  m_Layer: 0
+  m_Name: Entity
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1319875394
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1319875393}
+  m_LocalRotation: {x: .707106829, y: 0, z: 0, w: .707106829}
+  m_LocalPosition: {x: -3.57999992, y: .0599999987, z: -0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 336828151}
+  m_Father: {fileID: 0}
+  m_RootOrder: 1
 --- !u!1 &1692068334
 GameObject:
   m_ObjectHideFlags: 0
