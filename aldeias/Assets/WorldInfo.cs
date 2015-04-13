@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class WorldInfo : MonoBehaviour {
-	
+
 	//Classes and values that have to be declared and defined before the actual WorldTileInfo declaration
 	public partial class WorldTileInfo {
 		public static Tribe nullTribe=new Tribe();
@@ -24,10 +25,43 @@ public class WorldInfo : MonoBehaviour {
 		public TribeTerritory tribeTerritory=defaultTribeTerritory;
 	}
 
-
+	// The size of the world in rows and columns.
 	public int xSize = 50;
 	public int zSize = 50;
-	public WorldTileInfo[,] worldTileInfo;
+
+	// The tiles of the world.
+	public WorldTileInfo[,] worldTileInfo; 
+
+	// All the tribes that exist in the world.
+	public List<Tribe> tribes; 
+
+	// Every habitant believes that he belongs to a tribe.
+
+	// The agents that exist in the world.
+	public List<Habitant> habitants;
+	public List<Animal> animals; 
+	public List<Agent> allAgents;
+
+
+	public void WorldTick () {
+		// Update agents' sensors. (agent.sensors.update();)
+		// Collect actions from all agents.
+		//    Run the agents' decision cycles.
+		//    Collect the actions that are going to be performed. Remember which agent issued them.
+		// Apply actions to the world.
+
+
+
+		// Rules:
+		//    Agents cannot change the world state directly. They must produce an action that will be applied to the world.
+
+		// Ideas:
+		//    Gather failed actions to be reported to the agents if needed.
+		//    The world may not be responsible of reporting failed action. The agents can detect failed actions using their sensors.
+
+		// Is the agent's decision cycle synchronous?
+		// How do the agents perceive the world state?
+	}
 
 	void Start () {
 		GenerateWorldTileInfo ();
