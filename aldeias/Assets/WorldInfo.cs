@@ -4,16 +4,17 @@ using System.Collections.Generic;
 
 public class WorldInfo : MonoBehaviour {
 
+	public static Tribe nullTribe=new Tribe();
+	public class Tribe {
+		//Insert tribe identification here
+	}
+
 	//Classes and values that have to be declared and defined before the actual WorldTileInfo declaration
 	public partial class WorldTileInfo {
-		public static Tribe nullTribe=new Tribe();
 		public static TribeTerritory defaultTribeTerritory=new TribeTerritory();
 		public class TribeTerritory {
 			public bool hasFlag=false;
 			public Tribe ownerTribe=nullTribe;
-		}
-		public class Tribe {
-			//Insert tribe identification here
 		}
 	}
 
