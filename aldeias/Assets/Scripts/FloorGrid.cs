@@ -114,19 +114,19 @@ public class FloorGrid : MonoBehaviour {
 				int quadVertexBaseIndex = quadIndex*4;
 
 				//x=0,z=0
-				vertices[ quadVertexBaseIndex + 0 ] = new Vector3( x*tileSize, 0, -z*tileSize );
+				vertices[ quadVertexBaseIndex + 0 ] = new Vector3( x*tileSize, 0, z*tileSize );
 				normals[ quadVertexBaseIndex + 0 ] = Vector3.up;
 				uv[ quadVertexBaseIndex + 0 ] = new Vector2( 0, 0 );
 				//x=1,z=0
-				vertices[ quadVertexBaseIndex + 1 ] = new Vector3( (x+1)*tileSize, 0, -z*tileSize );
+				vertices[ quadVertexBaseIndex + 1 ] = new Vector3( (x+1)*tileSize, 0, z*tileSize );
 				normals[ quadVertexBaseIndex + 1 ] = Vector3.up;
 				uv[ quadVertexBaseIndex + 1 ] = new Vector2( 1, 0 );
 				//x=1,z=1
-				vertices[ quadVertexBaseIndex + 2 ] = new Vector3( (x+1)*tileSize, 0, -(z+1)*tileSize );
+				vertices[ quadVertexBaseIndex + 2 ] = new Vector3( (x+1)*tileSize, 0, (z+1)*tileSize );
 				normals[ quadVertexBaseIndex + 2 ] = Vector3.up;
 				uv[ quadVertexBaseIndex + 2 ] = new Vector2( 1, 1 );
 				//x=0,z=1
-				vertices[ quadVertexBaseIndex + 3 ] = new Vector3( x*tileSize, 0, -(z+1)*tileSize );
+				vertices[ quadVertexBaseIndex + 3 ] = new Vector3( x*tileSize, 0, (z+1)*tileSize );
 				normals[ quadVertexBaseIndex + 3 ] = Vector3.up;
 				uv[ quadVertexBaseIndex + 3 ] = new Vector2( 0, 1 );
 			}
@@ -144,12 +144,12 @@ public class FloorGrid : MonoBehaviour {
 
 				int triBaseIndex = quadIndex * 6;
 				triangles[ triBaseIndex + 0 ] = corner_0_0;
-				triangles[ triBaseIndex + 1 ] = corner_1_0;
+				triangles[ triBaseIndex + 1 ] = corner_0_1;
 				triangles[ triBaseIndex + 2 ] = corner_1_1;
 
 				triangles[ triBaseIndex + 3 ] = corner_1_1;
-				triangles[ triBaseIndex + 4 ] = corner_0_1;
-				triangles[ triBaseIndex + 5	 ] = corner_0_0;
+				triangles[ triBaseIndex + 4 ] = corner_1_0;
+				triangles[ triBaseIndex + 5	] = corner_0_0;
 			}
 		}
 		
