@@ -82,6 +82,7 @@ public class WorldInfo : MonoBehaviour {
 	void Start () {
 		GenerateWorldTileInfo ();
 		SetDebugWorldTileInfo ();
+		NotifyChangeListeners();
 	}
 
 	void GenerateWorldTileInfo () {
@@ -127,6 +128,17 @@ public class WorldInfo : MonoBehaviour {
 			for(int z=posz; z < posz - HABITAT_SIZE; z--) {
 				worldTileInfo[x,z].isHabitat = true;
 			}
+		}
+	}
+
+	public delegate void WorldChangeListener();
+	private List<WorldChangeListener> changeListeners = new List<WorldChangeListener>();
+	public void AddChangeListener(WorldChangeListener func) {
+		changeListeners.Add(func);
+	}
+	private void NotifyChangeListeners() {
+		foreach(WorldChangeListener listener in changeListeners) {
+			listener();
 		}
 	}
 }
