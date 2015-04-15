@@ -13,6 +13,7 @@ public class FloorGrid : MonoBehaviour {
 	
 	public Texture2D terrainTiles;
 	public int tileResolution;
+	public TileTexInfo atlasInfo;
 
 	public Mesh floorMesh;
 	
@@ -21,16 +22,19 @@ public class FloorGrid : MonoBehaviour {
 		BuildMesh();
 	}
 	
-	struct TileTexInfo {
+	public struct TileTexInfo {
 		public Vector2[,] tileCorners; // the (0,0) corner of the tile texture
 		public Vector2 tileSquareSize;
+		public int NumTiles {
+			get {return tileCorners.GetLength(0);}
+		}
 	}
-	TileTexInfo MakeAtlasCoordinates() {
-		int numTilesPerRow = terrainTiles.width / tileResolution;
-		int numRows = terrainTiles.height / tileResolution;
+	TileTexInfo MakeAtlasCoordinates(Texture2D altasTexture, int tileRes) {
+		int numTilesPerRow = terrainTiles.width / tileRes;
+		int numRows = terrainTiles.height / tileRes;
 		
 		Vector2[,] tileCorners = new Vector2[ numRows*numTilesPerRow, 4 ];
-		Vector2 tileSquareSize = new Vector2( tileResolution / (float) terrainTiles.width, tileResolution / (float) terrainTiles.height );
+		Vector2 tileSquareSize = new Vector2( tileRes / (float) terrainTiles.width, tileRes / (float) terrainTiles.height );
 		
 		for(int y=0; y<numRows; y++) {
 			for(int x=0; x<numTilesPerRow; x++) {
@@ -52,27 +56,39 @@ public class FloorGrid : MonoBehaviour {
 		res.tileSquareSize = tileSquareSize;
 		return res;
 	}
-
-	void SetDebugUVs(Mesh mesh) {
-		TileTexInfo atlasInfo = MakeAtlasCoordinates();
-		int atlasSize = atlasInfo.tileCorners.GetLength(0);
-
-		int curAtlasTile = 0;
-		Vector2[] newUVs = new Vector2[mesh.uv.Length];
+	void SetAtlas(Texture2D atlasTexture, int tileRes) {
+		TileTexInfo info = MakeAtlasCoordinates(terrainTiles, tileRes);
+		atlasInfo = info;
+		terrainTiles = atlasTexture;
+		tileResolution = tileRes;
+	}
+	//A function that returns the tile to be used as the tile of the (x,z) tile.
+	public delegate int GetTile(int x, int z);
+	void SetTiles(GetTile tileFunction) {
+		Vector2[] newUVs = new Vector2[floorMesh.uv.Length];
 		for(int z=0; z < size_z; z++) {
 			for(int x=0; x < size_x; x++) {
 				int quadIndex = z*size_x + x;
 				int quadVertexBaseIndex = quadIndex*4;
-
+				
+				int curAtlasTile = tileFunction(x,z);
 				newUVs[ quadVertexBaseIndex + 0 ] = atlasInfo.tileCorners[curAtlasTile, 0];
 				newUVs[ quadVertexBaseIndex + 1 ] = atlasInfo.tileCorners[curAtlasTile, 1];
 				newUVs[ quadVertexBaseIndex + 2 ] = atlasInfo.tileCorners[curAtlasTile, 2];
 				newUVs[ quadVertexBaseIndex + 3 ] = atlasInfo.tileCorners[curAtlasTile, 3];
-
-				curAtlasTile = (curAtlasTile+1) % atlasSize;
 			}
 		}
-		mesh.uv = newUVs;
+		floorMesh.uv = newUVs;
+	}
+
+	void SetDebugUVs() {
+		int curAtlasTile = 0;
+		int atlasSize = atlasInfo.NumTiles;
+		GetTile tileFunc = (int x, int z) => {
+			int res=curAtlasTile; 
+			curAtlasTile=(curAtlasTile+1)%atlasSize; return res;
+		};
+		SetTiles(tileFunc);
 	}
 
 	public void BuildMesh() {
@@ -157,28 +173,11 @@ public class FloorGrid : MonoBehaviour {
 		Debug.Log ("Done Mesh!");
 		
 		//BuildTexture();
-		SetDebugUVs(mesh);
+		SetAtlas(terrainTiles, tileResolution);
+		SetDebugUVs();
 		MeshRenderer mesh_renderer = GetComponent<MeshRenderer>();
 		mesh_renderer.sharedMaterials[0].mainTexture = terrainTiles;
 	}
 
-	//Return a function that returns the tile to be used as the tile of the (x,z) tile.
-	/*public delegate int GetTile(int x, int z);
-	void SetTiles(GetTile tileFunction) {
-		Vector2[] newUVs = new Vector2[floorMesh.uv.Length];
-		for(int z=0; z < size_z; z++) {
-			for(int x=0; x < size_x; x++) {
-				int quadIndex = z*size_x + x;
-				int quadVertexBaseIndex = quadIndex*4;
-				
-				newUVs[ quadVertexBaseIndex + 0 ] = atlasInfo.tileCorners[curAtlasTile, 0];
-				newUVs[ quadVertexBaseIndex + 1 ] = atlasInfo.tileCorners[curAtlasTile, 1];
-				newUVs[ quadVertexBaseIndex + 2 ] = atlasInfo.tileCorners[curAtlasTile, 2];
-				newUVs[ quadVertexBaseIndex + 3 ] = atlasInfo.tileCorners[curAtlasTile, 3];
-				
-				curAtlasTile = (curAtlasTile+1) % atlasSize;
-			}
-		}
-		mesh.uv = newUVs;
-	}*/
+
 }
