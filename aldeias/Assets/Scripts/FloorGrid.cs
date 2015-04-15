@@ -10,13 +10,15 @@ public class FloorGrid : MonoBehaviour {
 	public int size_x = 50;
 	public int size_z = 50;
 	public float tileSize = 1.0f;
-	
+
 	public Texture2D terrainTiles;
 	public int tileResolution;
-	
-	// Use this for initialization
+
 	void Start () {
 		BuildMesh();
+	}
+
+	void Update () {
 	}
 	
 	Color[][] ChopUpTiles() {

@@ -9,10 +9,8 @@ public class TileMouseOver : MonoBehaviour {
 	void Start() {
 		normalColor = renderer.material.color;
 	}
-	
-	// Update is called once per frame
+
 	void Update () {
-		
 		Ray ray = Camera.main.ScreenPointToRay( Input.mousePosition );
 		RaycastHit hitInfo;
 		
@@ -21,8 +19,6 @@ public class TileMouseOver : MonoBehaviour {
 		}
 		else {
 			renderer.material.color = normalColor;
-		}
-		
+		}	
 	}
-	
 }
