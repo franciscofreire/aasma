@@ -110,8 +110,10 @@ public class WorldInfo : MonoBehaviour {
 			}
 		}
 		// Fill tribe B territory
+
 		posx = xSize - 1;
 		posz = zSize - 1;
+
 		Tribe tribeB = new Tribe("B");
 		for(int x=posx; x > posx - TRIBE_TERRITORY_SIZE; x--) {
 			for(int z=posz; z > posz - TRIBE_TERRITORY_SIZE; z--) {
