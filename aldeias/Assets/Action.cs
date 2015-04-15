@@ -1,6 +1,11 @@
+using UnityEngine;
 
 public abstract class Action {
 	public abstract void apply (WorldInfo world, Agent agent);
+	public void moveAgent(WorldInfo world, Agent agent, Vector2 newPos) {
+		// Translate agent to new position
+
+	}
 }
 
 public class Walk : Action {
