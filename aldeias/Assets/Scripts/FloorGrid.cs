@@ -80,15 +80,26 @@ public class FloorGrid : MonoBehaviour {
 				newUVs[ quadVertexBaseIndex + 3 ] = atlasInfo.tileCorners[curAtlasTile, 3];
 			}
 		}
+		
 		floorMesh.uv = newUVs;
 	}
 
 	void SetDebugUVs() {
 		int curAtlasTile = 0;
 		int atlasSize = atlasInfo.NumTiles;
+		
 		GetTile tileFunc = (int x, int z) => {
-			int res=curAtlasTile; 
-			curAtlasTile=(curAtlasTile+1)%atlasSize; return res;
+			int res = 0;
+
+			GameObject g = GameObject.Find ("World");
+			WorldInfo wti = (WorldInfo) g.GetComponent<WorldInfo>();
+			wti.GenerateWorldTileInfo ();
+			wti.SetDebugWorldTileInfo ();
+			if (wti.worldTileInfo[x,z].hasTree)
+				res = 1;
+
+			curAtlasTile = (curAtlasTile+1)%atlasSize;
+			return res;
 		};
 		SetTiles(tileFunc);
 	}
@@ -154,7 +165,6 @@ public class FloorGrid : MonoBehaviour {
 				triangles[ triBaseIndex + 5	] = corner_0_0;
 			}
 		}
-		
 		Debug.Log ("Done Triangles!");
 		
 		// Create a new Mesh and populate with the data
@@ -176,10 +186,9 @@ public class FloorGrid : MonoBehaviour {
 		
 		//BuildTexture();
 		SetAtlas(terrainTiles, tileResolution);
+
 		SetDebugUVs();
 		MeshRenderer mesh_renderer = GetComponent<MeshRenderer>();
 		mesh_renderer.sharedMaterials[0].mainTexture = terrainTiles;
 	}
-
-
 }

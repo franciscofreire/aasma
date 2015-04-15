@@ -13,11 +13,11 @@ public class WorldCamera : MonoBehaviour {
 	void Update () {
 		if (Input.GetKey("1")) {
 			transform.rotation = Quaternion.Euler(new Vector3(75, 0, 0));
-			transform.position = new Vector3(25, 50, -40);
+			transform.position = new Vector3(25, 50, 10);
 		}
 		if (Input.GetKey("2")) {
 			transform.rotation = Quaternion.Euler(new Vector3(15, 0, 0));
-			transform.position = new Vector3(25, 5, -60);
+			transform.position = new Vector3(25, 5, -10);
 		}
 
 		if (Input.GetKey("a"))
