@@ -18,8 +18,8 @@ public class TreeLayer : MonoBehaviour {
 	void Update() {
 		if(worldHasChanged) {
 			ApplyWorldInfo();
+			worldHasChanged=false;
 		}
-		worldHasChanged=false;
 	}
 
 	Vector3 worldXZToVec3(int x, int z) {

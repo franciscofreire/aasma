@@ -68,7 +68,8 @@ public class WorldInfo : MonoBehaviour {
 
 	void Start () {
 		GenerateWorldTileInfo ();
-		SetDebugWorldTileInfo ();
+		SetPartitionTreeWorldTileInfo ();
+		NotifyChangeListeners ();
 	}
 
 	public void GenerateWorldTileInfo () {
@@ -83,9 +84,9 @@ public class WorldInfo : MonoBehaviour {
 			}
 		}
 	}
-	
-	//FIXME: Currently setting WorldTileInfo fields directly. Might need to have a better way to change their values.
-	public void SetDebugWorldTileInfo () {
+
+	#region WorldTileInfo initialization
+	public void SetPartitionTreeWorldTileInfo () {
 
 		//Fill (0,0) to (xsize/2 - 1,zSize/2 - 1) with animal habitat
 		for(int x=0; x<xSize/2; x++) {
@@ -145,6 +146,38 @@ public class WorldInfo : MonoBehaviour {
 			for(int z=zSize/2; z<zSize; z++) {
 				worldTileInfo[x,z].tribeTerritory.hasFlag = true;
 			}
+		}
+	}
+	public void SetDebugWorldTileInfo () {
+		//Fill (0,0) to (xsize/2 - 1,zSize/2 - 1) with animal habitat
+		for(int x=0; x<xSize/2; x++) {
+			for(int z=0; z<zSize/2; z++) {
+				worldTileInfo[x,z].isHabitat = true;
+			}
+		}
+		//Fill (xSize/2,0) to (xsize-1,zSize/2 - 1) corner with trees
+		for(int x=xSize/2; x<xSize; x++) {
+			for(int z=0; z<zSize/2; z++) {
+				worldTileInfo[x,z].hasTree = true;
+			}
+		}
+		//Fill (0,zSize/2) to (xSize/2 - 1,zSize-1) with null tribe flags
+		for(int x=0; x<xSize/2; x++) {
+			for(int z=zSize/2; z<zSize; z++) {
+				worldTileInfo[x,z].tribeTerritory.hasFlag = true;
+			}
+		}
+	}
+	#endregion
+
+	public delegate void WorldChangeListener();
+	private List<WorldChangeListener> changeListeners = new List<WorldChangeListener>();
+	public void AddChangeListener(WorldChangeListener func) {
+		changeListeners.Add(func);
+	}
+	private void NotifyChangeListeners() {
+		foreach(WorldChangeListener listener in changeListeners) {
+			listener();
 		}
 	}
 }
