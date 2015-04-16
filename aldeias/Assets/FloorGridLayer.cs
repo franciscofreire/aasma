@@ -17,7 +17,7 @@ public class FloorGridLayer : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		if(worldHasChanged){
-			floorGrid.SetTiles(WorldInfoTileToAtlasIndexFunc);
+			//floorGrid.SetTiles(WorldInfoTileToAtlasIndexFunc);
 			worldHasChanged=false;
 		}
 	}

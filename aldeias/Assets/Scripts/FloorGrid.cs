@@ -21,7 +21,7 @@ public class FloorGrid : MonoBehaviour {
 		BuildMesh();
 		SetAtlas(terrainTiles, tileResolution);
 		//Debug_SetDebugUVs();
-		Debug_SetAllTilesTo(1);
+		Debug_SetAllTilesTo(0);
 	}
 	
 	public struct TileTexInfo {

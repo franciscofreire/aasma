@@ -12,8 +12,7 @@ public class TreeLayer : MonoBehaviour {
 
 	void Start() {
 		CreateTreeObjects();
-		//Sorry, I wanted to get this running...
-		//worldInfo.AddChangeListener(()=>{worldHasChanged=true;});
+		worldInfo.AddChangeListener(()=>{worldHasChanged=true;});
 	}
 
 	void Update() {
