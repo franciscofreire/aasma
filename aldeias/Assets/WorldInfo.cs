@@ -89,7 +89,6 @@ public class WorldInfo : MonoBehaviour {
 
 	void Start () {
 		GenerateWorldTileInfo();
-		SetTribesWorldTileInfo();
 		SetTreesWorldTileInfo();
 		NotifyChangeListeners();
 	}
@@ -109,8 +108,7 @@ public class WorldInfo : MonoBehaviour {
 			}
 		}
 	}
-
-	#region WorldTileInfo initialization
+	
 	public void SetTreesWorldTileInfo () {
 
 		//Fill (0,0) to (xsize/2 - 1,zSize/2 - 1) with animal habitat

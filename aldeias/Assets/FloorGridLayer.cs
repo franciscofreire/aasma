@@ -32,6 +32,8 @@ public class FloorGridLayer : MonoBehaviour {
 			if (tt.ownerTribe.id == "B")
 				return 2;
 		}
+		if (worldInfo.worldTileInfo[x,z].isHabitat == true)
+			return 3;
 
 		return ATLAS_GRASS;
 	}
