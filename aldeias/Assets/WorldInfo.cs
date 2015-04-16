@@ -93,6 +93,7 @@ public class WorldInfo : MonoBehaviour {
 
 	public void GenerateWorldTileInfo () {
 		worldTileInfo = new WorldTileInfo[xSize,zSize];
+		FillWithDefaultWorldTileInfo();
 		FillTribeATerritory();
 		FillTribeBTerritory();
 		FillHabitat();
