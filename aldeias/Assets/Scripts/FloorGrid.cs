@@ -66,7 +66,8 @@ public class FloorGrid : MonoBehaviour {
 		MeshRenderer mesh_renderer = GetComponent<MeshRenderer>();
 		mesh_renderer.sharedMaterials[0].mainTexture = terrainTiles;
 	}
-	//A function that returns the tile to be used as the tile of the (x,z) tile.
+
+	// A function that returns the tile to be used as the tile of the (x,z) tile.
 	public delegate int GetTile(int x, int z);
 	public void SetTiles(GetTile tileFunction) {
 		Vector2[] newUVs = new Vector2[floorMesh.uv.Length];

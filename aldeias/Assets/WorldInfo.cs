@@ -22,22 +22,24 @@ public class WorldInfo : MonoBehaviour {
 		}
 	}
 
-	//Classes and values that have to be declared and defined before the actual WorldTileInfo declaration
-	public partial class WorldTileInfo {
-		public static TribeTerritory defaultTribeTerritory=new TribeTerritory();
-		public class TribeTerritory {
-			public bool hasFlag=false;
-			public Tribe ownerTribe=nullTribe;
-		}
-	}
-
 	//Information being holded in every tile
 	//The information contained in every tile is readonly.
 	public partial class WorldTileInfo {
 		public bool hasTree=false;
 		public bool hasStump=false;
 		public bool isHabitat=false;
-		public TribeTerritory tribeTerritory=defaultTribeTerritory;
+		public struct TribeTerritory {
+			public bool hasFlag;
+		    public Tribe ownerTribe;
+			
+			public static implicit operator TribeTerritory(Tribe tribe) {
+				return new TribeTerritory() {
+					hasFlag = false,
+					ownerTribe = tribe
+				};
+			}
+		}
+		public TribeTerritory tribeTerritory = nullTribe;
 	}
 
 	// The size of the world in rows and columns.
@@ -86,7 +88,8 @@ public class WorldInfo : MonoBehaviour {
 
 	void Start () {
 		GenerateWorldTileInfo ();
-		SetPartitionTreeWorldTileInfo ();
+		SetTribesWorldTileInfo ();
+		SetTreesWorldTileInfo ();
 		NotifyChangeListeners ();
 	}
 
@@ -104,7 +107,7 @@ public class WorldInfo : MonoBehaviour {
 	}
 
 	#region WorldTileInfo initialization
-	public void SetPartitionTreeWorldTileInfo () {
+	public void SetTreesWorldTileInfo () {
 
 		//Fill (0,0) to (xsize/2 - 1,zSize/2 - 1) with animal habitat
 		for(int x=0; x<xSize/2; x++) {
@@ -144,21 +147,15 @@ public class WorldInfo : MonoBehaviour {
 				}
 			}
 		}
-
-		//Fill (0,zSize/2) to (xSize/2 - 1,zSize-1) with null tribe flags
-		for(int x=0; x<xSize/2; x++) {
-			for(int z=zSize/2; z<zSize; z++) {
-				worldTileInfo[x,z].tribeTerritory.hasFlag = true;
-			}
-		}
 	}
-	public void SetDebugWorldTileInfo () {
+
+	public void SetTribesWorldTileInfo () {
 		// Fill tribe A territory
 		int posx = 0;
 		int posz = 0;
 		Tribe tribeA = new Tribe("A");
-		for(int x=posx; x < posx + TRIBE_TERRITORY_SIZE; x++) {
-			for(int z=posz; z < posz + TRIBE_TERRITORY_SIZE; z++) {
+		for(int x=15; x < 18; x++) {
+			for(int z=15; z < 18; z++) {
 				worldTileInfo[x,z].tribeTerritory.hasFlag = true;
 				worldTileInfo[x,z].tribeTerritory.ownerTribe = tribeA;
 			}
@@ -167,7 +164,6 @@ public class WorldInfo : MonoBehaviour {
 		// Fill tribe B territory
 		posx = xSize - 1;
 		posz = zSize - 1;
-		
 		Tribe tribeB = new Tribe("B");
 		for(int x=posx; x > posx - TRIBE_TERRITORY_SIZE; x--) {
 			for(int z=posz; z > posz - TRIBE_TERRITORY_SIZE; z--) {
@@ -178,8 +174,9 @@ public class WorldInfo : MonoBehaviour {
 
 		// Habitat
 		posx = 0;
+		posz = zSize - 1;
 		for(int x=posx; x > posx - HABITAT_SIZE; x--) {
-			for(int z=posz; z < posz - HABITAT_SIZE; z--) {
+			for(int z=posz; z > posz - HABITAT_SIZE; z--) {
 				worldTileInfo[x,z].isHabitat = true;
 			}
 		}

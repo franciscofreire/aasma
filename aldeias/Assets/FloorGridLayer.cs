@@ -17,18 +17,22 @@ public class FloorGridLayer : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		if(worldHasChanged){
-			//floorGrid.SetTiles(WorldInfoTileToAtlasIndexFunc);
+			floorGrid.SetTiles(WorldInfoTileToAtlasIndexFunc);
 			worldHasChanged=false;
 		}
 	}
 
 	int WorldInfoTileToAtlasIndexFunc(int x, int z) {
-		const int ATLAS_TREE = 1;
 		const int ATLAS_GRASS = 0;
-		if (worldInfo.worldTileInfo[x,z].hasTree) {
-			return ATLAS_TREE;
-		} else {
-			return ATLAS_GRASS;
+		WorldInfo.WorldTileInfo.TribeTerritory tt = worldInfo.worldTileInfo[x,z].tribeTerritory;
+
+		if (tt.hasFlag == true) {
+			if (tt.ownerTribe.id == "A")
+				return 1;
+			if (tt.ownerTribe.id == "B")
+				return 2;
 		}
+
+		return ATLAS_GRASS;
 	}
 }
