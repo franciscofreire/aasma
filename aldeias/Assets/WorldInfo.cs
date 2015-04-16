@@ -24,6 +24,7 @@ public class WorldInfo : MonoBehaviour {
 	//The information contained in every tile is readonly.
 	public partial class WorldTileInfo {
 		public bool hasTree=false;
+		public bool hasStump=false;
 		public bool isHabitat=false;
 		public TribeTerritory tribeTerritory=defaultTribeTerritory;
 	}
