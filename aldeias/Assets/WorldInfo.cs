@@ -12,6 +12,7 @@ public class WorldInfo : MonoBehaviour {
 	public class Tribe {
 		//Insert tribe identification here
 		public string id;
+		public Vector2 meetingPoint;
 		
 		public Tribe(string id) {
 			this.id = id;
@@ -157,6 +158,9 @@ public class WorldInfo : MonoBehaviour {
 		int posx = 0;
 		int posz = 0;
 		Tribe tribeA = new Tribe("A");
+		float meetingPointx = posx + Mathf.Floor(TRIBE_TERRITORY_SIZE/2);
+		float meetingPointz = posz + Mathf.Floor(TRIBE_TERRITORY_SIZE/2);
+		tribeA.meetingPoint = new Vector2(meetingPointx, meetingPointz);
 		for(int x=posx; x < posx + TRIBE_TERRITORY_SIZE; x++) {
 			for(int z=posz; z < posz + TRIBE_TERRITORY_SIZE; z++) {
 				worldTileInfo[x,z].tribeTerritory.hasFlag = true;
@@ -167,8 +171,12 @@ public class WorldInfo : MonoBehaviour {
 		// Fill tribe B territory
 		posx = xSize - 1;
 		posz = zSize - 1;
-		
+
 		Tribe tribeB = new Tribe("B");
+		meetingPointx = posx - Mathf.Floor(TRIBE_TERRITORY_SIZE/2);
+		meetingPointz = posz - Mathf.Floor(TRIBE_TERRITORY_SIZE/2);
+		tribeB.meetingPoint = new Vector2(meetingPointx, meetingPointz);
+
 		for(int x=posx; x > posx - TRIBE_TERRITORY_SIZE; x--) {
 			for(int z=posz; z > posz - TRIBE_TERRITORY_SIZE; z--) {
 				worldTileInfo[x,z].tribeTerritory.hasFlag = true;
@@ -178,8 +186,9 @@ public class WorldInfo : MonoBehaviour {
 
 		// Habitat
 		posx = 0;
-		for(int x=posx; x > posx - HABITAT_SIZE; x--) {
-			for(int z=posz; z < posz - HABITAT_SIZE; z--) {
+		posz = zSize - 1;
+		for(int x=posx; x < posx + HABITAT_SIZE; x++) {
+			for(int z=posz; z > posz - HABITAT_SIZE; z--) {
 				worldTileInfo[x,z].isHabitat = true;
 			}
 		}
