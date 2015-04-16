@@ -19,9 +19,9 @@ public class FloorGrid : MonoBehaviour {
 	
 	void Start () {
 		BuildMesh();
-	}
-
-	void Update () {
+		SetAtlas(terrainTiles, tileResolution);
+		//Debug_SetDebugUVs();
+		Debug_SetAllTilesTo(1);
 	}
 	
 	public struct TileTexInfo {
@@ -32,11 +32,11 @@ public class FloorGrid : MonoBehaviour {
 		}
 	}
 	TileTexInfo MakeAtlasCoordinates(Texture2D altasTexture, int tileRes) {
-		int numTilesPerRow = terrainTiles.width / tileRes;
-		int numRows = terrainTiles.height / tileRes;
+		int numTilesPerRow = altasTexture.width / tileRes;
+		int numRows = altasTexture.height / tileRes;
 		
 		Vector2[,] tileCorners = new Vector2[ numRows*numTilesPerRow, 4 ];
-		Vector2 tileSquareSize = new Vector2( tileRes / (float) terrainTiles.width, tileRes / (float) terrainTiles.height );
+		Vector2 tileSquareSize = new Vector2( tileRes / (float) altasTexture.width, tileRes / (float) altasTexture.height );
 		
 		for(int y=0; y<numRows; y++) {
 			for(int x=0; x<numTilesPerRow; x++) {
@@ -63,10 +63,12 @@ public class FloorGrid : MonoBehaviour {
 		atlasInfo = info;
 		terrainTiles = atlasTexture;
 		tileResolution = tileRes;
+		MeshRenderer mesh_renderer = GetComponent<MeshRenderer>();
+		mesh_renderer.sharedMaterials[0].mainTexture = terrainTiles;
 	}
 	//A function that returns the tile to be used as the tile of the (x,z) tile.
 	public delegate int GetTile(int x, int z);
-	void SetTiles(GetTile tileFunction) {
+	public void SetTiles(GetTile tileFunction) {
 		Vector2[] newUVs = new Vector2[floorMesh.uv.Length];
 		for(int z=0; z < size_z; z++) {
 			for(int x=0; x < size_x; x++) {
@@ -84,23 +86,18 @@ public class FloorGrid : MonoBehaviour {
 		floorMesh.uv = newUVs;
 	}
 
-	void SetDebugUVs() {
+	void Debug_SetDebugUVs() {
 		int curAtlasTile = 0;
 		int atlasSize = atlasInfo.NumTiles;
-		
 		GetTile tileFunc = (int x, int z) => {
-			int res = 0;
-
-			GameObject g = GameObject.Find ("World");
-			WorldInfo wti = (WorldInfo) g.GetComponent<WorldInfo>();
-			wti.GenerateWorldTileInfo ();
-			wti.SetDebugWorldTileInfo ();
-			if (wti.worldTileInfo[x,z].hasTree)
-				res = 1;
-
-			curAtlasTile = (curAtlasTile+1)%atlasSize;
+			int res=curAtlasTile; 
+			curAtlasTile=(curAtlasTile+1)%atlasSize; 
 			return res;
 		};
+		SetTiles(tileFunc);
+	}
+	void Debug_SetAllTilesTo(int tileIndex) {
+		GetTile tileFunc = (int x, int z) => {return tileIndex;};
 		SetTiles(tileFunc);
 	}
 
@@ -183,12 +180,8 @@ public class FloorGrid : MonoBehaviour {
 		mesh_filter.mesh = mesh;
 		mesh_collider.sharedMesh = mesh;
 		Debug.Log ("Done Mesh!");
-		
-		//BuildTexture();
-		SetAtlas(terrainTiles, tileResolution);
 
-		SetDebugUVs();
-		MeshRenderer mesh_renderer = GetComponent<MeshRenderer>();
-		mesh_renderer.sharedMaterials[0].mainTexture = terrainTiles;
+		//MeshRenderer mesh_renderer = GetComponent<MeshRenderer>();
+		//mesh_renderer.sharedMaterials[0].mainTexture = terrainTiles;
 	}
 }
