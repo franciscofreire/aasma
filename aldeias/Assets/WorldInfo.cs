@@ -110,14 +110,6 @@ public class WorldInfo : MonoBehaviour {
 	}
 	
 	public void SetTreesWorldTileInfo () {
-
-		//Fill (0,0) to (xsize/2 - 1,zSize/2 - 1) with animal habitat
-		for(int x=0; x<xSize/2; x++) {
-			for(int z=0; z<zSize/2; z++) {
-				worldTileInfo[x,z].isHabitat = true;
-			}
-		}
-
 		// Fill partitions with trees
 		int x_partition = xSize / NUM_PARTITIONS;
 		int z_partition = zSize / NUM_PARTITIONS;
