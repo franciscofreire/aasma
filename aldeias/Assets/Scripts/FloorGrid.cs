@@ -36,12 +36,15 @@ public class FloorGrid : MonoBehaviour {
 		int numRows = altasTexture.height / tileRes;
 		
 		Vector2[,] tileCorners = new Vector2[ numRows*numTilesPerRow, 4 ];
-		Vector2 tileSquareSize = new Vector2( tileRes / (float) altasTexture.width, tileRes / (float) altasTexture.height );
+		Vector2 tileSquareSize = new Vector2(
+			tileRes / (float) altasTexture.width,
+			tileRes / (float) altasTexture.height
+		);
 		
 		for(int y=0; y<numRows; y++) {
 			for(int x=0; x<numTilesPerRow; x++) {
 				int tileIndex = y*numTilesPerRow + x;
-				Vector2 corner_0_0 = new Vector2( tileSquareSize.x*x, tileSquareSize.y*y );
+				Vector2 corner_0_0 = new Vector2( tileSquareSize.x*x, tileSquareSize.y*y);
 				//(0,0)
 				tileCorners[ tileIndex, 0 ] = corner_0_0;
 				//(1,0)
