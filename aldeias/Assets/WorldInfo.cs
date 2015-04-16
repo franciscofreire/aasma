@@ -110,14 +110,6 @@ public class WorldInfo : MonoBehaviour {
 	}
 	
 	public void SetTreesWorldTileInfo () {
-
-		//Fill (0,0) to (xsize/2 - 1,zSize/2 - 1) with animal habitat
-		for(int x=0; x<xSize/2; x++) {
-			for(int z=0; z<zSize/2; z++) {
-				worldTileInfo[x,z].isHabitat = true;
-			}
-		}
-
 		// Fill partitions with trees
 		int x_partition = xSize / NUM_PARTITIONS;
 		int z_partition = zSize / NUM_PARTITIONS;
@@ -187,6 +179,25 @@ public class WorldInfo : MonoBehaviour {
 		int posz = zSize - 1;
 		for(int x=posx; x < posx + HABITAT_SIZE; x++) {
 			for(int z=posz; z > posz - HABITAT_SIZE; z--) {
+				worldTileInfo[x,z].isHabitat = true;
+			}
+		}
+	}
+
+	public void SetPerlinNoiseTreesWorldTileInfo() {
+		for(int x=0; x<xSize; x++) {
+			for(int z=0; z<zSize; z++) {
+				float freqMultiplier = 1.0f / 10f;
+				if(Mathf.PerlinNoise(x*freqMultiplier,z*freqMultiplier) > 0.5){
+					worldTileInfo[x,z].hasTree = true;
+				}
+			}
+		}
+	}
+	public void SetCornerToHabitat() {
+		//Fill (0,0) to (xsize/2 - 1,zSize/2 - 1) with animal habitat
+		for(int x=0; x<xSize/2; x++) {
+			for(int z=0; z<zSize/2; z++) {
 				worldTileInfo[x,z].isHabitat = true;
 			}
 		}
