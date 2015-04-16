@@ -184,6 +184,25 @@ public class WorldInfo : MonoBehaviour {
 		}
 	}
 
+	public void SetPerlinNoiseTreesWorldTileInfo() {
+		for(int x=0; x<xSize; x++) {
+			for(int z=0; z<zSize; z++) {
+				float freqMultiplier = 1.0f / 10f;
+				if(Mathf.PerlinNoise(x*freqMultiplier,z*freqMultiplier) > 0.5){
+					worldTileInfo[x,z].hasTree = true;
+				}
+			}
+		}
+	}
+	public void SetCornerToHabitat() {
+		//Fill (0,0) to (xsize/2 - 1,zSize/2 - 1) with animal habitat
+		for(int x=0; x<xSize/2; x++) {
+			for(int z=0; z<zSize/2; z++) {
+				worldTileInfo[x,z].isHabitat = true;
+			}
+		}
+	}
+
 	public delegate void WorldChangeListener();
 	private List<WorldChangeListener> changeListeners = new List<WorldChangeListener>();
 	public void AddChangeListener(WorldChangeListener func) {
