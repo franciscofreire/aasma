@@ -142,15 +142,15 @@ public class WorldInfo : MonoBehaviour {
 	}
 
 	public void GenerateWorldTileInfo () {
-		worldTileInfo = new WorldTileInfo[xSize,zSize];
-		FillWithDefaultWorldTileInfo();
+		CreateTiles();
 		FillTribeATerritory();
 		FillTribeBTerritory();
 		FillHabitat();
 		FillTrees();
 	}
 
-	public void FillWithDefaultWorldTileInfo () {
+	private void CreateTiles() {
+		worldTileInfo = new WorldTileInfo[xSize,zSize];
 		for(int x=0; x<xSize; x++) {
 			for(int z=0; z<zSize; z++) {
 				worldTileInfo[x,z] = new WorldTileInfo();
