@@ -25,9 +25,9 @@ public class WorldCamera : MonoBehaviour {
 		if (Input.GetKey("s"))
 			transform.Rotate(Vector3.right, turnSpeed * Time.deltaTime);
 		if (Input.GetKey("z"))
-			transform.Translate(Vector3.forward * moveSpeed * Time.deltaTime);
+			transform.Translate(Vector3.forward * 2 * moveSpeed * Time.deltaTime);
 		if (Input.GetKey("x"))
-			transform.Translate(Vector3.back * moveSpeed * Time.deltaTime);
+			transform.Translate(Vector3.back * 2 * moveSpeed * Time.deltaTime);
 
 		if(Input.GetKey(KeyCode.UpArrow))
 			transform.Translate(Vector3.forward * moveSpeed * Time.deltaTime, Space.World);

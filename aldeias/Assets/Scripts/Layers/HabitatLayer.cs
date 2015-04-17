@@ -1,37 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class HabitatLayer : MonoBehaviour {
-
-	public WorldInfo worldInfo;
-	public int size_z {
-		get {
-			return worldInfo.zSize;
-		}
-	}
-	public int size_x {
-		get {
-			return worldInfo.xSize;
-		}
-	}
-	public float tileSize = 1.0f;
-
-	private bool worldHasChanged=false;
+public class HabitatLayer : Layer {
 	private Mesh layerMesh;
 
-	void Start() {
-		BuildMesh();
-		worldInfo.AddChangeListener(()=>{worldHasChanged=true;});
-	}
-
-	void Update() {
-		if(worldHasChanged){
-			SetHabitatFacesFromWorldInfo();
-			worldHasChanged=false;
-		}
-	}
-
-	public void BuildMesh() {
+	public override void CreateObjects() {
 		int numTiles = size_x * size_z;
 		
 		int vsize_x = size_x + 1;
@@ -116,7 +89,7 @@ public class HabitatLayer : MonoBehaviour {
 		//mesh_renderer.sharedMaterials[0].mainTexture = terrainTiles;
 	}
 
-	private void SetHabitatFacesFromWorldInfo() {
+	public override void ApplyWorldInfo() {
 		int[] triangles = layerMesh.triangles;
 
 		for(int z=0; z < size_z; z++) {

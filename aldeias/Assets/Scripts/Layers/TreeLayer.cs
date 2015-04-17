@@ -1,33 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class TreeLayer : MonoBehaviour {
-
-	public WorldInfo worldInfo;
+public class TreeLayer : Layer {
 	public GameObject treePrefab;
-	public float tileSize=1.0f;
 	
 	private GameObject[,] trees;
-	private bool worldHasChanged=false;
 
-	void Start() {
-		CreateTreeObjects();
-		worldInfo.AddChangeListener(()=>{worldHasChanged=true;});
-	}
-
-	void Update() {
-		if(worldHasChanged) {
-			ApplyWorldInfo();
-			worldHasChanged=false;
-		}
-	}
-
-	Vector3 worldXZToVec3(int x, int z) {
-		float halfTileSize = tileSize * 0.5f;
-		return new Vector3(x+halfTileSize, 0, z+halfTileSize);
-	}
-
-	void CreateTreeObjects() {
+	public override void CreateObjects() {
 		trees = new GameObject[worldInfo.xSize,worldInfo.zSize];
 		for(int x=0; x<worldInfo.xSize; x++) {
 			for(int z=0; z<worldInfo.zSize; z++) {
@@ -38,7 +17,7 @@ public class TreeLayer : MonoBehaviour {
 		}
 	}
 
-	void ApplyWorldInfo() {
+	public override void ApplyWorldInfo() {
 		for(int x=0; x<worldInfo.xSize; x++) {
 			for(int z=0; z<worldInfo.zSize; z++) {
 				trees[x, z].SetActive(worldInfo.worldTileInfo[x,z].hasTree);
