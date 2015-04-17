@@ -20,7 +20,7 @@ public class FloorGridLayer : Layer {
 		if (tt.hasFlag == true) {
 			if (tt.ownerTribe.id == "A")
 				return (int) ATLAS.TRIBE_A;
-			if (tt.ownerTribe.id == "B")
+			else if (tt.ownerTribe.id == "B")
 				return (int) ATLAS.TRIBE_B;
 		}
 		if (worldInfo.worldTileInfo[x,z].isHabitat == true)

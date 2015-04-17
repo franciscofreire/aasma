@@ -20,10 +20,12 @@ public class WorldInfo : MonoBehaviour {
 			this.width = width;
 		}
 	}
+
 	public class Tribe {
 		//Insert tribe identification here
-		public string id;
-		public MeetingPoint meetingPoint;
+		public string id = "";
+		public MeetingPoint meetingPoint = null;
+		public List<GameObject> agents = new List<GameObject>();
 		
 		public Tribe(string id, Vector2 centralPoint, int width) {
 			this.id = id;
@@ -31,13 +33,24 @@ public class WorldInfo : MonoBehaviour {
 		}
 		
 		public Tribe() {
-			this.id = "";
+		}
+	}
+	
+	public class Habitat {
+		public Vector2 corner_pos;
+		public List<GameObject> agents = new List<GameObject>();
+		
+		public Habitat(int x, int y) {
+			this.corner_pos = new Vector2(x, y);
+		}
+		
+		public Habitat() {
 		}
 	}
 
 	//Information being holded in every tile
 	//The information contained in every tile is readonly.
-	public partial class WorldTileInfo {
+	public class WorldTileInfo {
 		public bool hasTree=false;
 		public bool hasStump=false;
 		public bool isHabitat=false;
@@ -63,14 +76,15 @@ public class WorldInfo : MonoBehaviour {
 	public WorldTileInfo[,] worldTileInfo; 
 
 	// All the tribes that exist in the world.
-	public List<Tribe> tribes; 
+	public List<Tribe> tribes = new List<Tribe>(); 
 
-	// Every habitant believes that he belongs to a tribe.
+	// All the habitats that exist in the world.
+	public List<Habitat> habitats = new List<Habitat>();
 
 	// The agents that exist in the world.
-	public List<Habitant> habitants;
-	public List<Animal> animals; 
-	public List<Agent> allAgents;
+	public List<Habitant> habitants = new List<Habitant>();
+	public List<Animal> animals = new List<Animal>(); 
+	public List<Agent> allAgents = new List<Agent>();
 
 	public void placeObject(GameObject obj, Vector2 pos) {
 		int posx = (int) pos.x;
@@ -101,7 +115,7 @@ public class WorldInfo : MonoBehaviour {
 
 	void Start () {
 		GenerateWorldTileInfo();
-		SetTreesWorldTileInfo();
+		NotifyCreationListeners();
 		NotifyChangeListeners();
 	}
 
@@ -111,6 +125,7 @@ public class WorldInfo : MonoBehaviour {
 		FillTribeATerritory();
 		FillTribeBTerritory();
 		FillHabitat();
+		FillTrees();
 	}
 
 	public void FillWithDefaultWorldTileInfo () {
@@ -121,14 +136,15 @@ public class WorldInfo : MonoBehaviour {
 		}
 	}
 	
-	public void SetTreesWorldTileInfo () {
+	public void FillTrees () {
 		// Fill partitions with trees
 		int x_partition = xSize / NUM_PARTITIONS;
 		int z_partition = zSize / NUM_PARTITIONS;
 		int num_max_trees = x_partition * z_partition;
 
-		// Choose which partitions will have trees
 		for(int x = 0; x < NUM_PARTITIONS; x++) {
+
+			// Choose which partition will have trees
 			int partition_with_trees = Random.Range(0,NUM_PARTITIONS);
 			for(int z = 0; z < NUM_PARTITIONS; z++) {
 				
@@ -163,6 +179,7 @@ public class WorldInfo : MonoBehaviour {
 		float meetingPointz = posz + Mathf.Floor(TRIBE_TERRITORY_SIZE/2);
 		Vector2 centralMeetingPoint = new Vector2(meetingPointx, meetingPointz);
 		Tribe tribeA = new Tribe("A", centralMeetingPoint, MEETING_POINT_WIDTH);
+		tribes.Add(tribeA);
 
 		for(int x=posx; x < posx + TRIBE_TERRITORY_SIZE; x++) {
 			for(int z=posz; z < posz + TRIBE_TERRITORY_SIZE; z++) {
@@ -179,6 +196,7 @@ public class WorldInfo : MonoBehaviour {
 		float meetingPointz = posz - Mathf.Floor (TRIBE_TERRITORY_SIZE / 2);
 		Vector2 centralMeetingPoint = new Vector2 (meetingPointx, meetingPointz);
 		Tribe tribeB = new Tribe ("B", centralMeetingPoint, MEETING_POINT_WIDTH);
+		tribes.Add(tribeB);
 
 		for (int x=posx; x > posx - TRIBE_TERRITORY_SIZE; x--) {
 			for (int z=posz; z > posz - TRIBE_TERRITORY_SIZE; z--) {
@@ -191,6 +209,7 @@ public class WorldInfo : MonoBehaviour {
 	void FillHabitat () {
 		int posx = 0;
 		int posz = zSize - 1;
+		habitats.Add(new Habitat(posx, posz));
 		for(int x=posx; x < posx + HABITAT_SIZE; x++) {
 			for(int z=posz; z > posz - HABITAT_SIZE; z--) {
 				worldTileInfo[x,z].isHabitat = true;
@@ -201,18 +220,9 @@ public class WorldInfo : MonoBehaviour {
 	public void SetPerlinNoiseTreesWorldTileInfo() {
 		for(int x=0; x<xSize; x++) {
 			for(int z=0; z<zSize; z++) {
-				float freqMultiplier = 1.0f / 10f;
-				if(Mathf.PerlinNoise(x*freqMultiplier,z*freqMultiplier) > 0.5){
+				if(Mathf.PerlinNoise(x*0.1f,z*0.1f) > 0.5) {
 					worldTileInfo[x,z].hasTree = true;
 				}
-			}
-		}
-	}
-	public void SetCornerToHabitat() {
-		//Fill (0,0) to (xsize/2 - 1,zSize/2 - 1) with animal habitat
-		for(int x=0; x<xSize/2; x++) {
-			for(int z=0; z<zSize/2; z++) {
-				worldTileInfo[x,z].isHabitat = true;
 			}
 		}
 	}
@@ -224,6 +234,17 @@ public class WorldInfo : MonoBehaviour {
 	}
 	private void NotifyChangeListeners() {
 		foreach(WorldChangeListener listener in changeListeners) {
+			listener();
+		}
+	}
+
+	public delegate void WorldCreationListener();
+	private List<WorldCreationListener> creationListeners = new List<WorldCreationListener>();
+	public void AddCreationListener(WorldCreationListener func) {
+		creationListeners.Add(func);
+	}
+	private void NotifyCreationListeners() {
+		foreach(WorldCreationListener listener in creationListeners) {
 			listener();
 		}
 	}
