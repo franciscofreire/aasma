@@ -7,15 +7,27 @@ public class WorldInfo : MonoBehaviour {
 	private const int NUM_PARTITIONS = 5;
 	public const int TRIBE_TERRITORY_SIZE = 15;
 	public const int HABITAT_SIZE = 7;
+	public const int MEETING_POINT_WIDTH = 3;
 
 	public static Tribe nullTribe = new Tribe();
+
+	public class MeetingPoint {
+		public Vector2 centralPoint;
+		public int width;
+
+		public MeetingPoint(Vector2 centralPoint, int width) {
+			this.centralPoint = centralPoint;
+			this.width = width;
+		}
+	}
 	public class Tribe {
 		//Insert tribe identification here
 		public string id;
-		public Vector2 meetingPoint;
+		public MeetingPoint meetingPoint;
 		
-		public Tribe(string id) {
+		public Tribe(string id, Vector2 centralPoint, int width) {
 			this.id = id;
+			this.meetingPoint = new MeetingPoint(centralPoint, width);
 		}
 		
 		public Tribe() {
@@ -146,10 +158,12 @@ public class WorldInfo : MonoBehaviour {
 	void FillTribeATerritory () {
 		int posx = 0;
 		int posz = 0;
-		Tribe tribeA = new Tribe("A");
+
 		float meetingPointx = posx + Mathf.Floor(TRIBE_TERRITORY_SIZE/2);
 		float meetingPointz = posz + Mathf.Floor(TRIBE_TERRITORY_SIZE/2);
-		tribeA.meetingPoint = new Vector2(meetingPointx, meetingPointz);
+		Vector2 centralMeetingPoint = new Vector2(meetingPointx, meetingPointz);
+		Tribe tribeA = new Tribe("A", centralMeetingPoint, MEETING_POINT_WIDTH);
+
 		for(int x=posx; x < posx + TRIBE_TERRITORY_SIZE; x++) {
 			for(int z=posz; z < posz + TRIBE_TERRITORY_SIZE; z++) {
 				worldTileInfo[x,z].tribeTerritory.hasFlag = true;
@@ -161,11 +175,11 @@ public class WorldInfo : MonoBehaviour {
 	void FillTribeBTerritory () {
 		int posx = xSize - 1;
 		int posz = zSize - 1;
-		Tribe tribeB = new Tribe ("B");
 		float meetingPointx = posx - Mathf.Floor (TRIBE_TERRITORY_SIZE / 2);
 		float meetingPointz = posz - Mathf.Floor (TRIBE_TERRITORY_SIZE / 2);
-		tribeB.meetingPoint = new Vector2 (meetingPointx, meetingPointz);
-		
+		Vector2 centralMeetingPoint = new Vector2 (meetingPointx, meetingPointz);
+		Tribe tribeB = new Tribe ("B", centralMeetingPoint, MEETING_POINT_WIDTH);
+
 		for (int x=posx; x > posx - TRIBE_TERRITORY_SIZE; x--) {
 			for (int z=posz; z > posz - TRIBE_TERRITORY_SIZE; z--) {
 				worldTileInfo [x, z].tribeTerritory.hasFlag = true;
