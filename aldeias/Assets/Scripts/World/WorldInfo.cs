@@ -10,8 +10,6 @@ public class WorldInfo : MonoBehaviour {
 	private const int NUM_PARTITIONS = 5;
 	private const int UPDATE_FRAME_INTERVAL = 5;
 
-	public static Tribe nullTribe = new Tribe();
-
 	// Queue of actions: to be used by the agents
 	public ConcurrentQueue<Action> pendingActionsQueue =
 		new ConcurrentQueue<Action>();
@@ -28,6 +26,7 @@ public class WorldInfo : MonoBehaviour {
 		}
 	}
 
+	public static Tribe nullTribe = new Tribe();
 	public class Tribe {
 		//Insert tribe identification here
 		public string id = "";
@@ -239,7 +238,7 @@ public class WorldInfo : MonoBehaviour {
 		}
 	}
 
-	public void SetPerlinNoiseTreesWorldTileInfo() {
+	void SetPerlinNoiseTreesWorldTileInfo() {
 		for(int x=0; x<xSize; x++) {
 			for(int z=0; z<zSize; z++) {
 				if(Mathf.PerlinNoise(x*0.1f,z*0.1f) > 0.5) {
@@ -248,6 +247,15 @@ public class WorldInfo : MonoBehaviour {
 			}
 		}
 	}
+	void SetCornerToHabitat() {
+		//Fill (0,0) to (xsize/2 - 1,zSize/2 - 1) with animal habitat
+		for(int x=0; x<xSize/2; x++) {
+			for(int z=0; z<zSize/2; z++) {
+				worldTileInfo[x,z].isHabitat = true;
+			}
+		}
+	}
+
 
 	public delegate void WorldChangeListener();
 	private List<WorldChangeListener> changeListeners = new List<WorldChangeListener>();
