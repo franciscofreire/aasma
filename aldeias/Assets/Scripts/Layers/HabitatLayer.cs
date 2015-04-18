@@ -44,7 +44,7 @@ public class HabitatLayer : Layer {
 				uv[ quadVertexBaseIndex + 3 ] = new Vector2( 0, 1 );
 			}
 		}
-		Debug.Log ("Done Verts!");
+		Debug.Log ("Done Habitat Verts!");
 
 		//Default triangles
 		for(z=0; z < size_z; z++) {
@@ -66,7 +66,7 @@ public class HabitatLayer : Layer {
 				triangles[ triBaseIndex + 5	] = corner_0_0;
 			}
 		}
-		Debug.Log ("Done Triangles!");
+		Debug.Log ("Done Habitat Triangles!");
 		
 		// Create a new Mesh and populate with the data
 		Mesh mesh = new Mesh();
@@ -77,13 +77,14 @@ public class HabitatLayer : Layer {
 		mesh.uv = uv;
 		
 		// Assign our mesh to our filter/renderer/collider
+
 		MeshFilter mesh_filter = GetComponent<MeshFilter>();
 		MeshCollider mesh_collider = GetComponent<MeshCollider>();
 		
 		layerMesh = mesh;
 		mesh_filter.mesh = mesh;
 		mesh_collider.sharedMesh = mesh;
-		Debug.Log ("Done Mesh!");
+		Debug.Log ("Done Habitat Mesh!");
 		
 		//MeshRenderer mesh_renderer = GetComponent<MeshRenderer>();
 		//mesh_renderer.sharedMaterials[0].mainTexture = terrainTiles;

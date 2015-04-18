@@ -3,17 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class WorldInfo : MonoBehaviour {
-
-	private const int NUM_PARTITIONS = 5;
 	public const int TRIBE_TERRITORY_SIZE = 15;
 	public const int HABITAT_SIZE = 7;
 	public const int MEETING_POINT_WIDTH = 3;
+
+	private const int NUM_PARTITIONS = 5;
 	private const int UPDATE_FRAME_INTERVAL = 5;
 
-	public static Tribe nullTribe = new Tribe();
-
 	// Queue of actions: to be used by the agents
-	public ConcurrentQueue<Action> pendingActionsQueue = new ConcurrentQueue<Action>();
+	public ConcurrentQueue<Action> pendingActionsQueue =
+		new ConcurrentQueue<Action>();
 
 	public int frameCount = 0;
 
@@ -27,11 +26,12 @@ public class WorldInfo : MonoBehaviour {
 		}
 	}
 
+	public static Tribe nullTribe = new Tribe();
 	public class Tribe {
 		//Insert tribe identification here
 		public string id = "";
 		public MeetingPoint meetingPoint = null;
-		public List<GameObject> agents = new List<GameObject>();
+		public List<Habitant> habitants = new List<Habitant>();
 		
 		public Tribe(string id, Vector2 centralPoint, int width) {
 			this.id = id;
@@ -44,7 +44,7 @@ public class WorldInfo : MonoBehaviour {
 	
 	public class Habitat {
 		public Vector2 corner_pos;
-		public List<GameObject> agents = new List<GameObject>();
+		public List<Animal> animals = new List<Animal>();
 		
 		public Habitat(int x, int y) {
 			this.corner_pos = new Vector2(x, y);
@@ -87,9 +87,7 @@ public class WorldInfo : MonoBehaviour {
 	// All the habitats that exist in the world.
 	public List<Habitat> habitats = new List<Habitat>();
 
-	// The agents that exist in the world.
-	public List<Habitant> habitants = new List<Habitant>();
-	public List<Animal> animals = new List<Animal>(); 
+	// The agents that exist in the world. TODO: Maybe remove
 	public List<Agent> allAgents = new List<Agent>();
 
 	public List<AgentControl> agentsThreads = new List<AgentControl>();
@@ -143,15 +141,15 @@ public class WorldInfo : MonoBehaviour {
 	}
 
 	public void GenerateWorldTileInfo () {
-		worldTileInfo = new WorldTileInfo[xSize,zSize];
-		FillWithDefaultWorldTileInfo();
+		CreateTiles();
 		FillTribeATerritory();
 		FillTribeBTerritory();
 		FillHabitat();
 		FillTrees();
 	}
 
-	public void FillWithDefaultWorldTileInfo () {
+	private void CreateTiles() {
+		worldTileInfo = new WorldTileInfo[xSize,zSize];
 		for(int x=0; x<xSize; x++) {
 			for(int z=0; z<zSize; z++) {
 				worldTileInfo[x,z] = new WorldTileInfo();
@@ -240,7 +238,7 @@ public class WorldInfo : MonoBehaviour {
 		}
 	}
 
-	public void SetPerlinNoiseTreesWorldTileInfo() {
+	void SetPerlinNoiseTreesWorldTileInfo() {
 		for(int x=0; x<xSize; x++) {
 			for(int z=0; z<zSize; z++) {
 				if(Mathf.PerlinNoise(x*0.1f,z*0.1f) > 0.5) {
@@ -249,6 +247,15 @@ public class WorldInfo : MonoBehaviour {
 			}
 		}
 	}
+	void SetCornerToHabitat() {
+		//Fill (0,0) to (xsize/2 - 1,zSize/2 - 1) with animal habitat
+		for(int x=0; x<xSize/2; x++) {
+			for(int z=0; z<zSize/2; z++) {
+				worldTileInfo[x,z].isHabitat = true;
+			}
+		}
+	}
+
 
 	public delegate void WorldChangeListener();
 	private List<WorldChangeListener> changeListeners = new List<WorldChangeListener>();

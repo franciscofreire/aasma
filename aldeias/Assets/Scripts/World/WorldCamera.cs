@@ -7,7 +7,7 @@ public class WorldCamera : MonoBehaviour {
 	public float turnSpeed = 50f;
 
 	void Start () {
-		logStatus ();
+		//logStatus ();
 	}
 
 	void Update () {
