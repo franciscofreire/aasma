@@ -61,7 +61,7 @@ public class WorldInfo : MonoBehaviour {
 	}
 	public void addAgentToTribe(Tribe t, Habitant h) {
 		t.habitants.Add(h);
-		//allAgents.Add(h);
+		allAgents.Add(h);
 	}
 	
 	public class Habitat {
@@ -83,9 +83,9 @@ public class WorldInfo : MonoBehaviour {
 	//Information being holded in every tile
 	//The information contained in every tile is readonly.
 	public class WorldTileInfo {
-		public bool hasTree=false;
-		public bool hasStump=false;
-		public bool isHabitat=false;
+		public bool hasTree   = false;
+		public bool hasAgent  = false;
+		public bool isHabitat = false;
 		public struct TribeTerritory {
 			public bool hasFlag;
 		    public Tribe ownerTribe;
@@ -98,13 +98,6 @@ public class WorldInfo : MonoBehaviour {
 			}
 		}
 		public TribeTerritory tribeTerritory = nullTribe;
-	}
-
-	public void placeObject(GameObject obj, Vector2 pos) {
-		int posx = (int) pos.x;
-		int posz = (int) pos.y;
-		
-		// TODO: Test limits
 	}
 
 	public void Update() {
@@ -139,6 +132,10 @@ public class WorldInfo : MonoBehaviour {
 		NotifyCreationListeners();
 		NotifyChangeListeners();
 	}
+
+	////
+	//// TILE CREATION
+	////
 
 	public void GenerateWorldTileInfo () {
 		CreateTiles();
@@ -239,6 +236,7 @@ public class WorldInfo : MonoBehaviour {
 			}
 		}
 	}
+
 	void SetCornerToHabitat() {
 		//Fill (0,0) to (xsize/2 - 1,zSize/2 - 1) with animal habitat
 		for(int x=0; x<xSize/2; x++) {
@@ -248,6 +246,39 @@ public class WorldInfo : MonoBehaviour {
 		}
 	}
 
+	////
+	//// TILE INFORMATION
+	////
+	
+	public IList<Vector2> nearbyCells(Agent a) {
+		IList<Vector2> cells = new List<Vector2>();
+		int xmin = Mathf.Max(0, (int) a.pos[0] - 2);
+		int xmax = Mathf.Min(xSize - 1, (int) a.pos[0] + 2);
+		int zmin = Mathf.Max(0, (int) a.pos[1] - 2);
+		int zmax = Mathf.Min(zSize - 1, (int) a.pos[1] + 2); 
+		for (int x = xmin; x < xmax; x++) {
+			for (int z = zmin; z < zmax; z++) {
+				cells.Add(new Vector2(x, z));
+				//Debug.Log("Agent nearby cells - x: " + x + " z: " + z);
+			}
+		}
+		
+		return cells;
+	}
+
+	public bool isInsideWorld(int x, int z) {
+		return x >= 0 && z >= 0 && x < xSize && z < zSize;
+	}
+
+	public bool isFreeCell(int x, int z) {
+		return isInsideWorld(x, z) &&
+			   worldTileInfo[x, z].hasTree  == false &&
+			   worldTileInfo[x, z].hasAgent == false;
+	}
+
+	////
+	//// LISTENERS
+	////
 
 	public delegate void WorldChangeListener();
 	private List<WorldChangeListener> changeListeners = new List<WorldChangeListener>();

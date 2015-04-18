@@ -22,29 +22,37 @@ public class AgentSpawner : Layer {
 			for (int i = -mp_bound; i <= mp_bound; i++) {
 				for (int j = -mp_bound; j <= mp_bound; j++) {
 					if (num_agents-- > 0) {
+						int x = (int)cp[0] + i;
+						int z = (int)cp[1] + j;
+
+						// Update WordTileInfo
+						worldInfo.worldTileInfo[x, z].hasAgent = true;
+
 						// Create a model for the new agent
 						GameObject agentModel = (GameObject) Instantiate(
 							habitantModel,
-							worldXZToVec3((int)cp[0] + i,(int)cp[1] + j),
+							worldXZToVec3(x, z),
 							Quaternion.identity);
 						agentModel.transform.parent = this.transform;
 						agentModel.SetActive(true);
 
 						// Create the habitant and add him to the right tribe
 						Habitant habitant = new Habitant(
-							new Vector2((int)cp[0] + i,(int)cp[1] + j),
+							new Vector2(x, z),
 							t.id,
 							1);
 						worldInfo.addAgentToTribe(t, habitant);
 
 						// Save this agent
-						list_habitants.Add(new KeyValuePair<Habitant, GameObject>(habitant, habitantModel));
+						list_habitants.Add(new KeyValuePair<Habitant, GameObject>(habitant, agentModel));
 					} else
 						break;
 				}
 			}
 			num_agents = 4;
 		}
+
+		worldInfo.nearbyCells(list_habitants[0].Key);
 
 		// Create animals
 		// Find the first cell (corner) of a habitat
@@ -57,6 +65,9 @@ public class AgentSpawner : Layer {
 			for(int x = posx; x < posx + WorldInfo.HABITAT_SIZE; x++) {
 				for(int z = posz; z > posz - WorldInfo.HABITAT_SIZE; z--) {
 					if (num_animals-- > 0) {
+						// Update WordTileInfo
+						worldInfo.worldTileInfo[x, z].hasAgent = true;
+
 						// Create a model for the new agent
 						GameObject agentModel = (GameObject) Instantiate(
 							animalModel,
@@ -70,7 +81,7 @@ public class AgentSpawner : Layer {
 						worldInfo.addAgentToHabitat(h, animal);
 						
 						// Save this agent
-						list_animals.Add(new KeyValuePair<Animal, GameObject>(animal, animalModel));
+						list_animals.Add(new KeyValuePair<Animal, GameObject>(animal, agentModel));
 					} else
 						break;
 				}
