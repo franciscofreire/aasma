@@ -11,7 +11,8 @@ public class Habitant : Agent {
 		this.isLeader = false;
 	}
 
-	public override void doAction() {
+	public override Action doAction() {
 		//TODO
+		return null;
 	}
 }

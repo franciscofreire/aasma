@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 using System;
 using UnityEngine;
 
@@ -15,5 +16,5 @@ public abstract class Agent {
 		this.energy = 100;
 	}
 
-	public abstract void doAction();
+	public abstract Action doAction();
 }
