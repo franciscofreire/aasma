@@ -93,13 +93,14 @@ public class HabitatLayer : Layer {
 
 		for(int z=0; z < size_z; z++) {
 			for(int x=0; x < size_x; x++) {
+				Vector2I tileCoord = new Vector2I(x,z);
 				int quadIndex = z*size_x + x;
 
 				int corner_0_0;
 				int corner_1_0;
 				int corner_1_1;
 				int corner_0_1;
-				if(worldInfo.worldTileInfo[x,z].isHabitat) {
+				if(worldInfo.WorldTileInfoAtCoord(tileCoord).isHabitat) {
 					int quadVertexBaseIndex = quadIndex*4;
 					corner_0_0 = quadVertexBaseIndex + 0;
 					corner_1_0 = quadVertexBaseIndex + 1;

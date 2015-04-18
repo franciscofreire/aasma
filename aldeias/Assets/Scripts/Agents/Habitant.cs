@@ -19,24 +19,12 @@ public class Habitant : Agent {
 	}
 
 	public override void OnWorldTick () {
-		IList<Vector2> cells = worldInfo.nearbyFreeCells(worldInfo.nearbyCells(this));
-		int index = worldInfo.rnd.Next(cells.Count);
-		
-		//try {
+		IList<Vector2I> cells = worldInfo.nearbyFreeCells(worldInfo.nearbyCells(this));
 
-		if (index > 0) {
-			Vector2 cell = cells[index];
-			
-			worldInfo.nearbyCells(this);
-			move(this, cell);
-		}
-		/*
-			} catch (System.Exception e) {
-				Debug.DebugBreak();
-				Debug.Log ("BARRACA: " + index);
-				System.Threading.Thread.Sleep (1000);
-			}
-		*/
+		int index = worldInfo.rnd.Next(cells.Count);
+
+		Vector2I cell = cells[index];
+		move(this, worldInfo.WorldXZToAgentPos(cell));
 	}
 
 	//************
@@ -44,12 +32,9 @@ public class Habitant : Agent {
 	//************
 
 	public bool EnemyInFront() {
-		return false;
-		/*
 		Vector2 posInFront = pos + orientation.ToVector2();
-		int posInFront_x = (int)(posInFront.x + 0.5f);
-		int posInFront_z = (int)(posInFront.y + 0.5f);
-		Habitant habInFront = worldInfo.habitantInTile(posInFront_x, posInFront_z);
-		return habInFront != null && habInFront.tribe != this.tribe;*/
+		Vector2I tileCoordInFront = worldInfo.AgentPosToWorldXZ(posInFront);
+		Habitant habInFront = worldInfo.habitantInTile(tileCoordInFront);
+		return habInFront != null && habInFront.tribe != this.tribe;
 	}
 }
