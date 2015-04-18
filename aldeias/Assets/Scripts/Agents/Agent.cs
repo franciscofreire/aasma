@@ -46,27 +46,3 @@ public abstract class Agent {
 
 	public abstract void OnWorldTick();
 }
-
-public struct Orientation {
-	float angleToZ;
-
-	public static Orientation FromAngleToZ(float angle) {
-		return new Orientation(0);
-	}
-
-	public static Orientation forward {
-		get { return FromAngleToZ(0); }
-	}
-
-	public Vector2 ToVector2() {
-		return new Vector2(Mathf.Cos(angleToZ), Mathf.Sin(angleToZ));
-	}
-
-	public Quaternion ToQuaternion() {
-		return Quaternion.AngleAxis(angleToZ+90.0f, Vector3.up);
-	}
-
-	private Orientation(float angleToZ) {
-		this.angleToZ = angleToZ;
-	}
-}
