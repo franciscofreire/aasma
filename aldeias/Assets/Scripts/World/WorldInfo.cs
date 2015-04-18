@@ -150,8 +150,8 @@ public class WorldInfo : MonoBehaviour {
 
 	public void GenerateWorldTileInfo () {
 		CreateTiles();
-		FillTribeATerritory();
-		FillTribeBTerritory();
+		FillTribeTerritory("A", 0, 0);
+		FillTribeTerritory("B", xSize - TRIBE_TERRITORY_SIZE, zSize - TRIBE_TERRITORY_SIZE);
 		FillHabitat();
 		FillTrees();
 	}
@@ -212,37 +212,17 @@ public class WorldInfo : MonoBehaviour {
 		}
 	}
 
-	void FillTribeATerritory () {
-		int posx = 0;
-		int posz = 0;
-
+	void FillTribeTerritory(string name, int posx, int posz) {
 		float meetingPointx = posx + Mathf.Floor(TRIBE_TERRITORY_SIZE/2);
 		float meetingPointz = posz + Mathf.Floor(TRIBE_TERRITORY_SIZE/2);
 		Vector2 centralMeetingPoint = new Vector2(meetingPointx, meetingPointz);
-		Tribe tribeA = new Tribe("A", centralMeetingPoint, MEETING_POINT_WIDTH);
-		tribes.Add(tribeA);
+		Tribe tribe = new Tribe(name, centralMeetingPoint, MEETING_POINT_WIDTH);
+		tribes.Add(tribe);
 
 		for(int x=posx; x < posx + TRIBE_TERRITORY_SIZE; x++) {
 			for(int z=posz; z < posz + TRIBE_TERRITORY_SIZE; z++) {
 				worldTileInfo[x,z].tribeTerritory.hasFlag = true;
-				worldTileInfo[x,z].tribeTerritory.ownerTribe = tribeA;
-			}
-		}
-	}
-
-	void FillTribeBTerritory () {
-		int posx = xSize - 1;
-		int posz = zSize - 1;
-		float meetingPointx = posx - Mathf.Floor (TRIBE_TERRITORY_SIZE / 2);
-		float meetingPointz = posz - Mathf.Floor (TRIBE_TERRITORY_SIZE / 2);
-		Vector2 centralMeetingPoint = new Vector2 (meetingPointx, meetingPointz);
-		Tribe tribeB = new Tribe ("B", centralMeetingPoint, MEETING_POINT_WIDTH);
-		tribes.Add(tribeB);
-
-		for (int x=posx; x > posx - TRIBE_TERRITORY_SIZE; x--) {
-			for (int z=posz; z > posz - TRIBE_TERRITORY_SIZE; z--) {
-				worldTileInfo [x, z].tribeTerritory.hasFlag = true;
-				worldTileInfo [x, z].tribeTerritory.ownerTribe = tribeB;
+				worldTileInfo[x,z].tribeTerritory.ownerTribe = tribe;
 			}
 		}
 	}
