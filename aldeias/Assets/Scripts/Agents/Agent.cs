@@ -3,6 +3,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
+public enum ORIENTATION {UP=0, DOWN=180, LEFT=270, RIGHT=90};
+
 public abstract class Agent {
 
 	//Every agent runs on it's own thread.
@@ -17,7 +19,9 @@ public abstract class Agent {
 	public WorldInfo worldInfo;
 
 	public Vector2 pos;
+
 	public Orientation orientation;
+
 	public int energy; // 0: No energy; 100: Full energy
 
 	public Agent() {
@@ -25,7 +29,7 @@ public abstract class Agent {
 
 	public Agent (Vector2 pos) {
 		this.pos = pos;
-		this.orientation = Orientation.forward;
+		this.orientation = ORIENTATION.UP;
 		this.energy = 100;
 	}
 
@@ -34,12 +38,28 @@ public abstract class Agent {
 	///
 
 	public void move(Agent a, Vector2 target) {
-		a.pos[0] = (int) target[0];
-		a.pos[1] = (int) target[1];
-		
 		// Update worldtileInfo
-		worldInfo.worldTileInfo[(int)  a.pos[0], (int)  a.pos[1]].hasAgent = false;
-		worldInfo.worldTileInfo[(int) target[0], (int) target[1]].hasAgent = true;
+		int x_origin = (int) a.pos[0];
+		int z_origin = (int) a.pos[1];
+		int x_target = (int) target[0];
+		int z_target = (int) target[1];
+		worldInfo.worldTileInfo[x_origin, z_origin].hasAgent = false;
+		worldInfo.worldTileInfo[x_target, z_target].hasAgent = true;
+
+		// Orientation
+		if (x_origin > x_target) {
+			a.orientation = ORIENTATION.LEFT;
+		} else if (x_origin < x_target) {
+			a.orientation = ORIENTATION.RIGHT;
+		} else if (z_origin > z_target) {
+			a.orientation = ORIENTATION.UP;
+		} else {
+			a.orientation = ORIENTATION.DOWN;
+		}
+
+		// Position
+		a.pos[0] = target[0];
+		a.pos[1] = target[1];
 	}
 
 	public abstract Action doAction();
@@ -48,25 +68,25 @@ public abstract class Agent {
 }
 
 public struct Orientation {
-	float angleToZ;
+	private ORIENTATION orientation;
 
-	public static Orientation FromAngleToZ(float angle) {
-		return new Orientation(0);
+	public static implicit operator Orientation(ORIENTATION orientation) {
+		return new Orientation(orientation);
 	}
-
-	public static Orientation forward {
-		get { return FromAngleToZ(0); }
+	
+	public static Orientation FromORIENTATION(ORIENTATION orientation) {
+		return orientation;
 	}
 
 	public Vector2 ToVector2() {
-		return new Vector2(Mathf.Cos(angleToZ), Mathf.Sin(angleToZ));
+		return new Vector2(Mathf.Cos((float)orientation), Mathf.Sin((float)orientation));
 	}
 
 	public Quaternion ToQuaternion() {
-		return Quaternion.AngleAxis(angleToZ+90.0f, Vector3.up);
+		return Quaternion.AngleAxis((float)orientation, Vector3.up);
 	}
 
-	private Orientation(float angleToZ) {
-		this.angleToZ = angleToZ;
+	private Orientation(ORIENTATION orientation) {
+		this.orientation = orientation;
 	}
 }

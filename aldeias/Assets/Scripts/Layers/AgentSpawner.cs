@@ -94,6 +94,7 @@ public class AgentSpawner : Layer {
 			Agent a = kvp.Key;
 			GameObject g = kvp.Value;
 			g.transform.localPosition = worldXZToVec3((int) a.pos[0], (int) a.pos[1]);
+			g.transform.localRotation = a.orientation.ToQuaternion();
 		}
 	}
 }
