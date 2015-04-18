@@ -3,17 +3,18 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class WorldInfo : MonoBehaviour {
-
-	private const int NUM_PARTITIONS = 5;
 	public const int TRIBE_TERRITORY_SIZE = 15;
 	public const int HABITAT_SIZE = 7;
 	public const int MEETING_POINT_WIDTH = 3;
+
+	private const int NUM_PARTITIONS = 5;
 	private const int UPDATE_FRAME_INTERVAL = 5;
 
 	public static Tribe nullTribe = new Tribe();
 
 	// Queue of actions: to be used by the agents
-	public ConcurrentQueue<Action> pendingActionsQueue = new ConcurrentQueue<Action>();
+	public ConcurrentQueue<Action> pendingActionsQueue =
+		new ConcurrentQueue<Action>();
 
 	public int frameCount = 0;
 
