@@ -62,6 +62,7 @@ public class WorldInfo : MonoBehaviour {
 	public void addAgentToTribe(Tribe t, Habitant h) {
 		t.habitants.Add(h);
 		allAgents.Add(h);
+		h.worldInfo = this;//FIXME this is not the right place to set this
 	}
 	
 	public class Habitat {
@@ -78,6 +79,7 @@ public class WorldInfo : MonoBehaviour {
 	public void addAgentToHabitat(Habitat h, Animal a) {
 		h.animals.Add(a);
 		allAgents.Add(a);
+		a.worldInfo = this;//FIXME not the right place to set this
 	}
 
 	//Information being holded in every tile
