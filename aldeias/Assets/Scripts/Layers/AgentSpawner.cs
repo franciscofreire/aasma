@@ -39,7 +39,7 @@ public class AgentSpawner : Layer {
 						// Create the habitant and add him to the right tribe
 						Habitant habitant = new Habitant(
 							new Vector2(x, z),
-							t.id,
+							t,
 							1);
 						worldInfo.addAgentToTribe(t, habitant);
 

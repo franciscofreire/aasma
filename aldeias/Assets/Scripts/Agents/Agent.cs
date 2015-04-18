@@ -14,8 +14,10 @@ public abstract class Agent {
 
 	//The state of every agent must be swapped on each new frame.
 
+	public WorldInfo worldInfo;
+
 	public Vector2 pos;
-	public Vector3 orientation;
+	public Orientation orientation;
 	public int energy; // 0: No energy; 100: Full energy
 
 	public Agent() {
@@ -23,9 +25,35 @@ public abstract class Agent {
 
 	public Agent (Vector2 pos) {
 		this.pos = pos;
-		this.orientation = Vector3.forward;
+		this.orientation = Orientation.forward;
 		this.energy = 100;
 	}
 
 	public abstract Action doAction();
+
+	public abstract void OnWorldTick();
+}
+
+public struct Orientation {
+	float angleToZ;
+
+	public static Orientation FromAngleToZ(float angle) {
+		return new Orientation(0);
+	}
+
+	public static Orientation forward {
+		get { return FromAngleToZ(0); }
+	}
+
+	public Vector2 ToVector2() {
+		return new Vector2(Mathf.Cos(angleToZ), Mathf.Sin(angleToZ));
+	}
+
+	public Quaternion ToQuaternion() {
+		return Quaternion.AngleAxis(angleToZ+90.0f, Vector3.up);
+	}
+
+	private Orientation(float angleToZ) {
+		this.angleToZ = angleToZ;
+	}
 }

@@ -62,6 +62,7 @@ public class WorldInfo : MonoBehaviour {
 	public void addAgentToTribe(Tribe t, Habitant h) {
 		t.habitants.Add(h);
 		allAgents.Add(h);
+		h.worldInfo = this;//FIXME this is not the right place to set this
 	}
 	
 	public class Habitat {
@@ -78,6 +79,7 @@ public class WorldInfo : MonoBehaviour {
 	public void addAgentToHabitat(Habitat h, Animal a) {
 		h.animals.Add(a);
 		allAgents.Add(a);
+		a.worldInfo = this;//FIXME not the right place to set this
 	}
 
 	//Information being holded in every tile
@@ -112,6 +114,12 @@ public class WorldInfo : MonoBehaviour {
 	}
 
 	public void WorldTick () {
+
+		foreach(Agent a in allAgents) {
+			a.OnWorldTick();
+		}
+		NotifyChangeListeners();
+
 		// Update agents' sensors. (agent.sensors.update();)
 		// Collect actions from all agents.
 		//    Run the agents' decision cycles.
@@ -280,6 +288,24 @@ public class WorldInfo : MonoBehaviour {
 		return isInsideWorld(x, z) &&
 			   worldTileInfo[x, z].hasTree  == false &&
 			   worldTileInfo[x, z].hasAgent == false;
+	}
+
+	public bool isInTile(Vector2 pos, int x, int z) {
+		//Assuming pos (0,0) is in the center of the tile (0,0)
+		int pos_x = (int)(pos.x+0.5f);
+		int pos_z = (int)(pos.y+0.5f);
+		return pos_x == x && pos_z == z;
+	}
+
+	public Habitant habitantInTile(int x, int z) {
+		foreach(Tribe t in tribes) {
+			foreach(Habitant h in t.habitants) {
+				if(isInTile(h.pos, x, z)){
+					return h;
+				}
+			}
+		}
+		return null;
 	}
 
 	////

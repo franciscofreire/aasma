@@ -8,4 +8,9 @@ public class Animal : Agent {
 		//TODO
 		return null;
 	}
+
+	public override void OnWorldTick () {
+		Vector2 sum = pos+Vector2.right;
+		pos = new Vector2(sum.x%worldInfo.xSize, sum.y);
+	}
 }
