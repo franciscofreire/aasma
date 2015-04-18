@@ -90,8 +90,6 @@ public class WorldInfo : MonoBehaviour {
 	// The agents that exist in the world. TODO: Maybe remove
 	public List<Agent> allAgents = new List<Agent>();
 
-	public List<AgentControl> agentsThreads = new List<AgentControl>();
-
 	public void placeObject(GameObject obj, Vector2 pos) {
 		int posx = (int) pos.x;
 		int posz = (int) pos.y;
@@ -130,14 +128,6 @@ public class WorldInfo : MonoBehaviour {
 		GenerateWorldTileInfo();
 		NotifyCreationListeners();
 		NotifyChangeListeners();
-		InitializeAgentControl();
-	}
-
-	void InitializeAgentControl () {
-		// Assuming that agent have been already initialised
-		foreach(Agent agent in allAgents) {
-			agentsThreads.Add(new AgentControl(this,agent));
-		}
 	}
 
 	public void GenerateWorldTileInfo () {
