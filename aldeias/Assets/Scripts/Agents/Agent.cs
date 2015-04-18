@@ -14,6 +14,8 @@ public abstract class Agent {
 
 	//The state of every agent must be swapped on each new frame.
 
+	public WorldInfo worldInfo;
+
 	public Vector2 pos;
 	public Vector3 orientation;
 	public int energy; // 0: No energy; 100: Full energy
@@ -28,4 +30,6 @@ public abstract class Agent {
 	}
 
 	public abstract Action doAction();
+
+	public abstract void OnWorldTick();
 }

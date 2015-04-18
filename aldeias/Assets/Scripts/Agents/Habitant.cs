@@ -15,4 +15,8 @@ public class Habitant : Agent {
 		//TODO
 		return null;
 	}
+
+	public override void OnWorldTick () {
+		//TODO
+	}
 }

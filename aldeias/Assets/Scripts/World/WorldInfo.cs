@@ -112,6 +112,12 @@ public class WorldInfo : MonoBehaviour {
 	}
 
 	public void WorldTick () {
+
+		foreach(Agent a in allAgents) {
+			a.OnWorldTick();
+		}
+		NotifyChangeListeners();
+
 		// Update agents' sensors. (agent.sensors.update();)
 		// Collect actions from all agents.
 		//    Run the agents' decision cycles.
