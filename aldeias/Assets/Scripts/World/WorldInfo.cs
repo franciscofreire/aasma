@@ -99,7 +99,7 @@ public class WorldInfo : MonoBehaviour {
 		}
 		public TribeTerritory tribeTerritory = nullTribe;
 	}
-	
+
 	public void placeObject(GameObject obj, Vector2 pos) {
 		int posx = (int) pos.x;
 		int posz = (int) pos.y;
@@ -138,14 +138,6 @@ public class WorldInfo : MonoBehaviour {
 		GenerateWorldTileInfo();
 		NotifyCreationListeners();
 		NotifyChangeListeners();
-		InitializeAgentControl();
-	}
-
-	void InitializeAgentControl () {
-		// Assuming that agent have been already initialised
-		foreach(Agent agent in allAgents) {
-			agentsThreads.Add(new AgentControl(this,agent));
-		}
 	}
 
 	public void GenerateWorldTileInfo () {
