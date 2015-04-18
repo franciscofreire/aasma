@@ -18,7 +18,7 @@ public class AgentSpawner : Layer {
 		foreach (WorldInfo.Tribe t in tribes) {
 			WorldInfo.MeetingPoint mp = t.meetingPoint;
 			Vector2 cp = mp.centralPoint;
-			int mp_bound = WorldInfo.MEETING_POINT_WIDTH / 2;
+			int mp_bound = WorldInfo.MEETING_POINT_WIDTH / 2; // Limit for agent creation positions
 			for (int i = -mp_bound; i <= mp_bound; i++) {
 				for (int j = -mp_bound; j <= mp_bound; j++) {
 					if (num_agents-- > 0) {

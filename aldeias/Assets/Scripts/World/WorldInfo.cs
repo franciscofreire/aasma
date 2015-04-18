@@ -164,6 +164,18 @@ public class WorldInfo : MonoBehaviour {
 			}
 		}
 	}
+
+	public bool isFreePartition(int x_start, int x_partition, int z_start, int z_partition) {
+		for(int x2 = x_start; x2 < x_start + x_partition; x2++) {
+			for(int z2 = z_start; z2 < z_start + z_partition; z2++) {
+				if (worldTileInfo[x2, z2].isHabitat ||
+				    worldTileInfo[x2, z2].tribeTerritory.hasFlag) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
 	
 	public void FillTrees () {
 		// Fill partitions with trees
@@ -172,20 +184,20 @@ public class WorldInfo : MonoBehaviour {
 		int num_max_trees = x_partition * z_partition;
 
 		for(int x = 0; x < NUM_PARTITIONS; x++) {
-
 			// Choose which partition will have trees
 			int partition_with_trees = Random.Range(0,NUM_PARTITIONS);
 			for(int z = 0; z < NUM_PARTITIONS; z++) {
 				
-				// Is this a partition with trees?
-				if (z == partition_with_trees) {
+				// Is this a free partition with trees?
+				int x_start = x * x_partition;
+				int z_start = z * z_partition;
+				if (z == partition_with_trees &&
+				    isFreePartition(x_start, x_partition, z_start, z_partition)) {
 
 					// How many trees?
 					int num_trees = Random.Range(num_max_trees / 2, num_max_trees);
 
 					// Now bind the trees to the cells
-					int x_start = x * x_partition;
-					int z_start = z * z_partition;
 					for(int x2 = 0; x2 < x_partition; x2++) {
 						for(int z2 = 0; z2 < x_partition; z2++) {
 							if (num_trees-- > 0) {
