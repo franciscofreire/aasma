@@ -15,7 +15,7 @@ public abstract class Layer : MonoBehaviour {
 	}
 	public float tileSize = 1.0f;
 
-	private bool worldHasChanged = false, worldCreated = false;
+	private bool worldHasChanged = false;
 	
 	void Start() {
 		worldInfo.AddCreationListener(()=>{

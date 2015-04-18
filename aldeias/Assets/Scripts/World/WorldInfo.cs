@@ -10,6 +10,24 @@ public class WorldInfo : MonoBehaviour {
 	private const int NUM_PARTITIONS = 5;
 	private const int UPDATE_FRAME_INTERVAL = 5;
 
+	// The size of the world in rows and columns.
+	public int xSize = 50;
+	public int zSize = 50;
+	
+	// The tiles of the world.
+	public WorldTileInfo[,] worldTileInfo; 
+	
+	// All the tribes that exist in the world.
+	public List<Tribe> tribes = new List<Tribe>(); 
+	
+	// All the habitats that exist in the world.
+	public List<Habitat> habitats = new List<Habitat>();
+	
+	// All the agents that exist in the world.
+	public List<Agent> allAgents = new List<Agent>();
+	
+	public List<AgentControl> agentsThreads = new List<AgentControl>();
+
 	// Queue of actions: to be used by the agents
 	public ConcurrentQueue<Action> pendingActionsQueue =
 		new ConcurrentQueue<Action>();
@@ -41,6 +59,10 @@ public class WorldInfo : MonoBehaviour {
 		public Tribe() {
 		}
 	}
+	public void addAgentToTribe(Tribe t, Habitant h) {
+		t.habitants.Add(h);
+		//allAgents.Add(h);
+	}
 	
 	public class Habitat {
 		public Vector2 corner_pos;
@@ -52,6 +74,10 @@ public class WorldInfo : MonoBehaviour {
 		
 		public Habitat() {
 		}
+	}
+	public void addAgentToHabitat(Habitat h, Animal a) {
+		h.animals.Add(a);
+		allAgents.Add(a);
 	}
 
 	//Information being holded in every tile
@@ -73,22 +99,6 @@ public class WorldInfo : MonoBehaviour {
 		}
 		public TribeTerritory tribeTerritory = nullTribe;
 	}
-
-	// The size of the world in rows and columns.
-	public int xSize = 50;
-	public int zSize = 50;
-
-	// The tiles of the world.
-	public WorldTileInfo[,] worldTileInfo; 
-
-	// All the tribes that exist in the world.
-	public List<Tribe> tribes = new List<Tribe>(); 
-
-	// All the habitats that exist in the world.
-	public List<Habitat> habitats = new List<Habitat>();
-
-	// The agents that exist in the world. TODO: Maybe remove
-	public List<Agent> allAgents = new List<Agent>();
 
 	public void placeObject(GameObject obj, Vector2 pos) {
 		int posx = (int) pos.x;
@@ -146,6 +156,18 @@ public class WorldInfo : MonoBehaviour {
 			}
 		}
 	}
+
+	public bool isFreePartition(int x_start, int x_partition, int z_start, int z_partition) {
+		for(int x2 = x_start; x2 < x_start + x_partition; x2++) {
+			for(int z2 = z_start; z2 < z_start + z_partition; z2++) {
+				if (worldTileInfo[x2, z2].isHabitat ||
+				    worldTileInfo[x2, z2].tribeTerritory.hasFlag) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
 	
 	public void FillTrees () {
 		// Fill partitions with trees
@@ -154,20 +176,20 @@ public class WorldInfo : MonoBehaviour {
 		int num_max_trees = x_partition * z_partition;
 
 		for(int x = 0; x < NUM_PARTITIONS; x++) {
-
 			// Choose which partition will have trees
 			int partition_with_trees = Random.Range(0,NUM_PARTITIONS);
 			for(int z = 0; z < NUM_PARTITIONS; z++) {
 				
-				// Is this a partition with trees?
-				if (z == partition_with_trees) {
+				// Is this a free partition with trees?
+				int x_start = x * x_partition;
+				int z_start = z * z_partition;
+				if (z == partition_with_trees &&
+				    isFreePartition(x_start, x_partition, z_start, z_partition)) {
 
 					// How many trees?
 					int num_trees = Random.Range(num_max_trees / 2, num_max_trees);
 
 					// Now bind the trees to the cells
-					int x_start = x * x_partition;
-					int z_start = z * z_partition;
 					for(int x2 = 0; x2 < x_partition; x2++) {
 						for(int z2 = 0; z2 < x_partition; z2++) {
 							if (num_trees-- > 0) {

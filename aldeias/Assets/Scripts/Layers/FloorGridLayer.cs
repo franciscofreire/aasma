@@ -2,7 +2,7 @@
 using System.Collections;
 
 public class FloorGridLayer : Layer {
-	enum ATLAS {GRASS, TRIBE_A, TRIBE_B, HABITAT};
+	enum ATLAS {GRASS, TRIBE_A, TRIBE_B};
 
 	private FloorGrid floorGrid;
 	
@@ -23,8 +23,6 @@ public class FloorGridLayer : Layer {
 			else if (tt.ownerTribe.id == "B")
 				return (int) ATLAS.TRIBE_B;
 		}
-		if (worldInfo.worldTileInfo[x,z].isHabitat == true)
-			return (int) ATLAS.HABITAT;
 
 		return (int) ATLAS.GRASS;
 	}

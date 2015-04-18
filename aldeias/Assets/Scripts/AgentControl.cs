@@ -20,7 +20,7 @@ public class AgentControl {
 		this.worldInfo = worldInfo;
 		this.agent = agent;
 		this.thread = new Thread(OnTick);
-		this.thread.Start ();
+		//this.thread.Start ();
 	}
 	 
 	public void OnTick() {

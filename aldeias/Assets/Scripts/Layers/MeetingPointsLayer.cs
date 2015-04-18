@@ -6,9 +6,7 @@ public class MeetingPointsLayer : Layer {
 	
 	public override void CreateObjects() {
 		int numTiles = size_x * size_z;
-		
-		int vsize_x = size_x + 1;
-		int vsize_z = size_z + 1;
+
 		int numQuads = numTiles;
 		int numVerts = numQuads * 4;
 		int numTris = numQuads * 2;
