@@ -87,25 +87,13 @@ public class AgentSpawner : Layer {
 			num_animals = 4;
 		}
 	}
-	
-	public void move(Agent a, GameObject g, Vector2 target) {
-		a.pos[0] = (int) target[0];
-		a.pos[1] = (int) target[1];
-		g.transform.localPosition = worldXZToVec3((int) target[0], (int) target[1]);
-	}
+
 
 	public override void ApplyWorldInfo() {
-
 		foreach (KeyValuePair<Habitant,GameObject> kvp in list_habitants) {
 			Agent a = kvp.Key;
 			GameObject g = kvp.Value;
-			IList<Vector2> cells = worldInfo.nearbyCells(a);
-			System.Random rnd = new System.Random();
-			int index = rnd.Next(cells.Count);
-			Vector2 cell = cells[index];
-			
-			worldInfo.nearbyCells(a);
-			move(a, g, cell);
+			g.transform.localPosition = worldXZToVec3((int) a.pos[0], (int) a.pos[1]);
 		}
 	}
 }

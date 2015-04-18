@@ -9,6 +9,8 @@ public class WorldInfo : MonoBehaviour {
 
 	private const int NUM_PARTITIONS = 5;
 	private const int UPDATE_FRAME_INTERVAL = 5;
+	
+	public System.Random rnd = new System.Random(); 
 
 	// The size of the world in rows and columns.
 	public int xSize = 50;
@@ -107,10 +109,11 @@ public class WorldInfo : MonoBehaviour {
 			WorldTick();
 		}
 		frameCount = (frameCount + 1) % UPDATE_FRAME_INTERVAL;
-
+		/*
 		if(Input.GetKeyUp("m")) {
 			NotifyChangeListeners();
 		}
+		*/
 	}
 
 	public void WorldTick () {
@@ -272,12 +275,23 @@ public class WorldInfo : MonoBehaviour {
 			for (int z = zmin; z < zmax; z++) {
 				if (x != a.pos[0] && z != a.pos[1]) {
 					cells.Add(new Vector2(x, z));
-					Debug.Log("Agent nearby cells at " + Time.realtimeSinceStartup + " x: " + x + " z: " + z);
+					//Debug.Log("Agent nearby cells at " + Time.realtimeSinceStartup + " x: " + x + " z: " + z);
 				}
 			}
 		}
 		
 		return cells;
+	}
+
+	public IList<Vector2> nearbyFreeCells(IList<Vector2> cells) {
+		IList<Vector2> freeCells = new List<Vector2>();
+
+		foreach (Vector2 pos in cells) {
+			if (isFreeCell((int)pos[0], (int)pos[1]))
+				freeCells.Add (pos);
+		}
+		
+		return freeCells;
 	}
 
 	public bool isInsideWorld(int x, int z) {
@@ -286,8 +300,7 @@ public class WorldInfo : MonoBehaviour {
 
 	public bool isFreeCell(int x, int z) {
 		return isInsideWorld(x, z) &&
-			   worldTileInfo[x, z].hasTree  == false &&
-			   worldTileInfo[x, z].hasAgent == false;
+			worldTileInfo[x, z].hasTree  == false;
 	}
 
 	public bool isInTile(Vector2 pos, int x, int z) {

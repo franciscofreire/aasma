@@ -29,6 +29,19 @@ public abstract class Agent {
 		this.energy = 100;
 	}
 
+	/// 
+	/// ACTUATORS
+	///
+
+	public void move(Agent a, Vector2 target) {
+		a.pos[0] = (int) target[0];
+		a.pos[1] = (int) target[1];
+		
+		// Update worldtileInfo
+		worldInfo.worldTileInfo[(int)  a.pos[0], (int)  a.pos[1]].hasAgent = false;
+		worldInfo.worldTileInfo[(int) target[0], (int) target[1]].hasAgent = true;
+	}
+
 	public abstract Action doAction();
 
 	public abstract void OnWorldTick();
