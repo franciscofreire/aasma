@@ -14,6 +14,8 @@ public abstract class Layer : MonoBehaviour {
 		}
 	}
 	public float tileSize = 1.0f;
+	
+	protected float moveSpeed = 10f;
 
 	private bool worldHasChanged = false;
 	

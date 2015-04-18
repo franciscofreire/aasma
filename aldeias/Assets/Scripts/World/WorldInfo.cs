@@ -105,6 +105,10 @@ public class WorldInfo : MonoBehaviour {
 			WorldTick();
 		}
 		frameCount = (frameCount + 1) % UPDATE_FRAME_INTERVAL;
+
+		if(Input.GetKeyUp("m")) {
+			NotifyChangeListeners();
+		}
 	}
 
 	public void WorldTick () {
@@ -258,8 +262,10 @@ public class WorldInfo : MonoBehaviour {
 		int zmax = Mathf.Min(zSize - 1, (int) a.pos[1] + 2); 
 		for (int x = xmin; x < xmax; x++) {
 			for (int z = zmin; z < zmax; z++) {
-				cells.Add(new Vector2(x, z));
-				//Debug.Log("Agent nearby cells - x: " + x + " z: " + z);
+				if (x != a.pos[0] && z != a.pos[1]) {
+					cells.Add(new Vector2(x, z));
+					Debug.Log("Agent nearby cells at " + Time.realtimeSinceStartup + " x: " + x + " z: " + z);
+				}
 			}
 		}
 		
