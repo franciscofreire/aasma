@@ -12,6 +12,24 @@ public class WorldInfo : MonoBehaviour {
 
 	public static Tribe nullTribe = new Tribe();
 
+	// The size of the world in rows and columns.
+	public int xSize = 50;
+	public int zSize = 50;
+	
+	// The tiles of the world.
+	public WorldTileInfo[,] worldTileInfo; 
+	
+	// All the tribes that exist in the world.
+	public List<Tribe> tribes = new List<Tribe>(); 
+	
+	// All the habitats that exist in the world.
+	public List<Habitat> habitats = new List<Habitat>();
+	
+	// All the agents that exist in the world.
+	public List<Agent> allAgents = new List<Agent>();
+	
+	public List<AgentControl> agentsThreads = new List<AgentControl>();
+
 	// Queue of actions: to be used by the agents
 	public ConcurrentQueue<Action> pendingActionsQueue =
 		new ConcurrentQueue<Action>();
@@ -42,6 +60,10 @@ public class WorldInfo : MonoBehaviour {
 		public Tribe() {
 		}
 	}
+	public void addAgentToTribe(Tribe t, Habitant h) {
+		t.habitants.Add(h);
+		//allAgents.Add(h);
+	}
 	
 	public class Habitat {
 		public Vector2 corner_pos;
@@ -53,6 +75,10 @@ public class WorldInfo : MonoBehaviour {
 		
 		public Habitat() {
 		}
+	}
+	public void addAgentToHabitat(Habitat h, Animal a) {
+		h.animals.Add(a);
+		allAgents.Add(a);
 	}
 
 	//Information being holded in every tile
@@ -74,25 +100,7 @@ public class WorldInfo : MonoBehaviour {
 		}
 		public TribeTerritory tribeTerritory = nullTribe;
 	}
-
-	// The size of the world in rows and columns.
-	public int xSize = 50;
-	public int zSize = 50;
-
-	// The tiles of the world.
-	public WorldTileInfo[,] worldTileInfo; 
-
-	// All the tribes that exist in the world.
-	public List<Tribe> tribes = new List<Tribe>(); 
-
-	// All the habitats that exist in the world.
-	public List<Habitat> habitats = new List<Habitat>();
-
-	// The agents that exist in the world. TODO: Maybe remove
-	public List<Agent> allAgents = new List<Agent>();
-
-	public List<AgentControl> agentsThreads = new List<AgentControl>();
-
+	
 	public void placeObject(GameObject obj, Vector2 pos) {
 		int posx = (int) pos.x;
 		int posz = (int) pos.y;

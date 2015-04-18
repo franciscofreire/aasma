@@ -35,7 +35,7 @@ public class AgentSpawner : Layer {
 							new Vector2((int)cp[0] + i,(int)cp[1] + j),
 							t.id,
 							1);
-						t.habitants.Add(habitant);
+						worldInfo.addAgentToTribe(t, habitant);
 
 						// Save this agent
 						list_habitants.Add(new KeyValuePair<Habitant, GameObject>(habitant, habitantModel));
@@ -67,7 +67,7 @@ public class AgentSpawner : Layer {
 
 						// Create the animal and add him to the right habitat
 						Animal animal = new Animal(new Vector2(x, z));
-						h.animals.Add(animal);
+						worldInfo.addAgentToHabitat(h, animal);
 						
 						// Save this agent
 						list_animals.Add(new KeyValuePair<Animal, GameObject>(animal, animalModel));
