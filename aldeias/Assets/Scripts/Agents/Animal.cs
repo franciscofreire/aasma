@@ -1,5 +1,6 @@
 public class Animal : Agent {
-	public override void doAction() {
+	public override Action doAction() {
 		//TODO
+		return null;
 	}
 }

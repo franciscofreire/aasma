@@ -8,8 +8,14 @@ public class WorldInfo : MonoBehaviour {
 	public const int TRIBE_TERRITORY_SIZE = 15;
 	public const int HABITAT_SIZE = 7;
 	public const int MEETING_POINT_WIDTH = 3;
+	private const int UPDATE_FRAME_INTERVAL = 5;
 
 	public static Tribe nullTribe = new Tribe();
+
+	// Queue of actions: to be used by the agents
+	public ConcurrentQueue<Action> pendingActionsQueue = new ConcurrentQueue<Action>();
+
+	public int frameCount = 0;
 
 	public class MeetingPoint {
 		public Vector2 centralPoint;
@@ -86,11 +92,20 @@ public class WorldInfo : MonoBehaviour {
 	public List<Animal> animals = new List<Animal>(); 
 	public List<Agent> allAgents = new List<Agent>();
 
+	public List<AgentControl> agentsThreads = new List<AgentControl>();
+
 	public void placeObject(GameObject obj, Vector2 pos) {
 		int posx = (int) pos.x;
 		int posz = (int) pos.y;
 		
 		// TODO: Test limits
+	}
+
+	public void Update() {
+		if(frameCount == 0) {
+			WorldTick();
+		}
+		frameCount = (frameCount + 1) % UPDATE_FRAME_INTERVAL;
 	}
 
 	public void WorldTick () {
@@ -117,6 +132,14 @@ public class WorldInfo : MonoBehaviour {
 		GenerateWorldTileInfo();
 		NotifyCreationListeners();
 		NotifyChangeListeners();
+		InitializeAgentControl();
+	}
+
+	void InitializeAgentControl () {
+		// Assuming that agent have been already initialised
+		foreach(Agent agent in allAgents) {
+			agentsThreads.Add(new AgentControl(this,agent));
+		}
 	}
 
 	public void GenerateWorldTileInfo () {
