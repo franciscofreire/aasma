@@ -7,8 +7,8 @@ public abstract class Agent {
 	public int energy; // 0: No energy; 100: Full energy
 
 	public Agent() {
-
 	}
+
 	public Agent (Vector2 pos) {
 		this.pos = pos;
 		this.orientation = Vector3.forward;

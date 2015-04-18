@@ -25,7 +25,7 @@ public class WorldInfo : MonoBehaviour {
 		//Insert tribe identification here
 		public string id = "";
 		public MeetingPoint meetingPoint = null;
-		public List<GameObject> agents = new List<GameObject>();
+		public List<Habitant> habitants = new List<Habitant>();
 		
 		public Tribe(string id, Vector2 centralPoint, int width) {
 			this.id = id;
@@ -38,7 +38,7 @@ public class WorldInfo : MonoBehaviour {
 	
 	public class Habitat {
 		public Vector2 corner_pos;
-		public List<GameObject> agents = new List<GameObject>();
+		public List<Animal> animals = new List<Animal>();
 		
 		public Habitat(int x, int y) {
 			this.corner_pos = new Vector2(x, y);
@@ -81,9 +81,7 @@ public class WorldInfo : MonoBehaviour {
 	// All the habitats that exist in the world.
 	public List<Habitat> habitats = new List<Habitat>();
 
-	// The agents that exist in the world.
-	public List<Habitant> habitants = new List<Habitant>();
-	public List<Animal> animals = new List<Animal>(); 
+	// The agents that exist in the world. TODO: Maybe remove
 	public List<Agent> allAgents = new List<Agent>();
 
 	public void placeObject(GameObject obj, Vector2 pos) {

@@ -3,30 +3,42 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class AgentSpawner : Layer {
-	public const int MAX_AGENTS = 100;
-
 	public GameObject habitantModel, warriorModel, animalModel;
 
-	private GameObject agent;
+	public IList<KeyValuePair<Habitant,GameObject>> list_habitants =
+		new List<KeyValuePair<Habitant,GameObject>>();
+	public IList<KeyValuePair<Animal,GameObject>> list_animals =
+		new List<KeyValuePair<Animal,GameObject>>();
 
 	public override void CreateObjects() {
-
-		// Create tribe agents
+		// Create habitants
+		// Find the meeting point of a tribe
 		List<WorldInfo.Tribe> tribes = worldInfo.tribes;
 		int num_agents = 4;
 		foreach (WorldInfo.Tribe t in tribes) {
 			WorldInfo.MeetingPoint mp = t.meetingPoint;
 			Vector2 cp = mp.centralPoint;
-			for (int i = 0; i < WorldInfo.MEETING_POINT_WIDTH; i++) {
-				for (int j = 0; j < WorldInfo.MEETING_POINT_WIDTH; j++) {
+			int mp_bound = WorldInfo.MEETING_POINT_WIDTH / 2;
+			for (int i = -mp_bound; i <= mp_bound; i++) {
+				for (int j = -mp_bound; j <= mp_bound; j++) {
 					if (num_agents-- > 0) {
-						agent = (GameObject) Instantiate(
+						// Create a model for the new agent
+						GameObject agentModel = (GameObject) Instantiate(
 							habitantModel,
 							worldXZToVec3((int)cp[0] + i,(int)cp[1] + j),
 							Quaternion.identity);
-						agent.transform.parent = this.transform;
-						agent.SetActive(true);
-						t.agents.Add(agent);
+						agentModel.transform.parent = this.transform;
+						agentModel.SetActive(true);
+
+						// Create the habitant and add him to the right tribe
+						Habitant habitant = new Habitant(
+							new Vector2((int)cp[0] + i,(int)cp[1] + j),
+							t.id,
+							1);
+						t.habitants.Add(habitant);
+
+						// Save this agent
+						list_habitants.Add(new KeyValuePair<Habitant, GameObject>(habitant, habitantModel));
 					} else
 						break;
 				}
@@ -35,6 +47,7 @@ public class AgentSpawner : Layer {
 		}
 
 		// Create animals
+		// Find the first cell (corner) of a habitat
 		List<WorldInfo.Habitat> habitats = worldInfo.habitats;
 		int num_animals = 4;
 		foreach (WorldInfo.Habitat h in habitats) {
@@ -44,12 +57,20 @@ public class AgentSpawner : Layer {
 			for(int x = posx; x < posx + WorldInfo.HABITAT_SIZE; x++) {
 				for(int z = posz; z > posz - WorldInfo.HABITAT_SIZE; z--) {
 					if (num_animals-- > 0) {
-						agent = (GameObject) Instantiate(
+						// Create a model for the new agent
+						GameObject agentModel = (GameObject) Instantiate(
 							animalModel,
 							worldXZToVec3(x, z),
 							Quaternion.identity);
-						agent.transform.parent = this.transform;
-						agent.SetActive(true);
+						agentModel.transform.parent = this.transform;
+						agentModel.SetActive(true);
+
+						// Create the animal and add him to the right habitat
+						Animal animal = new Animal(new Vector2(x, z));
+						h.animals.Add(animal);
+						
+						// Save this agent
+						list_animals.Add(new KeyValuePair<Animal, GameObject>(animal, animalModel));
 					} else
 						break;
 				}
