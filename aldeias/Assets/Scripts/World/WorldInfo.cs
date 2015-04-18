@@ -288,6 +288,24 @@ public class WorldInfo : MonoBehaviour {
 			   worldTileInfo[x, z].hasAgent == false;
 	}
 
+	public bool isInTile(Vector2 pos, int x, int z) {
+		//Assuming pos (0,0) is in the center of the tile (0,0)
+		int pos_x = (int)(pos.x+0.5f);
+		int pos_z = (int)(pos.y+0.5f);
+		return pos_x == x && pos_z == z;
+	}
+
+	public Habitant habitantInTile(int x, int z) {
+		foreach(Tribe t in tribes) {
+			foreach(Habitant h in t.habitants) {
+				if(isInTile(h.pos, x, z)){
+					return h;
+				}
+			}
+		}
+		return null;
+	}
+
 	////
 	//// LISTENERS
 	////
