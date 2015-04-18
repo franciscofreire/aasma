@@ -92,6 +92,10 @@ public class AgentSpawner : Layer {
 		a.pos[0] = (int) target[0];
 		a.pos[1] = (int) target[1];
 		g.transform.localPosition = worldXZToVec3((int) target[0], (int) target[1]);
+		
+		// Update worldtileInfo
+		worldInfo.worldTileInfo[(int)  a.pos[0], (int)  a.pos[1]].hasAgent = false;
+		worldInfo.worldTileInfo[(int) target[0], (int) target[1]].hasAgent = true;
 	}
 
 	public override void ApplyWorldInfo() {
