@@ -7,6 +7,10 @@ public class CryptoRandom : RandomNumberGenerator {
 	public CryptoRandom() {
 		r = RandomNumberGenerator.Create();
 	}
+	public override void GetNonZeroBytes(byte[] buffer) {
+		r.GetBytes(buffer);
+	}
+
 	/// Fills the elements of a specified array of bytes with random numbers.
 	public override void GetBytes(byte[] buffer) {
 		r.GetBytes(buffer);
