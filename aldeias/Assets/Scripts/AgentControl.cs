@@ -13,6 +13,9 @@ public class AgentControl {
 
 	private Thread thread;
 
+	//public BlockingQueue<SensorData> sensorData = 
+	//	new BlockingQueue<SensorData>(new ConcurrentQueue<sensorData>());
+
 	public AgentControl(WorldInfo worldInfo, Agent agent) {
 		this.worldInfo = worldInfo;
 		this.agent = agent;

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class ConcurrentQueue<T>{
+public class ConcurrentQueue<T> {
 	private readonly object syncLock = new object();
 	private Queue<T> queue;
 	
@@ -13,41 +13,35 @@ public class ConcurrentQueue<T>{
 		}
 	}
 	
-	public ConcurrentQueue ()
-	{
+	public ConcurrentQueue () {
 		this.queue = new Queue<T> ();
 	}
 	
-	public T Peek ()
-	{
+	public T Peek () {
 		lock (syncLock) {
 			return queue.Peek ();
 		}
 	}	
 	
-	public void Enqueue (T obj)
-	{
+	public void Enqueue (T obj) {
 		lock (syncLock) {
 			queue.Enqueue (obj);
 		}
 	}
 	
-	public T Dequeue ()
-	{
+	public T Dequeue () {
 		lock (syncLock) {
 			return queue.Dequeue ();
 		}
 	}
 	
-	public void Clear ()
-	{
+	public void Clear () {
 		lock (syncLock) {
 			queue.Clear ();
 		}
 	}
 	
-	public T[] CopyToArray ()
-	{
+	public T[] CopyToArray (){
 		lock (syncLock) {
 			if (queue.Count == 0) {
 				return new T[0];
@@ -59,8 +53,7 @@ public class ConcurrentQueue<T>{
 		}
 	}
 	
-	public static ConcurrentQueue<T> InitFromArray (IEnumerable<T> initValues)
-	{
+	public static ConcurrentQueue<T> InitFromArray (IEnumerable<T> initValues) {
 		var queue = new ConcurrentQueue<T> ();
 		
 		if (initValues == null) {
@@ -74,4 +67,3 @@ public class ConcurrentQueue<T>{
 		return queue;
 	}
 }
-
