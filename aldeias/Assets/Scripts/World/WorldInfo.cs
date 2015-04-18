@@ -17,7 +17,7 @@ public class WorldInfo : MonoBehaviour {
 	public int zSize = 50;
 	
 	// The tiles of the world.
-	public WorldTileInfo[,] worldTileInfo; 
+	private WorldTileInfo[,] worldTileInfo; 
 	
 	// All the tribes that exist in the world.
 	public List<Tribe> tribes = new List<Tribe>(); 
@@ -264,17 +264,25 @@ public class WorldInfo : MonoBehaviour {
 	////
 	//// TILE INFORMATION
 	////
-	
-	public IList<Vector2> nearbyCells(Agent a) {
-		IList<Vector2> cells = new List<Vector2>();
-		int xmin = Mathf.Max(0, (int) a.pos[0] - 2);
-		int xmax = Mathf.Min(xSize - 1, (int) a.pos[0] + 2);
-		int zmin = Mathf.Max(0, (int) a.pos[1] - 2);
-		int zmax = Mathf.Min(zSize - 1, (int) a.pos[1] + 2); 
-		for (int x = xmin; x < xmax; x++) {
-			for (int z = zmin; z < zmax; z++) {
-				if (x != a.pos[0] && z != a.pos[1]) {
-					cells.Add(new Vector2(x, z));
+
+	public WorldTileInfo WorldTileInfoAtCoord(Vector2I tileCoord) {
+		return worldTileInfo[tileCoord.x, tileCoord.y];
+	}
+
+	public IList<Vector2I> nearbyCells(Agent agent) {
+
+		Vector2I agentPos = AgentPosToWorldXZ(agent.pos);
+		int xmin = Mathf.Max(0, agentPos.x - 2);
+		int xmax = Mathf.Min(xSize - 1, agentPos.x + 2);
+		int zmin = Mathf.Max(0, agentPos.y - 2);
+		int zmax = Mathf.Min(zSize - 1, agentPos.y + 2); 
+
+		IList<Vector2I> cells = new List<Vector2I>();
+		for (int x = xmin; x <= xmax; x++) {
+			for (int z = zmin; z <= zmax; z++) {
+				Vector2I cellCoord = new Vector2I(x,z);
+				if (!Vector2I.Equal(cellCoord, agentPos)) {
+					cells.Add(cellCoord);
 					//Debug.Log("Agent nearby cells at " + Time.realtimeSinceStartup + " x: " + x + " z: " + z);
 				}
 			}
@@ -283,42 +291,49 @@ public class WorldInfo : MonoBehaviour {
 		return cells;
 	}
 
-	public IList<Vector2> nearbyFreeCells(IList<Vector2> cells) {
-		IList<Vector2> freeCells = new List<Vector2>();
+	public IList<Vector2I> nearbyFreeCells(IList<Vector2I> cells) {
+		IList<Vector2I> freeCells = new List<Vector2I>();
 
-		foreach (Vector2 pos in cells) {
-			if (isFreeCell((int)pos[0], (int)pos[1]))
+		foreach (Vector2I pos in cells) {
+			if (isFreeCell(pos))
 				freeCells.Add (pos);
 		}
 		
 		return freeCells;
 	}
 
-	public bool isInsideWorld(int x, int z) {
-		return x >= 0 && z >= 0 && x < xSize && z < zSize;
+	public bool isInsideWorld(Vector2I coord) {
+		return coord.x >= 0 && coord.y >= 0 && coord.x < xSize && coord.y < zSize;
 	}
 
-	public bool isFreeCell(int x, int z) {
-		return isInsideWorld(x, z) &&
-			worldTileInfo[x, z].hasTree  == false;
+	public bool isFreeCell(Vector2I tileCoord) {
+		return isInsideWorld(tileCoord) &&
+			!worldTileInfo[tileCoord.x, tileCoord.y].hasTree;
 	}
 
-	public bool isInTile(Vector2 pos, int x, int z) {
+	public bool AgentPosInTile(Vector2 agentPos, Vector2I tileCoord) {
 		//Assuming pos (0,0) is in the center of the tile (0,0)
-		int pos_x = (int)(pos.x+0.5f);
-		int pos_z = (int)(pos.y+0.5f);
-		return pos_x == x && pos_z == z;
+		Vector2I agentTileCoord = AgentPosToWorldXZ(agentPos);
+		return Vector2I.Equal(agentTileCoord, tileCoord);
 	}
 
-	public Habitant habitantInTile(int x, int z) {
+	public Habitant habitantInTile(Vector2I tileCoord) {
 		foreach(Tribe t in tribes) {
 			foreach(Habitant h in t.habitants) {
-				if(isInTile(h.pos, x, z)){
+				if(AgentPosInTile(h.pos, tileCoord)){
 					return h;
 				}
 			}
 		}
 		return null;
+	}
+
+	public Vector2I AgentPosToWorldXZ(Vector2 pos) {
+		return new Vector2I((int)(pos.x+0.5f), (int)(pos.y+0.5f));
+	}
+
+	public Vector2 WorldXZToAgentPos(Vector2I coord) {
+		return new Vector2(coord.x, coord.y);
 	}
 
 	////

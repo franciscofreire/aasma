@@ -24,9 +24,10 @@ public class AgentSpawner : Layer {
 					if (num_agents-- > 0) {
 						int x = (int)cp[0] + i;
 						int z = (int)cp[1] + j;
+						Vector2I tileCoord = new Vector2I(x,z);
 
 						// Update WordTileInfo
-						worldInfo.worldTileInfo[x, z].hasAgent = true;
+						worldInfo.WorldTileInfoAtCoord(tileCoord).hasAgent = true;
 
 						// Create a model for the new agent
 						GameObject agentModel = (GameObject) Instantiate(
@@ -62,9 +63,10 @@ public class AgentSpawner : Layer {
 			int posz = (int) pos[1]; 
 			for(int x = posx; x < posx + WorldInfo.HABITAT_SIZE; x++) {
 				for(int z = posz; z > posz - WorldInfo.HABITAT_SIZE; z--) {
+					Vector2I tileCoord = new Vector2I(x,z);
 					if (num_animals-- > 0) {
 						// Update WordTileInfo
-						worldInfo.worldTileInfo[x, z].hasAgent = true;
+						worldInfo.WorldTileInfoAtCoord(tileCoord).hasAgent = true;
 
 						// Create a model for the new agent
 						GameObject agentModel = (GameObject) Instantiate(
@@ -93,7 +95,12 @@ public class AgentSpawner : Layer {
 		foreach (KeyValuePair<Habitant,GameObject> kvp in list_habitants) {
 			Agent a = kvp.Key;
 			GameObject g = kvp.Value;
-			g.transform.localPosition = worldXZToVec3((int) a.pos[0], (int) a.pos[1]);
+			g.transform.localPosition = AgentPosToVec3(a.pos);
 		}
+	}
+
+	private Vector3 AgentPosToVec3(Vector2 pos) {
+		float halfTileSize = tileSize / 2.0f;
+		return new Vector3(pos.x + halfTileSize, 0, pos.y + halfTileSize);
 	}
 }

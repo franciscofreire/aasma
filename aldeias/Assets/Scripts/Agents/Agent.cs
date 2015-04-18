@@ -34,12 +34,14 @@ public abstract class Agent {
 	///
 
 	public void move(Agent a, Vector2 target) {
-		a.pos[0] = (int) target[0];
-		a.pos[1] = (int) target[1];
 		
 		// Update worldtileInfo
-		worldInfo.worldTileInfo[(int)  a.pos[0], (int)  a.pos[1]].hasAgent = false;
-		worldInfo.worldTileInfo[(int) target[0], (int) target[1]].hasAgent = true;
+		WorldInfo.WorldTileInfo agentTileInfo = worldInfo.WorldTileInfoAtCoord(worldInfo.AgentPosToWorldXZ(a.pos));
+		WorldInfo.WorldTileInfo targetTileInfo = worldInfo.WorldTileInfoAtCoord(worldInfo.AgentPosToWorldXZ(target));
+		agentTileInfo.hasAgent = false;
+		targetTileInfo.hasAgent = true;
+
+		a.pos = target;
 	}
 
 	public abstract Action doAction();

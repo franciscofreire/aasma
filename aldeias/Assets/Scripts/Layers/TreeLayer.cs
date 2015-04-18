@@ -25,7 +25,7 @@ public class TreeLayer : Layer {
 		for(int x=0; x<worldInfo.xSize; x++) {
 			for(int z=0; z<worldInfo.zSize; z++) {
 				// Show a tree if it exists and has wood
-				trees[x, z].Value.SetActive(worldInfo.worldTileInfo[x, z].hasTree &&
+				trees[x, z].Value.SetActive(worldInfo.WorldTileInfoAtCoord(new Vector2I(x,z)).hasTree &&
 				                            trees[x, z].Key.wood > 0);
 				// Change to stump model when an agent starts to collect wood
 				if(trees[x, z].Key.turnToStump) {

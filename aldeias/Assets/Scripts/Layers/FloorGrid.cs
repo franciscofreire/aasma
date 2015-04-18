@@ -71,15 +71,16 @@ public class FloorGrid : MonoBehaviour {
 	}
 
 	// A function that returns the tile to be used as the tile of the (x,z) tile.
-	public delegate int GetTile(int x, int z);
+	public delegate int GetTile(Vector2I tileCoord);
 	public void SetTiles(GetTile tileFunction) {
 		Vector2[] newUVs = new Vector2[floorMesh.uv.Length];
 		for(int z=0; z < size_z; z++) {
 			for(int x=0; x < size_x; x++) {
 				int quadIndex = z*size_x + x;
 				int quadVertexBaseIndex = quadIndex*4;
-				
-				int curAtlasTile = tileFunction(x,z);
+
+				Vector2I tileCoord = new Vector2I(x,z);
+				int curAtlasTile = tileFunction(tileCoord);
 				newUVs[ quadVertexBaseIndex + 0 ] = atlasInfo.tileCorners[curAtlasTile, 0];
 				newUVs[ quadVertexBaseIndex + 1 ] = atlasInfo.tileCorners[curAtlasTile, 1];
 				newUVs[ quadVertexBaseIndex + 2 ] = atlasInfo.tileCorners[curAtlasTile, 2];
@@ -93,7 +94,7 @@ public class FloorGrid : MonoBehaviour {
 	void Debug_SetDebugUVs() {
 		int curAtlasTile = 0;
 		int atlasSize = atlasInfo.NumTiles;
-		GetTile tileFunc = (int x, int z) => {
+		GetTile tileFunc = (Vector2I coord) => {
 			int res=curAtlasTile; 
 			curAtlasTile=(curAtlasTile+1)%atlasSize; 
 			return res;
@@ -101,7 +102,7 @@ public class FloorGrid : MonoBehaviour {
 		SetTiles(tileFunc);
 	}
 	void Debug_SetAllTilesTo(int tileIndex) {
-		GetTile tileFunc = (int x, int z) => {return tileIndex;};
+		GetTile tileFunc = (Vector2I coord) => {return tileIndex;};
 		SetTiles(tileFunc);
 	}
 

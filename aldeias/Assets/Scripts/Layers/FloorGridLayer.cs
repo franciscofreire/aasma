@@ -14,8 +14,8 @@ public class FloorGridLayer : Layer {
 		floorGrid.SetTiles(WorldInfoTileToAtlasIndexFunc);
 	}
 
-	int WorldInfoTileToAtlasIndexFunc(int x, int z) {
-		WorldInfo.WorldTileInfo.TribeTerritory tt = worldInfo.worldTileInfo[x,z].tribeTerritory;
+	int WorldInfoTileToAtlasIndexFunc(Vector2I tileCoord) {
+		WorldInfo.WorldTileInfo.TribeTerritory tt = worldInfo.WorldTileInfoAtCoord(tileCoord).tribeTerritory;
 
 		if (tt.hasFlag == true) {
 			if (tt.ownerTribe.id == "A")
