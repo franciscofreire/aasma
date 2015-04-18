@@ -1,4 +1,6 @@
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 
 public class Habitant : Agent {
 	public WorldInfo.Tribe tribe;
@@ -17,7 +19,24 @@ public class Habitant : Agent {
 	}
 
 	public override void OnWorldTick () {
-		//TODO
+		IList<Vector2> cells = worldInfo.nearbyFreeCells(worldInfo.nearbyCells(this));
+		int index = worldInfo.rnd.Next(cells.Count);
+		
+		//try {
+
+		if (index > 0) {
+			Vector2 cell = cells[index];
+			
+			worldInfo.nearbyCells(this);
+			move(this, cell);
+		}
+		/*
+			} catch (System.Exception e) {
+				Debug.DebugBreak();
+				Debug.Log ("BARRACA: " + index);
+				System.Threading.Thread.Sleep (1000);
+			}
+		*/
 	}
 
 	//************
