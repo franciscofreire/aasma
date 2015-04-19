@@ -11,9 +11,12 @@ public class TreeLayer : Layer {
 		trees = new KeyValuePair<Tree,GameObject>[worldInfo.xSize, worldInfo.zSize];
 		for(int x=0; x<worldInfo.xSize; x++) {
 			for(int z=0; z<worldInfo.zSize; z++) {
-				// Create tree model
+				// Add tree to WorldInfo
+				Tree t = worldInfo.WorldTileInfoAtCoord(new Vector2I(x,z)).tree;
+
+				// Create tree model and save tree
 				trees[x, z] = new KeyValuePair<Tree,GameObject>(
-					new Tree(x, z),
+					t,
 					(GameObject) Instantiate(treeModel, worldXZToVec3(x, z), Quaternion.identity));
 				trees[x, z].Value.transform.parent = this.transform;
 				trees[x, z].Value.SetActive(false);
@@ -24,16 +27,21 @@ public class TreeLayer : Layer {
 	public override void ApplyWorldInfo() {
 		for(int x=0; x<worldInfo.xSize; x++) {
 			for(int z=0; z<worldInfo.zSize; z++) {
-				// Show a tree if it exists and has wood
-				trees[x, z].Value.SetActive(worldInfo.WorldTileInfoAtCoord(new Vector2I(x,z)).hasTree &&
-				                            trees[x, z].Key.wood > 0);
+				Tree t = trees[x, z].Key;
+
 				// Change to stump model when an agent starts to collect wood
-				if(trees[x, z].Key.turnToStump) {
+				if(t.turnToStump) {
+					Destroy(trees[x, z].Value);
 					trees[x, z] = new KeyValuePair<Tree,GameObject>(
-						trees[x, z].Key,
+						t,
 						(GameObject) Instantiate(stumpModel, worldXZToVec3(x, z), Quaternion.identity));
-					trees[x, z].Key.turnToStump = false;
+					trees[x, z].Value.transform.parent = this.transform;
+
+					t.turnToStump = false;
 				}
+				
+				// Show tree if it exists and has wood
+				trees[x, z].Value.SetActive(t.hasTree && t.wood > 0);
 			}
 		}
 	}

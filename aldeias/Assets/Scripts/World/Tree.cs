@@ -1,14 +1,16 @@
 using UnityEngine;
 
-public class Tree {
-	public Vector2 pos;
+public struct Tree {
+	public bool hasTree;
+	//public Vector2 pos;
 	public bool isStump, turnToStump;
 	public int wood; // 0: No wood; 100: Full wood
 
-	public Tree (int x, int z) {
-		this.pos = new Vector2(x, z);
+	public Tree (int wood) {
+		//this.pos = new Vector2(x, z);
+		this.hasTree = false;
 		this.isStump = false;
 		this.turnToStump = false;
-		this.wood = 100;
+		this.wood = wood;
 	}
 }

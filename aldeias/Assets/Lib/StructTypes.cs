@@ -30,6 +30,11 @@ public struct Orientation {
 public struct Vector2I {
 	public int x;
 	public int y;
+	
+	public Vector2I(Vector2 v) {
+		this.x = (int) v[0];
+		this.y = (int) v[1];
+	}
 
 	public Vector2I(int x, int y) {
 		this.x = x;

@@ -57,7 +57,9 @@ public class Attack : Action {
 }
 
 public class CutTree : Action {
-	public override void apply () {}
+	public override void apply () {
+		world.WorldTileInfoAtCoord(target).tree.turnToStump = true;
+	}
 	public CutTree(Agent agent, Vector2I target) : base(agent, target) {}
 }
 

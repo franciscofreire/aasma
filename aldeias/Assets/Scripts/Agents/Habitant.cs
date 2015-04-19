@@ -14,6 +14,7 @@ public class Habitant : Agent {
 	}
 
 	public override Action doAction() {
+		
 		/*	if (enemy-in-front? or animal-in-front?) and low-energy?
 				move();
 			else if	enemy-in-front? or animal-in-front?
@@ -31,22 +32,18 @@ public class Habitant : Agent {
 			else
 				move();
 		*/
-        
-        int index = worldInfo.rnd.Next(sensorData.Cells.Count);
-        
-        Vector2I target = sensorData.Cells[index];
-        
+		if (TreeInFront())
+			return new CutTree(this, sensorData.FrontCell);
+        		
+		int index = worldInfo.rnd.Next(sensorData.Cells.Count);
+		Vector2I target = sensorData.Cells[index];
         return new Walk(this, target);
 	}
 
 	public override void OnWorldTick () {
-		sensorData.Cells = worldInfo.nearbyFreeCells(worldInfo.nearbyCells(this));
+		updateSensorData();
 
-		int index = worldInfo.rnd.Next(sensorData.Cells.Count);
-		
-		Vector2I target = sensorData.Cells[index];
-
-		Action a = new Walk(this, target);
+		Action a = doAction();
 		a.apply();
 	}
 
@@ -55,9 +52,7 @@ public class Habitant : Agent {
 	//*************
 	
 	public override bool EnemyInFront() {
-		Vector2 posInFront = pos + orientation.ToVector2();
-		Vector2I tileCoordInFront = worldInfo.AgentPosToWorldXZ(posInFront);
-		Habitant habInFront = worldInfo.habitantInTile(tileCoordInFront);
+		Habitant habInFront = worldInfo.habitantInTile(sensorData.FrontCell);
 		return habInFront != null && habInFront.tribe != this.tribe;
 	}
 }

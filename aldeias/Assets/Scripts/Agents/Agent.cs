@@ -20,10 +20,9 @@ public abstract class Agent {
 	public Orientation orientation;
 	public int energy; // 0: No energy; 100: Full energy
 
-	protected const int CRITICAL_ENERGY_LEVEL = 20;
-
 	public struct SensorData {
 		public IList<Vector2I> _cells;
+		public Vector2I _front_cell;
 
 		public IList<Vector2I> Cells
 		{
@@ -31,9 +30,16 @@ public abstract class Agent {
 			set { _cells = value; }
 		}
 		
-		public SensorData(IList<Vector2I> cells)
+		public Vector2I FrontCell
+		{
+			get { return _front_cell; }
+			set { _front_cell = value; }
+		}
+		
+		public SensorData(IList<Vector2I> cells, Vector2I front_cell)
 		{
 			_cells = cells;
+			_front_cell = front_cell;
 		}
 	}
 	public SensorData sensorData;
@@ -50,10 +56,24 @@ public abstract class Agent {
 	public abstract Action doAction();
 
 	public abstract void OnWorldTick();
+	
+	public void updateSensorData() {
+		sensorData.Cells = worldInfo.nearbyFreeCells(worldInfo.nearbyCells(this));
+		
+		Vector2 posInFront = pos + orientation.ToVector2();
+		Vector2I tileCoordInFront = worldInfo.AgentPosToWorldXZ(posInFront);
+		sensorData.FrontCell = worldInfo.isInsideWorld(tileCoordInFront)
+			? tileCoordInFront
+			: new Vector2I(pos); // VERIFYME: Not sure about this...
+	}
 
 	//*************
 	//** SENSORS **
 	//*************
 
 	public abstract bool EnemyInFront();
+
+	public bool TreeInFront() {
+		return worldInfo.WorldTileInfoAtCoord(sensorData.FrontCell).tree.hasTree;
+	}
 }

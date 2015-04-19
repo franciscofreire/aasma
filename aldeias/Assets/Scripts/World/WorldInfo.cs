@@ -8,7 +8,7 @@ public class WorldInfo : MonoBehaviour {
 	public const int MEETING_POINT_WIDTH = 3;
 
 	private const int NUM_PARTITIONS = 5;
-	private const int UPDATE_FRAME_INTERVAL = 10;
+	private const int UPDATE_FRAME_INTERVAL = 5;
 	
 	public System.Random rnd = new System.Random(); 
 
@@ -87,9 +87,11 @@ public class WorldInfo : MonoBehaviour {
 	//Information being holded in every tile
 	//The information contained in every tile is readonly.
 	public class WorldTileInfo {
-		public bool hasTree   = false;
 		public bool hasAgent  = false;
 		public bool isHabitat = false;
+		
+		public Tree tree = new Tree(100);
+
 		public struct TribeTerritory {
 			public bool hasFlag;
 		    public Tribe ownerTribe;
@@ -205,7 +207,7 @@ public class WorldInfo : MonoBehaviour {
 					for(int x2 = 0; x2 < x_partition; x2++) {
 						for(int z2 = 0; z2 < x_partition; z2++) {
 							if (num_trees-- > 0) {
-								worldTileInfo[x_start + x2, z_start + z2].hasTree = true;
+								worldTileInfo[x_start + x2, z_start + z2].tree.hasTree = true;
 							} else {
 								break;
 							}
@@ -246,7 +248,7 @@ public class WorldInfo : MonoBehaviour {
 		for(int x=0; x<xSize; x++) {
 			for(int z=0; z<zSize; z++) {
 				if(Mathf.PerlinNoise(x*0.1f,z*0.1f) > 0.5) {
-					worldTileInfo[x,z].hasTree = true;
+					worldTileInfo[x,z].tree.hasTree = true;
 				}
 			}
 		}
@@ -308,7 +310,7 @@ public class WorldInfo : MonoBehaviour {
 
 	public bool isFreeCell(Vector2I tileCoord) {
 		return isInsideWorld(tileCoord) &&
-			!worldTileInfo[tileCoord.x, tileCoord.y].hasTree;
+			!worldTileInfo[tileCoord.x, tileCoord.y].tree.hasTree;
 	}
 
 	public bool AgentPosInTile(Vector2 agentPos, Vector2I tileCoord) {
