@@ -22,6 +22,8 @@ public abstract class Agent {
 
 	public int energy; // 0: No energy; 100: Full energy
 
+	protected const int CRITICAL_ENERGY_LEVEL = 20;
+
 	public Agent() {
 	}
 

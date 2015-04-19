@@ -8,7 +8,7 @@ public class WorldInfo : MonoBehaviour {
 	public const int MEETING_POINT_WIDTH = 3;
 
 	private const int NUM_PARTITIONS = 5;
-	private const int UPDATE_FRAME_INTERVAL = 5;
+	private const int UPDATE_FRAME_INTERVAL = 10;
 	
 	public System.Random rnd = new System.Random(); 
 
