@@ -17,7 +17,7 @@ public class Animal : Agent {
 		pos = new Vector2(sum.x%worldInfo.xSize, sum.y);
 	}
 
-    public void Die() {
+    public override void Die() {
         this.isAlive = false;
         this.orientation = ORIENTATION.DOWN;
     }

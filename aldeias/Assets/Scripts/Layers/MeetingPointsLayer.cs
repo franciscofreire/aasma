@@ -93,21 +93,9 @@ public class MeetingPointsLayer : Layer {
 
 		foreach(WorldInfo.Tribe tribe in worldInfo.tribes) {
 			WorldInfo.MeetingPoint mp = tribe.meetingPoint;
-			Vector2 centralPoint = mp.centralPoint;
-			int width = mp.width;
-			// width must be odd
-			int leftCornerX = (int) centralPoint.x - Mathf.FloorToInt(width/2);
-			int leftCornerZ = (int) centralPoint.y + Mathf.FloorToInt(width/2);
-
-			//map[leftCornerX,leftCornerZ] = true;
-			//map[(int)centralPoint.x, (int)centralPoint.y] = true;
-			for(int i = 0; i < width; ++i) {
-				for(int j = 0; j < width; j++) {
-					int posX = leftCornerX + i;
-					int posZ = leftCornerZ - j;
-					map[posX,posZ] = true;
-				}
-			}
+            foreach(Vector2I mpCell in mp.meetingPointCells) {
+                map[mpCell.x, mpCell.y] = true;
+            }
 		} 
 
 		for(int z=0; z < size_z; z++) {

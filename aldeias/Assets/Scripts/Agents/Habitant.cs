@@ -17,6 +17,9 @@ public class Habitant : Agent {
     public override bool IsAlive() {
         return true;
     }
+    public override void Die() {
+        //TODO
+    }
 
 	public override Action doAction() {
 		
@@ -39,7 +42,7 @@ public class Habitant : Agent {
 		*/
 		if (TreeInFront())
 			return new CutTree(this, sensorData.FrontCell);
-        		
+
 		int index = worldInfo.rnd.Next(sensorData.Cells.Count);
 		Vector2I target = sensorData.Cells[index];
         return new Walk(this, target);
@@ -62,13 +65,9 @@ public class Habitant : Agent {
 	}
 
 	private bool AnimalInFront() {
-		// FIXME : Use sensorData (and worldinfo hasAgent?)
-        Vector2 posInFront = pos + orientation.ToVector2();
-        Vector2I tileCoordInFront = worldInfo.AgentPosToWorldXZ(posInFront);
-
         foreach(WorldInfo.Habitat h in worldInfo.habitats) {
             foreach(Agent a in h.animals) {
-                if (a.pos.Equals (tileCoordInFront)) {
+                if (a.pos.Equals (sensorData.FrontCell)) {
                     return true;
                 }
             }
@@ -82,11 +81,7 @@ public class Habitant : Agent {
     }
 
 	private bool UnclaimedTerritoryInFront() {
-        // FIXME : Use sensorData (and worldinfo hasAgent?)
-        Vector2 posInFront = pos + orientation.ToVector2();
-        Vector2I tileCoordInFront = worldInfo.AgentPosToWorldXZ(posInFront);
-
-        return worldInfo.isUnclaimedTerritory(tileCoordInFront);
+        return worldInfo.isUnclaimedTerritory(sensorData.FrontCell);
     }
 
     private bool carryingResources() {
@@ -98,7 +93,13 @@ public class Habitant : Agent {
 	}
 
     private bool FoodInFront() {
-        // TODO
+        foreach(WorldInfo.Habitat h in worldInfo.habitats) {
+            foreach(Agent a in h.animals) {
+                if (a.pos.Equals (sensorData.FrontCell) && !a.IsAlive()) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 }

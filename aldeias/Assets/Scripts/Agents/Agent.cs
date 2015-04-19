@@ -21,6 +21,7 @@ public abstract class Agent {
 	public int energy; // 0: No energy; 100: Full energy
 
 	protected const int CRITICAL_ENERGY_LEVEL = 20;
+    protected const int DECREASE_ENERGY_AMOUNT = 20;
 
 	public struct SensorData {
 		public IList<Vector2I> _cells;
@@ -71,6 +72,17 @@ public abstract class Agent {
 
     public abstract bool IsAlive();
 
+    public abstract void Die();
+
+    public void DecreaseEnergy() {
+        int amount = DECREASE_ENERGY_AMOUNT;
+        if(this.energy > 0) {
+            if(this.energy - amount <= 0) {
+                Die();
+            }
+            this.energy -= amount;
+        }
+    }
 	//*************
 	//** SENSORS **
 	//*************
