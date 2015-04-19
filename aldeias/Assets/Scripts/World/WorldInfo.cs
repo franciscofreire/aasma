@@ -37,13 +37,13 @@ public class WorldInfo : MonoBehaviour {
 	public int frameCount = 0;
 
 	public class MeetingPoint {
-		public Vector2I centralPoint;
-		public int width;
+        public Vector2I centralPoint;
+        public int width;
         public List<Vector2I> meetingPointCells;
 
-		public MeetingPoint(Vector2I centralPoint, int width) {
-			this.centralPoint = centralPoint;
-			this.width = width;
+        public MeetingPoint(Vector2I centralPoint, int width) {
+            this.centralPoint = centralPoint;
+            this.width = width;
             this.meetingPointCells = new List<Vector2I>();
 
             // width must be odd
@@ -59,7 +59,7 @@ public class WorldInfo : MonoBehaviour {
                     this.meetingPointCells.Add(new Vector2I(posX, posZ));
                 }
             }
-		}
+        }
 
         public bool IsMeetingPoint(Vector2I pos) {
             foreach(Vector2I mpCell in meetingPointCells) {
@@ -67,9 +67,10 @@ public class WorldInfo : MonoBehaviour {
                     return true;
                 }
             }
+    
             return false;
         }
-	}
+    }            
 
 	public static Tribe nullTribe = new Tribe();
 	public class Tribe {
@@ -86,6 +87,7 @@ public class WorldInfo : MonoBehaviour {
 		public Tribe() {
 		}
 	}
+
 	public void addAgentToTribe(Tribe t, Habitant h) {
 		t.habitants.Add(h);
 		allAgents.Add(h);
@@ -103,6 +105,7 @@ public class WorldInfo : MonoBehaviour {
 		public Habitat() {
 		}
 	}
+
 	public void addAgentToHabitat(Habitat h, Animal a) {
 		h.animals.Add(a);
 		allAgents.Add(a);
@@ -236,28 +239,27 @@ public class WorldInfo : MonoBehaviour {
 							} else {
 								break;
 							}
-						}
-					}
-				}
-			}
-		}
-	}
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-	void FillTribeTerritory(string name, int posx, int posz) {
-		int meetingPointx = posx + Mathf.FloorToInt(TRIBE_TERRITORY_SIZE/2);
-		int meetingPointz = posz + Mathf.FloorToInt(TRIBE_TERRITORY_SIZE/2);
+    void FillTribeTerritory(string name, int posx, int posz) {
+        int meetingPointx = posx + Mathf.FloorToInt(TRIBE_TERRITORY_SIZE/2);
+        int meetingPointz = posz + Mathf.FloorToInt(TRIBE_TERRITORY_SIZE/2);
         Vector2I centralMeetingPoint = new Vector2I(meetingPointx, meetingPointz);
-		Tribe tribe = new Tribe(name, centralMeetingPoint, MEETING_POINT_WIDTH);
-		tribes.Add(tribe);
+        Tribe tribe = new Tribe(name, centralMeetingPoint, MEETING_POINT_WIDTH);
+        tribes.Add(tribe);
 
-		for(int x=posx; x < posx + TRIBE_TERRITORY_SIZE; x++) {
-			for(int z=posz; z < posz + TRIBE_TERRITORY_SIZE; z++) {
-				worldTileInfo[x,z].tribeTerritory.hasFlag = true;
-				worldTileInfo[x,z].tribeTerritory.ownerTribe = tribe;
-			}
-		}
-	}
-
+        for(int x=posx; x < posx + TRIBE_TERRITORY_SIZE; x++) {
+            for(int z=posz; z < posz + TRIBE_TERRITORY_SIZE; z++) {
+                worldTileInfo[x,z].tribeTerritory.hasFlag = true;
+                worldTileInfo[x,z].tribeTerritory.ownerTribe = tribe;
+            }
+        }
+    }            
 	void FillHabitat () {
 		int posx = 0;
 		int posz = zSize - 1;
@@ -294,6 +296,10 @@ public class WorldInfo : MonoBehaviour {
 
 	public WorldTileInfo WorldTileInfoAtCoord(Vector2I tileCoord) {
 		return worldTileInfo[tileCoord.x, tileCoord.y];
+	}
+
+	public WorldTileInfo WorldTileInfoAtCoord(int x, int z) {
+		return worldTileInfo[x, z];
 	}
 
 	public IList<Vector2I> nearbyCells(Agent agent) {

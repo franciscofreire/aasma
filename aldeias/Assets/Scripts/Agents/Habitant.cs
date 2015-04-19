@@ -6,14 +6,20 @@ public class Habitant : Agent {
 	public WorldInfo.Tribe tribe;
 	public float affinity; // 0: Complete Civil; 1: Complete Warrior
 	public bool  isLeader;
-	public bool  carryingFood;
-	public bool  carryingWood;
+	public bool  isCarryingFood;
+	public bool  isCarryingWood;
 
 	public Habitant(Vector2 pos, WorldInfo.Tribe tribe, float affinity): base(pos) {
 		this.tribe  = tribe;
 		this.affinity = affinity;
 		this.isLeader = false;
 	}
+
+    public void logFrontCell() {
+        Debug.Log("Agent & Front: " + pos + " ; (" +
+                  sensorData.FrontCell.x + "," + sensorData.FrontCell.y + ")");
+    }
+
     public override bool IsAlive() {
         return true;
     }
@@ -40,8 +46,12 @@ public class Habitant : Agent {
 			else
 				move();
 		*/
-		if (TreeInFront())
-			return new CutTree(this, sensorData.FrontCell);
+        if (StumpInFront() && !carryingResources()) {
+            return new PickupTree(this, sensorData.FrontCell);
+        }
+        else if (TreeInFront() && !carryingResources()) {
+            return new CutTree(this, sensorData.FrontCell);
+        }
 
 		int index = worldInfo.rnd.Next(sensorData.Cells.Count);
 		Vector2I target = sensorData.Cells[index];
@@ -75,17 +85,12 @@ public class Habitant : Agent {
         return false;
 	}
 
-    private bool StumpInFront() {
-        // TODO
-        return false;
-    }
-
 	private bool UnclaimedTerritoryInFront() {
         return worldInfo.isUnclaimedTerritory(sensorData.FrontCell);
     }
 
     private bool carryingResources() {
-        return carryingFood || carryingWood;
+        return isCarryingFood || isCarryingWood;
     }
 
 	private bool LowEnergy() {

@@ -12,7 +12,7 @@ public class TreeLayer : Layer {
 		for(int x=0; x<worldInfo.xSize; x++) {
 			for(int z=0; z<worldInfo.zSize; z++) {
 				// Add tree to WorldInfo
-				Tree t = worldInfo.WorldTileInfoAtCoord(new Vector2I(x,z)).tree;
+				Tree t = worldInfo.WorldTileInfoAtCoord(x, z).tree;
 
 				// Create tree model and save tree
 				trees[x, z] = new KeyValuePair<Tree,GameObject>(
@@ -27,7 +27,14 @@ public class TreeLayer : Layer {
 	public override void ApplyWorldInfo() {
 		for(int x=0; x<worldInfo.xSize; x++) {
 			for(int z=0; z<worldInfo.zSize; z++) {
-				Tree t = trees[x, z].Key;
+				Tree t = worldInfo.WorldTileInfoAtCoord(x, z).tree;
+
+				// Remove depleted tree
+				if(t.wood == 0) {
+					Destroy(trees[x, z].Value);
+					t.isStump = false;
+					t.hasTree = false;
+				}
 
 				// Change to stump model when an agent starts to collect wood
 				if(t.turnToStump) {
@@ -40,8 +47,8 @@ public class TreeLayer : Layer {
 					t.turnToStump = false;
 				}
 				
-				// Show tree if it exists and has wood
-				trees[x, z].Value.SetActive(t.hasTree && t.wood > 0);
+				// Show tree if it exists
+				trees[x, z].Value.SetActive(t.hasTree);
 			}
 		}
 	}

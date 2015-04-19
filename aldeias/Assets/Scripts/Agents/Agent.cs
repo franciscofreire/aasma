@@ -89,7 +89,11 @@ public abstract class Agent {
 
 	public abstract bool EnemyInFront();
 
-	public bool TreeInFront() {
-		return worldInfo.WorldTileInfoAtCoord(sensorData.FrontCell).tree.hasTree;
-	}
+    public bool TreeInFront() {
+        return worldInfo.WorldTileInfoAtCoord(sensorData.FrontCell).tree.hasTree;
+    }
+    
+    public bool StumpInFront() {
+        return worldInfo.WorldTileInfoAtCoord(sensorData.FrontCell).tree.isStump;
+    }
 }

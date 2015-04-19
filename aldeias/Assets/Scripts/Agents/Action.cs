@@ -25,8 +25,10 @@ public abstract class Action {
 public class Walk : Action {
 	public override void apply () {
 		// Update worldtileInfo
-		WorldInfo.WorldTileInfo agentTileInfo = world.WorldTileInfoAtCoord(world.AgentPosToWorldXZ(agent.pos));
-		WorldInfo.WorldTileInfo targetTileInfo = world.WorldTileInfoAtCoord(target);
+		WorldInfo.WorldTileInfo agentTileInfo = 
+			world.WorldTileInfoAtCoord(world.AgentPosToWorldXZ(agent.pos));
+		WorldInfo.WorldTileInfo targetTileInfo = 
+			world.WorldTileInfoAtCoord(target);
 		agentTileInfo.hasAgent = false;
 		targetTileInfo.hasAgent = true;
 		
@@ -66,13 +68,19 @@ public class Attack : Action {
 
 public class CutTree : Action {
 	public override void apply () {
-		world.WorldTileInfoAtCoord(target).tree.turnToStump = true;
+		if (world.WorldTileInfoAtCoord(target).tree.isStump == false) {
+			world.WorldTileInfoAtCoord(target).tree.turnToStump = true;
+			world.WorldTileInfoAtCoord(target).tree.isStump = true;
+		}
 	}
 	public CutTree(Agent agent, Vector2I target) : base(agent, target) {}
 }
 
 public class PickupTree : Action {
-	public override void apply () {}
+	public override void apply () {
+		world.WorldTileInfoAtCoord(target).tree.Chop();
+		((Habitant) agent).isCarryingWood = true;
+	}
 	public PickupTree(Agent agent, Vector2I target) : base(agent, target) {}
 }
 
