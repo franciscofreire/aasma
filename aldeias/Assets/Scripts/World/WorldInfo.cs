@@ -271,6 +271,10 @@ public class WorldInfo : MonoBehaviour {
 		return worldTileInfo[tileCoord.x, tileCoord.y];
 	}
 
+	public WorldTileInfo WorldTileInfoAtCoord(int x, int z) {
+		return worldTileInfo[x, z];
+	}
+
 	public IList<Vector2I> nearbyCells(Agent agent) {
 
 		Vector2I agentPos = AgentPosToWorldXZ(agent.pos);

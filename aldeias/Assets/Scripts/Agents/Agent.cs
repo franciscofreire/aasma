@@ -66,7 +66,7 @@ public abstract class Agent {
 		Vector2I tileCoordInFront = worldInfo.AgentPosToWorldXZ(posInFront);
 		sensorData.FrontCell = worldInfo.isInsideWorld(tileCoordInFront)
 			? tileCoordInFront
-			: new Vector2I(pos); // VERIFYME: Not sure about this...
+			: new Vector2I(pos); // FIXME: Not sure about this...
 	}
 
     public abstract bool IsAlive();
@@ -79,5 +79,9 @@ public abstract class Agent {
 
 	public bool TreeInFront() {
 		return worldInfo.WorldTileInfoAtCoord(sensorData.FrontCell).tree.hasTree;
+	}
+	
+	public bool StumpInFront() {
+		return worldInfo.WorldTileInfoAtCoord(sensorData.FrontCell).tree.isStump;
 	}
 }

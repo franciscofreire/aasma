@@ -24,10 +24,9 @@ public class AgentSpawner : Layer {
 					if (num_agents-- > 0) {
 						int x = (int)cp[0] + i;
 						int z = (int)cp[1] + j;
-						Vector2I tileCoord = new Vector2I(x,z);
 
 						// Update WordTileInfo
-						worldInfo.WorldTileInfoAtCoord(tileCoord).hasAgent = true;
+						worldInfo.WorldTileInfoAtCoord(x, z).hasAgent = true;
 
 						// Create a model for the new agent
 						GameObject agentModel = (GameObject) Instantiate(
@@ -63,10 +62,9 @@ public class AgentSpawner : Layer {
 			int posz = (int) pos[1]; 
 			for(int x = posx; x < posx + WorldInfo.HABITAT_SIZE; x++) {
 				for(int z = posz; z > posz - WorldInfo.HABITAT_SIZE; z--) {
-					Vector2I tileCoord = new Vector2I(x,z);
 					if (num_animals-- > 0) {
 						// Update WordTileInfo
-						worldInfo.WorldTileInfoAtCoord(tileCoord).hasAgent = true;
+						worldInfo.WorldTileInfoAtCoord(x, z).hasAgent = true;
 
 						// Create a model for the new agent
 						GameObject agentModel = (GameObject) Instantiate(
@@ -110,7 +108,6 @@ public class AgentSpawner : Layer {
                 g.transform.localPosition = pos;
                 g.transform.localRotation = a.orientation.ToQuaternionInX();
             }
-
 		}
 	}
 

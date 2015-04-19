@@ -13,4 +13,8 @@ public struct Tree {
 		this.turnToStump = false;
 		this.wood = wood;
 	}
+
+	public void Chop() {
+		wood = 0;
+	}
 }

@@ -6,8 +6,8 @@ public class Habitant : Agent {
 	public WorldInfo.Tribe tribe;
 	public float affinity; // 0: Complete Civil; 1: Complete Warrior
 	public bool  isLeader;
-	public bool  carryingFood;
-	public bool  carryingWood;
+	public bool  isCarryingFood;
+	public bool  isCarryingWood;
 
 	public Habitant(Vector2 pos, WorldInfo.Tribe tribe, float affinity): base(pos) {
 		this.tribe  = tribe;
@@ -18,16 +18,17 @@ public class Habitant : Agent {
         return true;
     }
 
+	public void logFrontCell() {
+		Debug.Log("Agent & Front: " + pos + " ; (" +
+		          sensorData.FrontCell.x + "," + sensorData.FrontCell.y + ")");
+	}
+
 	public override Action doAction() {
 		
 		/*	if (enemy-in-front? or animal-in-front?) and low-energy?
 				move();
 			else if	enemy-in-front? or animal-in-front?
 				attack();
-			else if tree-in-front?
-				crop-tree();
-            else if stump-in-front?
-                collectWood();
             else if food-in-front?
                 collectFood();
             else if meeting-point-in-front and carrying-resources?
@@ -37,9 +38,14 @@ public class Habitant : Agent {
 			else
 				move();
 		*/
-		if (TreeInFront())
+		if (StumpInFront() && !carryingResources()) {
+			return new PickupTree(this, sensorData.FrontCell);
+		}
+		else if (TreeInFront() && !carryingResources()) {
 			return new CutTree(this, sensorData.FrontCell);
-        		
+		}
+        
+		// Reactive agent: Walk randomly
 		int index = worldInfo.rnd.Next(sensorData.Cells.Count);
 		Vector2I target = sensorData.Cells[index];
         return new Walk(this, target);
@@ -76,11 +82,6 @@ public class Habitant : Agent {
         return false;
 	}
 
-    private bool StumpInFront() {
-        // TODO
-        return false;
-    }
-
 	private bool UnclaimedTerritoryInFront() {
         // FIXME : Use sensorData (and worldinfo hasAgent?)
         Vector2 posInFront = pos + orientation.ToVector2();
@@ -90,7 +91,7 @@ public class Habitant : Agent {
     }
 
     private bool carryingResources() {
-        return carryingFood || carryingWood;
+        return isCarryingFood || isCarryingWood;
     }
 
 	private bool LowEnergy() {
