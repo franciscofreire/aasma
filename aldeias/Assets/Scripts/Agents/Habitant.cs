@@ -19,19 +19,21 @@ public class Habitant : Agent {
 	}
 
 	public override void OnWorldTick () {
-		IList<Vector2I> cells = worldInfo.nearbyFreeCells(worldInfo.nearbyCells(this));
+		sensorData.Cells = worldInfo.nearbyFreeCells(worldInfo.nearbyCells(this));
 
-		int index = worldInfo.rnd.Next(cells.Count);
+		int index = worldInfo.rnd.Next(sensorData.Cells.Count);
+		
+		Vector2I target = sensorData.Cells[index];
 
-		Vector2I cell = cells[index];
-		move(this, worldInfo.WorldXZToAgentPos(cell));
+		Action a = new Walk(this, target);
+		a.apply();
 	}
 
-	//************
-	//***SENSORS**
-	//************
-
-	public bool EnemyInFront() {
+	//*************
+	//** SENSORS **
+	//*************
+	
+	public override bool EnemyInFront() {
 		Vector2 posInFront = pos + orientation.ToVector2();
 		Vector2I tileCoordInFront = worldInfo.AgentPosToWorldXZ(posInFront);
 		Habitant habInFront = worldInfo.habitantInTile(tileCoordInFront);
