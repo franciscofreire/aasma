@@ -14,8 +14,29 @@ public class Habitant : Agent {
 	}
 
 	public override Action doAction() {
-		//TODO
-		return null;
+		/*	if (enemy-in-front? or animal-in-front?) and low-energy?
+				move();
+			else if	enemy-in-front? or animal-in-front?
+				attack();
+			else if tree-in-front?
+				crop-tree();
+            else if stump-in-front?
+                collectWood();
+            else if food-in-front?
+                collectFood();
+            else if meeting-point-in-front and carrying-resources?
+                dropResources();
+			else if unclaimed-territory-in-front?
+				place-flag()
+			else
+				move();
+		*/
+        
+        int index = worldInfo.rnd.Next(sensorData.Cells.Count);
+        
+        Vector2I target = sensorData.Cells[index];
+        
+        return new Walk(this, target);
 	}
 
 	public override void OnWorldTick () {
