@@ -82,7 +82,11 @@ public class DropTree : Action {
 }
 
 public class PlaceFlag : Action {
-	public override void apply () {}
+	public override void apply () {
+		world.WorldTileInfoAtCoord(target).tribeTerritory.hasFlag = true;
+		world.WorldTileInfoAtCoord(target).tribeTerritory.ownerTribe.id =
+			((Habitant) agent).tribe.id;
+	}
 	public PlaceFlag(Agent agent, Vector2I target) : base(agent, target) {}
 }
 

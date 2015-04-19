@@ -23,7 +23,7 @@ public class FloorGrid : MonoBehaviour {
 		//Debug_SetDebugUVs();
 		Debug_SetAllTilesTo(0);
 	}
-	
+
 	public struct TileTexInfo {
 		public Vector2[,] tileCorners; // the (0,0) corner of the tile texture
 		public Vector2 tileSquareSize;

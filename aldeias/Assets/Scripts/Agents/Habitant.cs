@@ -44,6 +44,9 @@ public class Habitant : Agent {
 		else if (TreeInFront() && !carryingResources()) {
 			return new CutTree(this, sensorData.FrontCell);
 		}
+		else if (UnclaimedTerritoryInFront()) {
+			return new PlaceFlag(this, sensorData.FrontCell);
+		}
         
 		// Reactive agent: Walk randomly
 		int index = worldInfo.rnd.Next(sensorData.Cells.Count);
@@ -83,11 +86,7 @@ public class Habitant : Agent {
 	}
 
 	private bool UnclaimedTerritoryInFront() {
-        // FIXME : Use sensorData (and worldinfo hasAgent?)
-        Vector2 posInFront = pos + orientation.ToVector2();
-        Vector2I tileCoordInFront = worldInfo.AgentPosToWorldXZ(posInFront);
-
-        return worldInfo.isUnclaimedTerritory(tileCoordInFront);
+        return worldInfo.isUnclaimedTerritory(sensorData.FrontCell);
     }
 
     private bool carryingResources() {
