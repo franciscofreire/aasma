@@ -20,6 +20,8 @@ public abstract class Agent {
 	public Orientation orientation;
 	public int energy; // 0: No energy; 100: Full energy
 
+	protected const int CRITICAL_ENERGY_LEVEL = 20;
+
 	public struct SensorData {
 		public IList<Vector2I> _cells;
 		public Vector2I _front_cell;
@@ -66,6 +68,8 @@ public abstract class Agent {
 			? tileCoordInFront
 			: new Vector2I(pos); // VERIFYME: Not sure about this...
 	}
+
+    public abstract bool IsAlive();
 
 	//*************
 	//** SENSORS **

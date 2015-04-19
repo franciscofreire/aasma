@@ -1,8 +1,11 @@
 using UnityEngine;
 
 public class Animal : Agent {
+    private bool isAlive;
+
 	public Animal(Vector2 pos): base(pos) {
-	}
+        this.isAlive = true;
+    }
 
 	public override Action doAction() {
 		//TODO
@@ -14,7 +17,14 @@ public class Animal : Agent {
 		pos = new Vector2(sum.x%worldInfo.xSize, sum.y);
 	}
 
-	
+    public void Die() {
+        this.isAlive = false;
+        this.orientation = ORIENTATION.DOWN;
+    }
+
+    public override bool IsAlive() {
+        return isAlive;
+    } 
 	//*************
 	//** SENSORS **
 	//*************

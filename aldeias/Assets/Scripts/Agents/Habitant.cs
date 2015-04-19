@@ -4,14 +4,19 @@ using System.Collections.Generic;
 
 public class Habitant : Agent {
 	public WorldInfo.Tribe tribe;
-	public float  affinity; // 0: Complete Civil; 1: Complete Warrior
-	public bool   isLeader;
+	public float affinity; // 0: Complete Civil; 1: Complete Warrior
+	public bool  isLeader;
+	public bool  carryingFood;
+	public bool  carryingWood;
 
 	public Habitant(Vector2 pos, WorldInfo.Tribe tribe, float affinity): base(pos) {
 		this.tribe  = tribe;
 		this.affinity = affinity;
 		this.isLeader = false;
 	}
+    public override bool IsAlive() {
+        return true;
+    }
 
 	public override Action doAction() {
 		
@@ -55,4 +60,45 @@ public class Habitant : Agent {
 		Habitant habInFront = worldInfo.habitantInTile(sensorData.FrontCell);
 		return habInFront != null && habInFront.tribe != this.tribe;
 	}
+
+	private bool AnimalInFront() {
+		// FIXME : Use sensorData (and worldinfo hasAgent?)
+        Vector2 posInFront = pos + orientation.ToVector2();
+        Vector2I tileCoordInFront = worldInfo.AgentPosToWorldXZ(posInFront);
+
+        foreach(WorldInfo.Habitat h in worldInfo.habitats) {
+            foreach(Agent a in h.animals) {
+                if (a.pos.Equals (tileCoordInFront)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+	}
+
+    private bool StumpInFront() {
+        // TODO
+        return false;
+    }
+
+	private bool UnclaimedTerritoryInFront() {
+        // FIXME : Use sensorData (and worldinfo hasAgent?)
+        Vector2 posInFront = pos + orientation.ToVector2();
+        Vector2I tileCoordInFront = worldInfo.AgentPosToWorldXZ(posInFront);
+
+        return worldInfo.isUnclaimedTerritory(tileCoordInFront);
+    }
+
+    private bool carryingResources() {
+        return carryingFood || carryingWood;
+    }
+
+	private bool LowEnergy() {
+		return this.energy <= CRITICAL_ENERGY_LEVEL;
+	}
+
+    private bool FoodInFront() {
+        // TODO
+        return false;
+    }
 }

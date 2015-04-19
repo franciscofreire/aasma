@@ -20,7 +20,11 @@ public struct Orientation {
 	public Quaternion ToQuaternion() {
 		return Quaternion.AngleAxis((float)orientation, Vector3.up);
 	}
-	
+
+    public Quaternion ToQuaternionInX() {
+        return Quaternion.AngleAxis((float)orientation, Vector3.right);
+    }
+
 	private Orientation(ORIENTATION orientation) {
 		this.orientation = orientation;
 	}
