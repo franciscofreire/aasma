@@ -14,5 +14,12 @@ public class Animal : Agent {
 		pos = new Vector2(sum.x%worldInfo.xSize, sum.y);
 	}
 
+	
+	//*************
+	//** SENSORS **
+	//*************
 
+	public override bool EnemyInFront() {
+		return false;
+	}
 }

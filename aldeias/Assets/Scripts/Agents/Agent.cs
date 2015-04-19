@@ -17,12 +17,26 @@ public abstract class Agent {
 	public WorldInfo worldInfo;
 
 	public Vector2 pos;
-
 	public Orientation orientation;
-
 	public int energy; // 0: No energy; 100: Full energy
 
 	protected const int CRITICAL_ENERGY_LEVEL = 20;
+
+	public struct SensorData {
+		public IList<Vector2I> _cells;
+
+		public IList<Vector2I> Cells
+		{
+			get { return _cells; }
+			set { _cells = value; }
+		}
+		
+		public SensorData(IList<Vector2I> cells)
+		{
+			_cells = cells;
+		}
+	}
+	public SensorData sensorData;
 
 	public Agent() {
 	}
@@ -33,38 +47,13 @@ public abstract class Agent {
 		this.energy = 100;
 	}
 
-	/// 
-	/// ACTUATORS
-	///
-
-	public void move(Agent a, Vector2 target) {
-
-		// Update worldtileInfo
-		WorldInfo.WorldTileInfo agentTileInfo = worldInfo.WorldTileInfoAtCoord(worldInfo.AgentPosToWorldXZ(a.pos));
-		WorldInfo.WorldTileInfo targetTileInfo = worldInfo.WorldTileInfoAtCoord(worldInfo.AgentPosToWorldXZ(target));
-		agentTileInfo.hasAgent = false;
-		targetTileInfo.hasAgent = true;
-
-		// Orientation
-		int x_origin = (int) a.pos[0];
-		int z_origin = (int) a.pos[1];
-		int x_target = (int) target[0];
-		int z_target = (int) target[1];
-		if (x_origin > x_target) {
-			a.orientation = ORIENTATION.LEFT;
-		} else if (x_origin < x_target) {
-			a.orientation = ORIENTATION.RIGHT;
-		} else if (z_origin > z_target) {
-			a.orientation = ORIENTATION.UP;
-		} else {
-			a.orientation = ORIENTATION.DOWN;
-		}
-
-		// Position
-		a.pos = target;
-	}
-
 	public abstract Action doAction();
 
 	public abstract void OnWorldTick();
+
+	//*************
+	//** SENSORS **
+	//*************
+
+	public abstract bool EnemyInFront();
 }
