@@ -51,9 +51,12 @@ public abstract class Agent {
 
 	public abstract void OnWorldTick();
 
+    public abstract bool IsAlive();
+
 	//*************
 	//** SENSORS **
 	//*************
 
 	public abstract bool EnemyInFront();
+
 }

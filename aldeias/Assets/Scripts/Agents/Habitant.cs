@@ -14,6 +14,9 @@ public class Habitant : Agent {
 		this.affinity = affinity;
 		this.isLeader = false;
 	}
+    public override bool IsAlive() {
+        return true;
+    }
 
 	public override Action doAction() {
 		/*	if (enemy-in-front? or animal-in-front?) and low-energy?
@@ -63,12 +66,22 @@ public class Habitant : Agent {
 	}
 
 	private bool AnimalInFront() {
-		// TODO
+		// FIXME : Use sensorData (and worldinfo hasAgent?)
+        Vector2 posInFront = pos + orientation.ToVector2();
+        Vector2I tileCoordInFront = worldInfo.AgentPosToWorldXZ(posInFront);
+
+        foreach(WorldInfo.Habitat h in worldInfo.habitats) {
+            foreach(Agent a in h.animals) {
+                if (a.pos.Equals (tileCoordInFront)) {
+                    return true;
+                }
+            }
+        }
         return false;
 	}
 
 	private bool TreeInFront() {
-        // TODO
+
         return false;
 	}
 
@@ -78,9 +91,12 @@ public class Habitant : Agent {
     }
 
 	private bool UnclaimedTerritoryInFront() {
-        // TODO
-        return false;
-	}
+        // FIXME : Use sensorData (and worldinfo hasAgent?)
+        Vector2 posInFront = pos + orientation.ToVector2();
+        Vector2I tileCoordInFront = worldInfo.AgentPosToWorldXZ(posInFront);
+
+        return worldInfo.isUnclaimedTerritory(tileCoordInFront);
+    }
 
     private bool carryingResources() {
         return carryingFood || carryingWood;

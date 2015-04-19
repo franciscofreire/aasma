@@ -311,6 +311,11 @@ public class WorldInfo : MonoBehaviour {
 			!worldTileInfo[tileCoord.x, tileCoord.y].hasTree;
 	}
 
+    public bool hasTree(Vector2I tileCoord) {
+        return isInsideWorld(tileCoord) &&
+            worldTileInfo[tileCoord.x, tileCoord.y].hasTree;
+    }
+
 	public bool AgentPosInTile(Vector2 agentPos, Vector2I tileCoord) {
 		//Assuming pos (0,0) is in the center of the tile (0,0)
 		Vector2I agentTileCoord = AgentPosToWorldXZ(agentPos);
@@ -335,6 +340,11 @@ public class WorldInfo : MonoBehaviour {
 	public Vector2 WorldXZToAgentPos(Vector2I coord) {
 		return new Vector2(coord.x, coord.y);
 	}
+
+    public bool isUnclaimedTerritory(Vector2I coord) {
+        WorldTileInfo worldTileInfoCell = worldTileInfo[coord.x, coord.y];
+        return worldTileInfoCell.tribeTerritory.Equals(nullTribe);
+    }
 
 	////
 	//// LISTENERS
