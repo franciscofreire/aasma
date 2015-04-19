@@ -14,14 +14,18 @@ public class Habitant : Agent {
 		this.affinity = affinity;
 		this.isLeader = false;
 	}
+
+    public void logFrontCell() {
+        Debug.Log("Agent & Front: " + pos + " ; (" +
+                  sensorData.FrontCell.x + "," + sensorData.FrontCell.y + ")");
+    }
+
     public override bool IsAlive() {
         return true;
     }
-
-	public void logFrontCell() {
-		Debug.Log("Agent & Front: " + pos + " ; (" +
-		          sensorData.FrontCell.x + "," + sensorData.FrontCell.y + ")");
-	}
+    public override void Die() {
+        //TODO
+    }
 
 	public override Action doAction() {
 		
@@ -29,6 +33,10 @@ public class Habitant : Agent {
 				move();
 			else if	enemy-in-front? or animal-in-front?
 				attack();
+			else if tree-in-front?
+				crop-tree();
+            else if stump-in-front?
+                collectWood();
             else if food-in-front?
                 collectFood();
             else if meeting-point-in-front and carrying-resources?
@@ -38,17 +46,17 @@ public class Habitant : Agent {
 			else
 				move();
 		*/
-		if (StumpInFront() && !carryingResources()) {
-			return new PickupTree(this, sensorData.FrontCell);
-		}
-		else if (TreeInFront() && !carryingResources()) {
-			return new CutTree(this, sensorData.FrontCell);
-		}
-		else if (UnclaimedTerritoryInFront()) {
-			return new PlaceFlag(this, sensorData.FrontCell);
-		}
-        
-		// Reactive agent: Walk randomly
+        if (StumpInFront() && !CarryingResources()) {
+            return new PickupTree(this, sensorData.FrontCell);
+        }
+        else if (TreeInFront() && !CarryingResources()) {
+            return new CutTree(this, sensorData.FrontCell);
+        }
+        else if (UnclaimedTerritoryInFront()) {
+            return new PlaceFlag(this, sensorData.FrontCell);
+        }
+
+        // Reactive agent: Walk randomly
 		int index = worldInfo.rnd.Next(sensorData.Cells.Count);
 		Vector2I target = sensorData.Cells[index];
         return new Walk(this, target);
@@ -71,25 +79,25 @@ public class Habitant : Agent {
 	}
 
 	private bool AnimalInFront() {
-		// FIXME : Use sensorData (and worldinfo hasAgent?)
-        Vector2 posInFront = pos + orientation.ToVector2();
-        Vector2I tileCoordInFront = worldInfo.AgentPosToWorldXZ(posInFront);
-
         foreach(WorldInfo.Habitat h in worldInfo.habitats) {
             foreach(Agent a in h.animals) {
-                if (a.pos.Equals (tileCoordInFront)) {
+                if (a.pos.Equals (sensorData.FrontCell)) {
                     return true;
                 }
             }
         }
         return false;
 	}
+    
+    private bool UnclaimedTerritoryInPos() {
+        return worldInfo.isUnclaimedTerritory(new Vector2I(this.pos));
+    }
 
 	private bool UnclaimedTerritoryInFront() {
         return worldInfo.isUnclaimedTerritory(sensorData.FrontCell);
     }
 
-    private bool carryingResources() {
+    private bool CarryingResources() {
         return isCarryingFood || isCarryingWood;
     }
 
@@ -98,7 +106,13 @@ public class Habitant : Agent {
 	}
 
     private bool FoodInFront() {
-        // TODO
+        foreach(WorldInfo.Habitat h in worldInfo.habitats) {
+            foreach(Agent a in h.animals) {
+                if (a.pos.Equals (sensorData.FrontCell) && !a.IsAlive()) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 }

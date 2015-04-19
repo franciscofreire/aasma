@@ -17,16 +17,17 @@ public class AgentSpawner : Layer {
 		int num_agents = 4;
 		foreach (WorldInfo.Tribe t in tribes) {
 			WorldInfo.MeetingPoint mp = t.meetingPoint;
-			Vector2 cp = mp.centralPoint;
+			Vector2I cp = mp.centralPoint;
 			int mp_bound = WorldInfo.MEETING_POINT_WIDTH / 2; // Limit for agent creation positions
 			for (int i = -mp_bound; i <= mp_bound; i++) {
 				for (int j = -mp_bound; j <= mp_bound; j++) {
 					if (num_agents-- > 0) {
-						int x = (int)cp[0] + i;
-						int z = (int)cp[1] + j;
+						int x = cp.x + i;
+						int z = cp.y + j;
+						Vector2I tileCoord = new Vector2I(x,z);
 
 						// Update WordTileInfo
-						worldInfo.WorldTileInfoAtCoord(x, z).hasAgent = true;
+						worldInfo.WorldTileInfoAtCoord(tileCoord).hasAgent = true;
 
 						// Create a model for the new agent
 						GameObject agentModel = (GameObject) Instantiate(
@@ -62,9 +63,10 @@ public class AgentSpawner : Layer {
 			int posz = (int) pos[1]; 
 			for(int x = posx; x < posx + WorldInfo.HABITAT_SIZE; x++) {
 				for(int z = posz; z > posz - WorldInfo.HABITAT_SIZE; z--) {
+					Vector2I tileCoord = new Vector2I(x,z);
 					if (num_animals-- > 0) {
 						// Update WordTileInfo
-						worldInfo.WorldTileInfoAtCoord(x, z).hasAgent = true;
+						worldInfo.WorldTileInfoAtCoord(tileCoord).hasAgent = true;
 
 						// Create a model for the new agent
 						GameObject agentModel = (GameObject) Instantiate(
@@ -108,6 +110,7 @@ public class AgentSpawner : Layer {
                 g.transform.localPosition = pos;
                 g.transform.localRotation = a.orientation.ToQuaternionInX();
             }
+
 		}
 	}
 

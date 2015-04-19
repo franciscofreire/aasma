@@ -54,7 +54,15 @@ public class Walk : Action {
 }
 
 public class Attack : Action {
-	public override void apply () {}
+	public override void apply () {
+        if(world.WorldTileInfoAtCoord(target).hasAgent) {
+            foreach(Agent a in world.allAgents) {
+                if(a.pos.Equals(target.ToVector2())) {
+                    a.DecreaseEnergy();
+                }
+            }
+        }
+    }
 	public Attack(Agent agent, Vector2I target) : base(agent, target) {}
 }
 
@@ -97,7 +105,9 @@ public class RemoveFlag : Action {
 
 public class PickupFood : Action {
 	public override void apply () {}
-	public PickupFood(Agent agent, Vector2I target) : base(agent, target) {}
+	public PickupFood(Agent agent, Vector2I target) : base(agent, target) {
+        // TODO
+    }
 }
 
 public class DropFood : Action {

@@ -21,6 +21,7 @@ public abstract class Agent {
 	public int energy; // 0: No energy; 100: Full energy
 
 	protected const int CRITICAL_ENERGY_LEVEL = 20;
+    protected const int DECREASE_ENERGY_AMOUNT = 20;
 
 	public struct SensorData {
 		public IList<Vector2I> _cells;
@@ -66,22 +67,33 @@ public abstract class Agent {
 		Vector2I tileCoordInFront = worldInfo.AgentPosToWorldXZ(posInFront);
 		sensorData.FrontCell = worldInfo.isInsideWorld(tileCoordInFront)
 			? tileCoordInFront
-			: new Vector2I(pos); // FIXME: Not sure about this...
+			: new Vector2I(pos); // VERIFYME: Not sure about this...
 	}
 
     public abstract bool IsAlive();
 
+    public abstract void Die();
+
+    public void DecreaseEnergy() {
+        int amount = DECREASE_ENERGY_AMOUNT;
+        if(this.energy > 0) {
+            if(this.energy - amount <= 0) {
+                Die();
+            }
+            this.energy -= amount;
+        }
+    }
 	//*************
 	//** SENSORS **
 	//*************
 
 	public abstract bool EnemyInFront();
 
-	public bool TreeInFront() {
-		return worldInfo.WorldTileInfoAtCoord(sensorData.FrontCell).tree.hasTree;
-	}
-	
-	public bool StumpInFront() {
-		return worldInfo.WorldTileInfoAtCoord(sensorData.FrontCell).tree.isStump;
-	}
+    public bool TreeInFront() {
+        return worldInfo.WorldTileInfoAtCoord(sensorData.FrontCell).tree.hasTree;
+    }
+    
+    public bool StumpInFront() {
+        return worldInfo.WorldTileInfoAtCoord(sensorData.FrontCell).tree.isStump;
+    }
 }
