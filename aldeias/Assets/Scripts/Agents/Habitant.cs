@@ -51,7 +51,7 @@ public class Habitant : Agent {
         }
         else if (TreeInFront() && !carryingResources()) {
             return new CutTree(this, sensorData.FrontCell);
-        }
+        } 
 
 		int index = worldInfo.rnd.Next(sensorData.Cells.Count);
 		Vector2I target = sensorData.Cells[index];
@@ -77,7 +77,7 @@ public class Habitant : Agent {
 	private bool AnimalInFront() {
         foreach(WorldInfo.Habitat h in worldInfo.habitats) {
             foreach(Agent a in h.animals) {
-                if (a.pos.Equals (sensorData.FrontCell)) {
+                if (a.pos.Equals (sensorData.FrontCell.ToVector2())) {
                     return true;
                 }
             }
@@ -89,7 +89,7 @@ public class Habitant : Agent {
         return worldInfo.isUnclaimedTerritory(sensorData.FrontCell);
     }
 
-    private bool carryingResources() {
+    public bool carryingResources() {
         return isCarryingFood || isCarryingWood;
     }
 
@@ -100,7 +100,7 @@ public class Habitant : Agent {
     private bool FoodInFront() {
         foreach(WorldInfo.Habitat h in worldInfo.habitats) {
             foreach(Agent a in h.animals) {
-                if (a.pos.Equals (sensorData.FrontCell) && !a.IsAlive()) {
+                if (a.pos.Equals (sensorData.FrontCell.ToVector2()) && !a.IsAlive()) {
                     return true;
                 }
             }

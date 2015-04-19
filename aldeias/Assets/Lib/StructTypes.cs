@@ -52,4 +52,5 @@ public struct Vector2I {
 	public static bool Equal(Vector2I v1, Vector2I v2) {
 		return v1.x == v2.x && v1.y == v2.y;
 	}
+
 }

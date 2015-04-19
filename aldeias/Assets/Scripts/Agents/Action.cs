@@ -102,7 +102,19 @@ public class RemoveFlag : Action {
 public class PickupFood : Action {
 	public override void apply () {}
 	public PickupFood(Agent agent, Vector2I target) : base(agent, target) {
-        // TODO
+        Habitant habitant = (Habitant) agent;
+        if(!habitant.carryingResources()) {
+            Animal animalToRemove = null;
+            foreach(WorldInfo.Habitat h in world.habitats) {
+                foreach(Animal a in h.animals) {
+                    if (a.pos.Equals (target) && !a.IsAlive()) {
+                        animalToRemove = a;
+                        break;
+                    }
+                }
+            }
+            world.removeAnimal(animalToRemove);
+        }
     }
 }
 

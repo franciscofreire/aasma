@@ -8,7 +8,7 @@ public class WorldInfo : MonoBehaviour {
 	public const int MEETING_POINT_WIDTH = 3;
 
 	private const int NUM_PARTITIONS = 5;
-	private const int UPDATE_FRAME_INTERVAL = 5;
+	private const int UPDATE_FRAME_INTERVAL = 2;
 	
 	public System.Random rnd = new System.Random(); 
 
@@ -376,7 +376,25 @@ public class WorldInfo : MonoBehaviour {
 
     public bool isUnclaimedTerritory(Vector2I coord) {
         WorldTileInfo worldTileInfoCell = worldTileInfo[coord.x, coord.y];
-        return worldTileInfoCell.tribeTerritory.Equals(nullTribe);
+        return worldTileInfoCell.tribeTerritory.ownerTribe.Equals(nullTribe);
+    }
+
+    public void removeAnimal(Animal animal) {
+        // remove from allagents
+        allAgents.Remove(animal);
+        // remove from Habitat
+        foreach(Habitat h in habitats) {
+            h.animals.Remove(animal);
+        }
+        // remove from AgentSpawner
+        AgentSpawner agentSpawner = GetComponent("AgentSpawner") as AgentSpawner;
+       
+        List<KeyValuePair<Habitant,GameObject>> lst = 
+            (List<KeyValuePair<Habitant,GameObject>>) agentSpawner.list_animals; // ugly statement: blame Nunes
+        lst.RemoveAll(x => x.Key.Equals(animal));
+
+        // worldTileInfo.hasAgent = false
+        worldTileInfo[(int)animal.pos.x, (int)animal.pos.y].hasAgent = false;
     }
 
 	////
