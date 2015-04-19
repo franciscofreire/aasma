@@ -72,12 +72,14 @@ public class WorldInfo : MonoBehaviour {
         }
     }            
 
-	public static Tribe nullTribe = new Tribe();
 	public class Tribe {
 		//Insert tribe identification here
 		public string id = "";
 		public MeetingPoint meetingPoint = null;
 		public List<Habitant> habitants = new List<Habitant>();
+
+        public int food_in_stock = 0;
+        public int wood_in_stock = 0;
 		
 		public Tribe(string id, Vector2I centralPoint, int width) {
 			this.id = id;
@@ -131,7 +133,7 @@ public class WorldInfo : MonoBehaviour {
 				};
 			}
 		}
-		public TribeTerritory tribeTerritory = nullTribe;
+		public TribeTerritory tribeTerritory = new Tribe();
 	}
 
 	public void Update() {
@@ -281,15 +283,6 @@ public class WorldInfo : MonoBehaviour {
 		}
 	}
 
-	void SetCornerToHabitat() {
-		//Fill (0,0) to (xsize/2 - 1,zSize/2 - 1) with animal habitat
-		for(int x=0; x<xSize/2; x++) {
-			for(int z=0; z<zSize/2; z++) {
-				worldTileInfo[x,z].isHabitat = true;
-			}
-		}
-	}
-
 	////
 	//// TILE INFORMATION
 	////
@@ -341,7 +334,8 @@ public class WorldInfo : MonoBehaviour {
 
 	public bool isFreeCell(Vector2I tileCoord) {
 		return isInsideWorld(tileCoord) &&
-			!worldTileInfo[tileCoord.x, tileCoord.y].tree.hasTree;
+			!worldTileInfo[tileCoord.x, tileCoord.y].tree.hasTree &&
+            !worldTileInfo[tileCoord.x, tileCoord.y].hasAgent;
 	}
 
     public bool hasTree(Vector2I tileCoord) {
@@ -376,7 +370,7 @@ public class WorldInfo : MonoBehaviour {
 
     public bool isUnclaimedTerritory(Vector2I coord) {
         WorldTileInfo worldTileInfoCell = worldTileInfo[coord.x, coord.y];
-        return worldTileInfoCell.tribeTerritory.ownerTribe.Equals(nullTribe);
+        return worldTileInfoCell.tribeTerritory.ownerTribe.id.Equals ("");
     }
 
     public void removeAnimal(Animal animal) {
@@ -395,6 +389,7 @@ public class WorldInfo : MonoBehaviour {
 
         // worldTileInfo.hasAgent = false
         worldTileInfo[(int)animal.pos.x, (int)animal.pos.y].hasAgent = false;
+
     }
 
 	////
