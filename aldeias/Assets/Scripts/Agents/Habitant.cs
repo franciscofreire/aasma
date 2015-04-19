@@ -39,6 +39,7 @@ public class Habitant : Agent {
         Vector2I target = sensorData.Cells[index];
         
         return new Walk(this, target);
+
 	}
 
 	public override void OnWorldTick () {
