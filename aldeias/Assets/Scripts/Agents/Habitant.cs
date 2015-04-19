@@ -28,35 +28,39 @@ public class Habitant : Agent {
     }
 
 	public override Action doAction() {
-		
-		/*	if (enemy-in-front? or animal-in-front?) and low-energy?
-				move();
-			else if	enemy-in-front? or animal-in-front?
-				attack();
-			else if tree-in-front?
-				crop-tree();
-            else if stump-in-front?
-                collectWood();
-            else if food-in-front?
-                collectFood();
-            else if meeting-point-in-front and carrying-resources?
-                dropResources();
-			else if unclaimed-territory-in-front?
-				place-flag()
-			else
-				move();
-		*/
-        if (StumpInFront() && !carryingResources()) {
+        if ((EnemyInFront() || AnimalInFront()) && LowEnergy()) {
+            // Reactive agent: Flee randomly
+            int fleeIndex = worldInfo.rnd.Next(sensorData.Cells.Count);
+            Vector2I fleeTarget = sensorData.Cells[fleeIndex];
+            return new Walk(this, fleeTarget);
+        }
+        else if (EnemyInFront() || AnimalInFront()) {
+            return new Attack(this, sensorData.FrontCell);
+        }
+        else if (FoodInFront() && !CarryingResources()) {
+            return new PickupFood(this, sensorData.FrontCell);
+        }
+        else if (StumpInFront() && !CarryingResources()) {
             return new PickupTree(this, sensorData.FrontCell);
         }
-        else if (TreeInFront() && !carryingResources()) {
+        else if (TreeInFront() && !CarryingResources()) {
             return new CutTree(this, sensorData.FrontCell);
-        } 
-
-		int index = worldInfo.rnd.Next(sensorData.Cells.Count);
-		Vector2I target = sensorData.Cells[index];
-        return new Walk(this, target);
-	}
+        }
+        else if (MeetingPointInFront() && isCarryingFood) {
+            return new DropFood(this, sensorData.FrontCell);
+        }
+        else if (MeetingPointInFront() && isCarryingWood) {
+            return new DropTree(this, sensorData.FrontCell);
+        }
+        else if (UnclaimedTerritoryInFront()) {
+            return new PlaceFlag(this, sensorData.FrontCell);
+        }
+            
+            // Reactive agent: Walk randomly
+            int index = worldInfo.rnd.Next(sensorData.Cells.Count);
+            Vector2I target = sensorData.Cells[index];
+            return new Walk(this, target);
+    }
 
 	public override void OnWorldTick () {
 		updateSensorData();
@@ -89,7 +93,7 @@ public class Habitant : Agent {
         return worldInfo.isUnclaimedTerritory(sensorData.FrontCell);
     }
 
-    public bool carryingResources() {
+    public bool CarryingResources() {
         return isCarryingFood || isCarryingWood;
     }
 
@@ -103,6 +107,14 @@ public class Habitant : Agent {
                 if (a.pos.Equals (sensorData.FrontCell.ToVector2()) && !a.IsAlive()) {
                     return true;
                 }
+            }
+        }
+        return false;
+    }
+    public bool MeetingPointInFront() {
+        foreach(Vector2I cell in tribe.meetingPoint.meetingPointCells) {
+            if (cell.Equals (sensorData.FrontCell)) {
+            return true;
             }
         }
         return false;

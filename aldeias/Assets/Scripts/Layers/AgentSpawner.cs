@@ -37,6 +37,10 @@ public class AgentSpawner : Layer {
 						agentModel.transform.parent = this.transform;
 						agentModel.SetActive(true);
 
+                        // Hide objects not collected by habitant
+                        Transform wood = agentModel.transform.Find("Wood");
+                        wood.GetComponent<Renderer>().enabled = false;
+
 						// Create the habitant and add him to the right tribe
 						Habitant habitant = new Habitant(
 							new Vector2(x, z),
@@ -97,6 +101,10 @@ public class AgentSpawner : Layer {
 			GameObject g = kvp.Value;
 			g.transform.localPosition = AgentPosToVec3(a.pos);
 			g.transform.localRotation = a.orientation.ToQuaternion();
+            if (((Habitant) a).isCarryingWood) {
+                Transform wood = g.transform.Find("Wood");
+                wood.GetComponent<Renderer>().enabled = true;
+            }
 		}
 		foreach (KeyValuePair<Animal,GameObject> kvp in list_animals) {
 			Agent a = kvp.Key;
