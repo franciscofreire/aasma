@@ -77,6 +77,9 @@ public class WorldInfo : MonoBehaviour {
 		public string id = "";
 		public MeetingPoint meetingPoint = null;
 		public List<Habitant> habitants = new List<Habitant>();
+
+        public int food_in_stock = 0;
+        public int wood_in_stock = 0;
 		
 		public Tribe(string id, Vector2I centralPoint, int width) {
 			this.id = id;
@@ -280,15 +283,6 @@ public class WorldInfo : MonoBehaviour {
 		}
 	}
 
-	void SetCornerToHabitat() {
-		//Fill (0,0) to (xsize/2 - 1,zSize/2 - 1) with animal habitat
-		for(int x=0; x<xSize/2; x++) {
-			for(int z=0; z<zSize/2; z++) {
-				worldTileInfo[x,z].isHabitat = true;
-			}
-		}
-	}
-
 	////
 	//// TILE INFORMATION
 	////
@@ -340,7 +334,8 @@ public class WorldInfo : MonoBehaviour {
 
 	public bool isFreeCell(Vector2I tileCoord) {
 		return isInsideWorld(tileCoord) &&
-			!worldTileInfo[tileCoord.x, tileCoord.y].tree.hasTree;
+			!worldTileInfo[tileCoord.x, tileCoord.y].tree.hasTree &&
+            !worldTileInfo[tileCoord.x, tileCoord.y].hasAgent;
 	}
 
     public bool hasTree(Vector2I tileCoord) {

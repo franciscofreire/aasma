@@ -28,29 +28,29 @@ public class Habitant : Agent {
     }
 
 	public override Action doAction() {
-		
-		/*	if (enemy-in-front? or animal-in-front?) and low-energy?
-				move();
-			else if	enemy-in-front? or animal-in-front?
-				attack();
-			else if tree-in-front?
-				crop-tree();
-            else if stump-in-front?
-                collectWood();
-            else if food-in-front?
-                collectFood();
-            else if meeting-point-in-front and carrying-resources?
-                dropResources();
-			else if unclaimed-territory-in-front?
-				place-flag()
-			else
-				move();
-		*/
-        if (StumpInFront() && !CarryingResources()) {
+        if ((EnemyInFront() || AnimalInFront()) && LowEnergy()) {
+            // Reactive agent: Flee randomly
+            int fleeIndex = worldInfo.rnd.Next(sensorData.Cells.Count);
+            Vector2I fleeTarget = sensorData.Cells[fleeIndex];
+            return new Walk(this, fleeTarget);
+        }
+        else if (EnemyInFront() || AnimalInFront()) {
+            return new Attack(this, sensorData.FrontCell);
+        }
+        else if (FoodInFront() && !CarryingResources()) {
+            return new PickupFood(this, sensorData.FrontCell);
+        }
+        else if (StumpInFront() && !CarryingResources()) {
             return new PickupTree(this, sensorData.FrontCell);
         }
         else if (TreeInFront() && !CarryingResources()) {
             return new CutTree(this, sensorData.FrontCell);
+        }
+        else if (MeetingPointInFront() && isCarryingFood) {
+            return new DropFood(this, sensorData.FrontCell);
+        }
+        else if (MeetingPointInFront() && isCarryingWood) {
+            return new DropTree(this, sensorData.FrontCell);
         }
         else if (UnclaimedTerritoryInFront()) {
             return new PlaceFlag(this, sensorData.FrontCell);
@@ -111,6 +111,15 @@ public class Habitant : Agent {
                 if (a.pos.Equals (sensorData.FrontCell) && !a.IsAlive()) {
                     return true;
                 }
+            }
+        }
+        return false;
+    }
+
+    public bool MeetingPointInFront() {
+        foreach(Vector2I cell in tribe.meetingPoint.meetingPointCells) {
+            if (cell.Equals (sensorData.FrontCell)) {
+                return true;
             }
         }
         return false;
