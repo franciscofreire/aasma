@@ -33,28 +33,22 @@ public class Habitant : Agent {
 			else
 				move();
 		*/
-        return null;
+        
+        int index = worldInfo.rnd.Next(sensorData.Cells.Count);
+        
+        Vector2I target = sensorData.Cells[index];
+        
+        return new Walk(this, target);
 	}
 
 	public override void OnWorldTick () {
 		sensorData.Cells = worldInfo.nearbyFreeCells(worldInfo.nearbyCells(this));
 
-		int index = worldInfo.rnd.Next(sensorData.Cells.Count);
-		
-		Vector2I target = sensorData.Cells[index];
-
-		Action a = new Walk(this, target);
+        Action a = doAction();
         a.apply();
 
 	}
 
-	//************
-	//***SENSORS**
-	//************
-
-	private bool EnemyInFront() {
-		
-	}
 
 	//*************
 	//** SENSORS **

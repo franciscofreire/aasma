@@ -95,7 +95,12 @@ public class AgentSpawner : Layer {
 		foreach (KeyValuePair<Habitant,GameObject> kvp in list_habitants) {
 			Agent a = kvp.Key;
 			GameObject g = kvp.Value;
-
+			g.transform.localPosition = AgentPosToVec3(a.pos);
+			g.transform.localRotation = a.orientation.ToQuaternion();
+		}
+		foreach (KeyValuePair<Animal,GameObject> kvp in list_animals) {
+			Agent a = kvp.Key;
+			GameObject g = kvp.Value;
 			g.transform.localPosition = AgentPosToVec3(a.pos);
 			g.transform.localRotation = a.orientation.ToQuaternion();
 		}
