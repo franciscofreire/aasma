@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 
+//TODO: Reflect the new Tree design. Trees can be Alive, Cutdown or Depleted.
+//IDEA: The Tree's WoodQuantity can be used to change it's size.
 public class TreeLayer : Layer {
 	public GameObject treeModel, stumpModel;
 	
@@ -12,14 +14,14 @@ public class TreeLayer : Layer {
 		for(int x=0; x<worldInfo.xSize; x++) {
 			for(int z=0; z<worldInfo.zSize; z++) {
 				// Add tree to WorldInfo
-				Tree t = worldInfo.WorldTileInfoAtCoord(x, z).tree;
-
-				// Create tree model and save tree
-				trees[x, z] = new KeyValuePair<Tree,GameObject>(
-					t,
-					(GameObject) Instantiate(treeModel, worldXZToVec3(x, z), Quaternion.identity));
-				trees[x, z].Value.transform.parent = this.transform;
-				trees[x, z].Value.SetActive(false);
+				WorldInfo.WorldTileInfo t = worldInfo.WorldTileInfoAtCoord(x,z);
+				if (t.hasTree) {
+					// Create tree model and save tree
+					trees[x, z] = new KeyValuePair<Tree,GameObject>(
+						t.tree,
+						(GameObject) Instantiate(treeModel, worldXZToVec3(x, z), Quaternion.identity));
+					trees[x, z].Value.transform.parent = this.transform;
+				}
 			}
 		}
 	}
@@ -27,28 +29,22 @@ public class TreeLayer : Layer {
 	public override void ApplyWorldInfo() {
 		for(int x=0; x<worldInfo.xSize; x++) {
 			for(int z=0; z<worldInfo.zSize; z++) {
-				Tree t = worldInfo.WorldTileInfoAtCoord(x, z).tree;
+				WorldInfo.WorldTileInfo t = worldInfo.WorldTileInfoAtCoord(x, z);
+				if(t.hasTree) {
+					// Remove depleted tree
+					if(!t.tree.HasWood) {
+						Destroy(trees[x, z].Value);
+					}
 
-				// Remove depleted tree
-				if(t.wood == 0) {
-					Destroy(trees[x, z].Value);
-					t.isStump = false;
-					t.hasTree = false;
+					// Change to stump model when an agent starts to collect wood
+					if(!t.tree.Alive) {
+						Destroy(trees[x, z].Value);
+						trees[x, z] = new KeyValuePair<Tree,GameObject>(
+							t.tree,
+							(GameObject) Instantiate(stumpModel, worldXZToVec3(x, z), Quaternion.identity));
+						trees[x, z].Value.transform.parent = this.transform;
+					}
 				}
-
-				// Change to stump model when an agent starts to collect wood
-				if(t.turnToStump) {
-					Destroy(trees[x, z].Value);
-					trees[x, z] = new KeyValuePair<Tree,GameObject>(
-						t,
-						(GameObject) Instantiate(stumpModel, worldXZToVec3(x, z), Quaternion.identity));
-					trees[x, z].Value.transform.parent = this.transform;
-
-					t.turnToStump = false;
-				}
-				
-				// Show tree if it exists
-				trees[x, z].Value.SetActive(t.hasTree);
 			}
 		}
 	}

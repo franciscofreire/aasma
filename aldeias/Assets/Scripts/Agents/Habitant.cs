@@ -40,10 +40,10 @@ public class Habitant : Agent {
         else if (FoodInFront() && !CarryingResources()) {
             return new PickupFood(this, sensorData.FrontCell);
         }
-        else if (StumpInFront() && !CarryingResources()) {
+        else if (CutDownTreeWithWoodInFront() && !CarryingResources()) {
             return new PickupTree(this, sensorData.FrontCell);
         }
-        else if (TreeInFront() && !CarryingResources()) {
+        else if (AliveTreeInFront() && !CarryingResources()) {
             return new CutTree(this, sensorData.FrontCell);
         }
         else if (MeetingPointInFront() && isCarryingFood) {
@@ -81,7 +81,7 @@ public class Habitant : Agent {
 	private bool AnimalInFront() {
         foreach(WorldInfo.Habitat h in worldInfo.habitats) {
             foreach(Agent a in h.animals) {
-                if (a.pos.Equals (sensorData.FrontCell.ToVector2())) {
+                if (a.pos.Equals (sensorData.FrontCell.ToVector2()) && a.IsAlive()) {
                     return true;
                 }
             }
@@ -113,7 +113,7 @@ public class Habitant : Agent {
     }
     public bool MeetingPointInFront() {
         foreach(Vector2I cell in tribe.meetingPoint.meetingPointCells) {
-            if (cell.Equals (sensorData.FrontCell)) {
+            if (Vector2I.Equal(cell, sensorData.FrontCell)) {
             return true;
             }
         }

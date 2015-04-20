@@ -120,7 +120,10 @@ public class WorldInfo : MonoBehaviour {
 		public bool hasAgent  = false;
 		public bool isHabitat = false;
 		
-		public Tree tree = new Tree(100);
+		public Tree tree = null;
+		public bool hasTree {
+			get { return tree != null; }
+		}
 
 		public struct TribeTerritory {
 			public bool hasFlag;
@@ -237,7 +240,7 @@ public class WorldInfo : MonoBehaviour {
 					for(int x2 = 0; x2 < x_partition; x2++) {
 						for(int z2 = 0; z2 < x_partition; z2++) {
 							if (num_trees-- > 0) {
-								worldTileInfo[x_start + x2, z_start + z2].tree.hasTree = true;
+								worldTileInfo[x_start + x2, z_start + z2].tree = new Tree(new WoodQuantity(100));
 							} else {
 								break;
 							}
@@ -277,7 +280,7 @@ public class WorldInfo : MonoBehaviour {
 		for(int x=0; x<xSize; x++) {
 			for(int z=0; z<zSize; z++) {
 				if(Mathf.PerlinNoise(x*0.1f,z*0.1f) > 0.5) {
-					worldTileInfo[x,z].tree.hasTree = true;
+					worldTileInfo[x,z].tree = new Tree(new WoodQuantity(100));
 				}
 			}
 		}
@@ -296,12 +299,13 @@ public class WorldInfo : MonoBehaviour {
 	}
 
 	public IList<Vector2I> nearbyCells(Agent agent) {
+		int radius = 1;
 
 		Vector2I agentPos = AgentPosToWorldXZ(agent.pos);
-		int xmin = Mathf.Max(0, agentPos.x - 2);
-		int xmax = Mathf.Min(xSize - 1, agentPos.x + 2);
-		int zmin = Mathf.Max(0, agentPos.y - 2);
-		int zmax = Mathf.Min(zSize - 1, agentPos.y + 2); 
+		int xmin = Mathf.Max(0, agentPos.x - radius);
+		int xmax = Mathf.Min(xSize - 1, agentPos.x + radius);
+		int zmin = Mathf.Max(0, agentPos.y - radius);
+		int zmax = Mathf.Min(zSize - 1, agentPos.y + radius); 
 
 		IList<Vector2I> cells = new List<Vector2I>();
 		for (int x = xmin; x <= xmax; x++) {
@@ -334,13 +338,13 @@ public class WorldInfo : MonoBehaviour {
 
 	public bool isFreeCell(Vector2I tileCoord) {
 		return isInsideWorld(tileCoord) &&
-			!worldTileInfo[tileCoord.x, tileCoord.y].tree.hasTree &&
+			!worldTileInfo[tileCoord.x, tileCoord.y].hasTree &&
             !worldTileInfo[tileCoord.x, tileCoord.y].hasAgent;
 	}
 
     public bool hasTree(Vector2I tileCoord) {
         return isInsideWorld(tileCoord) &&
-            worldTileInfo[tileCoord.x, tileCoord.y].tree.hasTree;
+            worldTileInfo[tileCoord.x, tileCoord.y].hasTree;
     }
 
 	public bool AgentPosInTile(Vector2 agentPos, Vector2I tileCoord) {
@@ -380,12 +384,6 @@ public class WorldInfo : MonoBehaviour {
         foreach(Habitat h in habitats) {
             h.animals.Remove(animal);
         }
-        // remove from AgentSpawner
-        AgentSpawner agentSpawner = GetComponent("AgentSpawner") as AgentSpawner;
-       
-        List<KeyValuePair<Habitant,GameObject>> lst = 
-            (List<KeyValuePair<Habitant,GameObject>>) agentSpawner.list_animals; // ugly statement: blame Nunes
-        lst.RemoveAll(x => x.Key.Equals(animal));
 
         // worldTileInfo.hasAgent = false
         worldTileInfo[(int)animal.pos.x, (int)animal.pos.y].hasAgent = false;

@@ -13,8 +13,19 @@ public struct Orientation {
 		return orientation;
 	}
 	
-	public Vector2 ToVector2() {
-		return new Vector2(Mathf.Cos((float)orientation), Mathf.Sin((float)orientation));
+	public Vector2 ToVector2() {//Up=(0,1), Down=(0,-1), Left=(-1,0), Right=(1,0)
+		switch (orientation) {
+		case ORIENTATION.UP:
+			return new Vector2(0f,1f);
+		case ORIENTATION.DOWN:
+			return new Vector2(0f,-1f);
+		case ORIENTATION.LEFT:
+			return new Vector2(-1f,0f);
+		case ORIENTATION.RIGHT:
+			return new Vector2(1f,0f);
+		default:
+			throw new System.Exception("Cannot convert "+orientation+" to UnityEngine.Vector2.");
+		}
 	}
 	
 	public Quaternion ToQuaternion() {

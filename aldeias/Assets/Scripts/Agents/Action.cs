@@ -72,9 +72,8 @@ public class Attack : Action {
 
 public class CutTree : Action {
 	public override void apply () {
-		if (world.WorldTileInfoAtCoord(target).tree.isStump == false) {
-			world.WorldTileInfoAtCoord(target).tree.turnToStump = true;
-			world.WorldTileInfoAtCoord(target).tree.isStump = true;
+		if(world.WorldTileInfoAtCoord(target).tree.Alive) {
+			world.WorldTileInfoAtCoord(target).tree.Chop();
 		}
 	}
 	public CutTree(Agent agent, Vector2I target) : base(agent, target) {}
@@ -120,7 +119,7 @@ public class PickupFood : Action {
             Animal animalToRemove = null;
             foreach(WorldInfo.Habitat h in world.habitats) {
                 foreach(Animal a in h.animals) {
-                    if (a.pos.Equals (target) && !a.IsAlive()) {
+                    if (a.pos.Equals (target.ToVector2()) && !a.IsAlive()) {
                         animalToRemove = a;
                         break;
                     }
