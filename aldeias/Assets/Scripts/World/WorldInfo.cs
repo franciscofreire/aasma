@@ -9,6 +9,7 @@ public class WorldInfo : MonoBehaviour {
 
 	private const int NUM_PARTITIONS = 5;
 	private const int UPDATE_FRAME_INTERVAL = 2;
+	public int MilisecondsPerTick = 50;//
 	
 	public System.Random rnd = new System.Random(); 
 
@@ -139,17 +140,31 @@ public class WorldInfo : MonoBehaviour {
 		public TribeTerritory tribeTerritory = new Tribe();
 	}
 
-	public void Update() {
-		if(frameCount == 0) {
+	void Start () {
+		GenerateWorldTileInfo();
+		NotifyCreationListeners();
+		NotifyChangeListeners();
+		StartCoroutine(NextWorldTick());
+	}
+
+	IEnumerator NextWorldTick() {
+		while(true) {
+			yield return new WaitForSeconds(MilisecondsPerTick/1000f);
 			WorldTick();
 		}
-		frameCount = (frameCount + 1) % UPDATE_FRAME_INTERVAL;
-		/*
-		if(Input.GetKeyUp("m")) {
-			NotifyChangeListeners();
-		}
-		*/
 	}
+
+	//void Update() {
+	//	if(frameCount == 0) {
+	//		WorldTick();
+	//	}
+	//	frameCount = (frameCount + 1) % UPDATE_FRAME_INTERVAL;
+	//	/*
+	//	if(Input.GetKeyUp("m")) {
+	//		NotifyChangeListeners();
+	//	}
+	//	*/
+	//}
 
 	public void WorldTick () {
 
@@ -175,12 +190,6 @@ public class WorldInfo : MonoBehaviour {
 
 		// Is the agent's decision cycle synchronous?
 		// How do the agents perceive the world state?
-	}
-
-	void Start () {
-		GenerateWorldTileInfo();
-		NotifyCreationListeners();
-		NotifyChangeListeners();
 	}
 
 	////
