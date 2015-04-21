@@ -164,7 +164,7 @@ public class AgentSpawner : Layer {
 			Agent a = kvp.Key;
 			GameObject g = kvp.Value;
             g.transform.localPosition = AgentPosToVec3(a.pos);
-            if (a.IsAlive()) {
+            if (a.Alive) {
                 g.transform.localRotation = a.orientation.ToQuaternion();
             } else {
                 Vector3 pos = g.transform.localPosition;

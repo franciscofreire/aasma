@@ -9,7 +9,9 @@ public class Habitant : Agent {
 	public bool  isCarryingFood;
 	public bool  isCarryingWood;
 
-	public Habitant(Vector2 pos, WorldInfo.Tribe tribe, float affinity): base(pos) {
+	public static readonly Energy INITIAL_ENERGY = new Energy(100);
+
+	public Habitant(Vector2 pos, WorldInfo.Tribe tribe, float affinity): base(pos, INITIAL_ENERGY) {
 		this.tribe  = tribe;
 		this.affinity = affinity;
 		this.isLeader = false;
@@ -18,13 +20,6 @@ public class Habitant : Agent {
     public void logFrontCell() {
         Debug.Log("Agent & Front: " + pos + " ; (" +
                   sensorData.FrontCell.x + "," + sensorData.FrontCell.y + ")");
-    }
-
-    public override bool IsAlive() {
-        return true;
-    }
-    public override void Die() {
-        //TODO
     }
 
 	public override Action doAction() {
@@ -81,7 +76,7 @@ public class Habitant : Agent {
 	private bool AnimalInFront() {
         foreach(WorldInfo.Habitat h in worldInfo.habitats) {
             foreach(Agent a in h.animals) {
-                if (a.pos.Equals (sensorData.FrontCell.ToVector2()) && a.IsAlive()) {
+                if (a.pos.Equals (sensorData.FrontCell.ToVector2()) && a.Alive) {
                     return true;
                 }
             }
@@ -97,6 +92,7 @@ public class Habitant : Agent {
         return isCarryingFood || isCarryingWood;
     }
 
+	private static Energy CRITICAL_ENERGY_LEVEL = new Energy(20);
 	private bool LowEnergy() {
 		return this.energy <= CRITICAL_ENERGY_LEVEL;
 	}
@@ -104,7 +100,7 @@ public class Habitant : Agent {
     private bool FoodInFront() {
         foreach(WorldInfo.Habitat h in worldInfo.habitats) {
             foreach(Agent a in h.animals) {
-                if (a.pos.Equals (sensorData.FrontCell.ToVector2()) && !a.IsAlive()) {
+                if (a.pos.Equals (sensorData.FrontCell.ToVector2()) && !a.Alive) {
                     return true;
                 }
             }

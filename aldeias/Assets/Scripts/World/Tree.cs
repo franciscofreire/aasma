@@ -30,7 +30,7 @@ public class Tree {
 	}
 
 	public bool HasWood {
-		get { return wood.IsGreaterThanZero(); }
+		get { return wood > WoodQuantity.Zero; }
 	}
 
 	public WoodQuantity Wood {
@@ -50,11 +50,14 @@ public struct WoodQuantity {
 		Count = 0;
 		return removed;
 	}
-	public bool IsGreaterThanZero() {
-		return Count>0;
-		//IMPL: could to Count>Zero.Count...
+	public static bool operator >(WoodQuantity w1, WoodQuantity w2) {
+		return w1.Count > w2.Count;
+	}
+	public static bool operator <(WoodQuantity w1, WoodQuantity w2) {
+		return w1.Count < w2.Count;
 	}
 	public static WoodQuantity Zero {
 		get { return new WoodQuantity(0); }
 	}
+
 }

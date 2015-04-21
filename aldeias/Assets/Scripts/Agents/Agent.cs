@@ -3,6 +3,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
+// An Agent starts on a position with a given Energy with a orientation.
+//    When he is attacked, a certain amount of his Energy is removed (RemoveEnergy).
+//    He is Alive as long as his Energy is greater than zero.
+//    At any given moment, his senses (SensorData) provide him a view of its WorldInfo.
+//    When is hungry, the Agent can Eat some food and will get some Energy from it.
 public abstract class Agent {
 
 	//Every agent runs on it's own thread.
@@ -11,55 +16,38 @@ public abstract class Agent {
 	//Every frame, the sensor values of each agent are computed and made available to their agents.
 	//   They might be timestamped.
 	//Every decision cycle, each agent copies it's sensor data to internal memory.
-
 	//The state of every agent must be swapped on each new frame.
 
 	public WorldInfo worldInfo;
 
 	public Vector2 pos;
 	public Orientation orientation;
-	public int energy; // 0: No energy; 100: Full energy
+	public Energy energy; // 0: No energy; 100: Full energy
 
-	protected const int CRITICAL_ENERGY_LEVEL = 20;
-    protected const int DECREASE_ENERGY_AMOUNT = 20;
-
-	public struct SensorData {
-		public IList<Vector2I> _cells;
-		public Vector2I _front_cell;
-
-		public IList<Vector2I> Cells
-		{
-			get { return _cells; }
-			set { _cells = value; }
-		}
-		
-		public Vector2I FrontCell
-		{
-			get { return _front_cell; }
-			set { _front_cell = value; }
-		}
-		
-		public SensorData(IList<Vector2I> cells, Vector2I front_cell)
-		{
-			_cells = cells;
-			_front_cell = front_cell;
-		}
-	}
 	public SensorData sensorData;
 
-	public Agent() {
+	public Agent (Vector2 pos, Energy e) {
+		this.pos = pos;
+		this.energy = e;
+		this.orientation = ORIENTATION.UP;
 	}
 
-	public Agent (Vector2 pos) {
-		this.pos = pos;
-		this.orientation = ORIENTATION.UP;
-		this.energy = 100;
+	public bool Alive {
+		get { return energy > Energy.Zero; }
+	}
+
+    public void RemoveEnergy(Energy e) {
+		energy.Subtract(e);
+    }
+
+	public void Eat(int food) {
+		energy.Add(EnergyFromFood(food));
 	}
 
 	public abstract Action doAction();
-
-	public abstract void OnWorldTick();
 	
+	public abstract void OnWorldTick();
+
 	public void updateSensorData() {
 		sensorData.Cells = worldInfo.nearbyFreeCells(worldInfo.nearbyCells(this));
 		
@@ -67,22 +55,8 @@ public abstract class Agent {
 		Vector2I tileCoordInFront = worldInfo.AgentPosToWorldXZ(posInFront);
 		sensorData.FrontCell = worldInfo.isInsideWorld(tileCoordInFront)
 			? tileCoordInFront
-			: new Vector2I(pos); // VERIFYME: Not sure about this...
+				: new Vector2I(pos); // VERIFYME: Not sure about this...
 	}
-
-    public abstract bool IsAlive();
-
-    public abstract void Die();
-
-    public void DecreaseEnergy() {
-        int amount = DECREASE_ENERGY_AMOUNT;
-        if(this.energy > 0) {
-            if(this.energy - amount <= 0) {
-                Die();
-            }
-            this.energy -= amount;
-        }
-    }
 	//*************
 	//** SENSORS **
 	//*************
@@ -98,4 +72,67 @@ public abstract class Agent {
 		WorldInfo.WorldTileInfo t = worldInfo.WorldTileInfoAtCoord(sensorData.FrontCell);
 		return t.hasTree && !t.tree.Alive && t.tree.HasWood;
     }
+
+	//FIXME: I don't know where to put this function as it is not part of the Agent. Or is it? It can also belong to the WorldInfo.
+	public static Energy EnergyFromFood(int food) {
+		return new Energy(food);
+	}
+}
+
+// Energy represents the energy that an agent has.
+//    It is a non-negative quantity.
+//TODO: How to ensure that no Energy is wrongly kept? That is, adding the same Energy multiple times.
+public struct Energy {
+	public int Count;
+	public Energy(int c) {
+		Count = c;
+	}
+	public void Subtract(Energy e) {
+		Count -= e.Count;
+		if(Count < 0) {
+			Count = 0;
+		}
+	}
+	public void Add(Energy e) {
+		Count += e.Count;
+	}
+	public static bool operator < (Energy e1, Energy e2) {
+		return e1.Count < e2.Count;
+	}
+	public static bool operator > (Energy e1, Energy e2) {
+		return e1.Count > e2.Count;
+	}
+	public static bool operator >= (Energy e1, Energy e2) {
+		return e1.Count >= e2.Count;
+	}
+	public static bool operator <= (Energy e1, Energy e2) {
+		return e1.Count <= e2.Count;
+	}
+	public static Energy Zero {
+		get { return new Energy(0); }
+	}
+}
+
+
+public struct SensorData {
+	public IList<Vector2I> _cells;
+	public Vector2I _front_cell;
+	
+	public IList<Vector2I> Cells
+	{
+		get { return _cells; }
+		set { _cells = value; }
+	}
+	
+	public Vector2I FrontCell
+	{
+		get { return _front_cell; }
+		set { _front_cell = value; }
+	}
+	
+	public SensorData(IList<Vector2I> cells, Vector2I front_cell)
+	{
+		_cells = cells;
+		_front_cell = front_cell;
+	}
 }

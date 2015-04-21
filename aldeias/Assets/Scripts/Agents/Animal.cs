@@ -1,12 +1,10 @@
 using UnityEngine;
 
 public class Animal : Agent {
-    private bool isAlive;
 
-	public Animal(Vector2 pos): base(pos) {
-        this.isAlive = true;
-        this.energy = 20;
-    }
+	public static readonly Energy INITIAL_ENERGY = new Energy(20);
+
+	public Animal(Vector2 pos): base(pos, INITIAL_ENERGY) { }
 
 	public override Action doAction() {
 
@@ -23,14 +21,6 @@ public class Animal : Agent {
         a.apply();*/
 	}
 
-    public override void Die() {
-        this.isAlive = false;
-        this.orientation = ORIENTATION.DOWN;
-    }
-
-    public override bool IsAlive() {
-        return isAlive;
-    } 
 	//*************
 	//** SENSORS **
 	//*************
