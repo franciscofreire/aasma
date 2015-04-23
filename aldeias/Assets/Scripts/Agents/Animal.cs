@@ -4,7 +4,7 @@ public class Animal : Agent {
 
 	public static readonly Energy INITIAL_ENERGY = new Energy(20);
 
-	public Animal(Vector2 pos): base(pos, INITIAL_ENERGY) { }
+	public Animal(WorldInfo world, Vector2 pos): base(world, pos, INITIAL_ENERGY) { }
 
 	public override Action doAction() {
 

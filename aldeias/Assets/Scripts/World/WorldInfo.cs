@@ -37,62 +37,10 @@ public class WorldInfo : MonoBehaviour {
 
 	public int frameCount = 0;
 
-	public class MeetingPoint {
-        public Vector2I centralPoint;
-        public int width;
-        public List<Vector2I> meetingPointCells;
 
-        public MeetingPoint(Vector2I centralPoint, int width) {
-            this.centralPoint = centralPoint;
-            this.width = width;
-            this.meetingPointCells = new List<Vector2I>();
-
-            // width must be odd
-            int leftCornerX = (int) centralPoint.x - Mathf.FloorToInt(width/2);
-            int leftCornerZ = (int) centralPoint.y + Mathf.FloorToInt(width/2);
-            
-            //map[leftCornerX,leftCornerZ] = true;
-            //map[(int)centralPoint.x, (int)centralPoint.y] = true;
-            for(int i = 0; i < width; ++i) {
-                for(int j = 0; j < width; j++) {
-                    int posX = leftCornerX + i;
-                    int posZ = leftCornerZ - j;
-                    this.meetingPointCells.Add(new Vector2I(posX, posZ));
-                }
-            }
-        }
-
-        public bool IsMeetingPoint(Vector2I pos) {
-            foreach(Vector2I mpCell in meetingPointCells) {
-                if(mpCell.Equals(pos)) {
-                    return true;
-                }
-            }
-    
-            return false;
-        }
-    }            
-
-	public class Tribe {
-		//Insert tribe identification here
-		public string id = "";
-		public MeetingPoint meetingPoint = null;
-		public List<Habitant> habitants = new List<Habitant>();
-
-        public int food_in_stock = 0;
-        public int wood_in_stock = 0;
-		
-		public Tribe(string id, Vector2I centralPoint, int width) {
-			this.id = id;
-			this.meetingPoint = new MeetingPoint(centralPoint, width);
-		}
-		
-		public Tribe() {
-		}
-	}
 
 	public void addAgentToTribe(Tribe t, Habitant h) {
-		t.habitants.Add(h);
+		t.AddHabitant(h);
 		allAgents.Add(h);
 		h.worldInfo = this;//FIXME this is not the right place to set this
 	}
@@ -137,7 +85,7 @@ public class WorldInfo : MonoBehaviour {
 				};
 			}
 		}
-		public TribeTerritory tribeTerritory = new Tribe();
+		public TribeTerritory tribeTerritory = new TribeTerritory();
 	}
 
 	void Start () {
@@ -373,17 +321,17 @@ public class WorldInfo : MonoBehaviour {
 		return null;
 	}
 
-	public Vector2I AgentPosToWorldXZ(Vector2 pos) {
+	public static Vector2I AgentPosToWorldXZ(Vector2 pos) {
 		return new Vector2I((int)(pos.x+0.5f), (int)(pos.y+0.5f));
 	}
 
-	public Vector2 WorldXZToAgentPos(Vector2I coord) {
+	public static Vector2 WorldXZToAgentPos(Vector2I coord) {
 		return new Vector2(coord.x, coord.y);
 	}
 
     public bool isUnclaimedTerritory(Vector2I coord) {
-        WorldTileInfo worldTileInfoCell = worldTileInfo[coord.x, coord.y];
-        return worldTileInfoCell.tribeTerritory.ownerTribe.id.Equals ("");
+		WorldTileInfo worldTileInfoCell = WorldTileInfoAtCoord(coord);
+		return worldTileInfoCell.tribeTerritory.ownerTribe == null;
     }
 
     public void removeAnimal(Animal animal) {

@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-// An Agent starts on a position with a given Energy with a orientation.
+// An Agent starts on a position in a world with a given Energy with an orientation.
 //    When he is attacked, a certain amount of his Energy is removed (RemoveEnergy).
 //    He is Alive as long as his Energy is greater than zero.
 //    At any given moment, his senses (SensorData) provide him a view of its WorldInfo.
@@ -26,7 +26,7 @@ public abstract class Agent {
 
 	public SensorData sensorData;
 
-	public Agent (Vector2 pos, Energy e) {
+	public Agent (WorldInfo world, Vector2 pos, Energy e) {
 		this.pos = pos;
 		this.energy = e;
 		this.orientation = ORIENTATION.UP;
@@ -40,7 +40,7 @@ public abstract class Agent {
 		energy.Subtract(e);
     }
 
-	public void Eat(int food) {
+	public void Eat(FoodQuantity food) {
 		energy.Add(EnergyFromFood(food));
 	}
 
@@ -52,7 +52,7 @@ public abstract class Agent {
 		sensorData.Cells = worldInfo.nearbyFreeCells(worldInfo.nearbyCells(this));
 		
 		Vector2 posInFront = pos + orientation.ToVector2();
-		Vector2I tileCoordInFront = worldInfo.AgentPosToWorldXZ(posInFront);
+		Vector2I tileCoordInFront = WorldInfo.AgentPosToWorldXZ(posInFront);
 		sensorData.FrontCell = worldInfo.isInsideWorld(tileCoordInFront)
 			? tileCoordInFront
 				: new Vector2I(pos); // VERIFYME: Not sure about this...
@@ -74,8 +74,8 @@ public abstract class Agent {
     }
 
 	//FIXME: I don't know where to put this function as it is not part of the Agent. Or is it? It can also belong to the WorldInfo.
-	public static Energy EnergyFromFood(int food) {
-		return new Energy(food);
+	public static Energy EnergyFromFood(FoodQuantity food) {
+		return new Energy(food.Count);
 	}
 }
 

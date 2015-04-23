@@ -23,7 +23,8 @@ public class Tree {
 			isAlive = false; // Die...
 			return WoodQuantity.Zero;
 		} else {
-			WoodQuantity removed = wood.RemoveAll(); 
+			WoodQuantity removed = wood;
+			wood = WoodQuantity.Zero;
 			return removed;
 		}
 		//Implementation detail: This method could be an Iterator method (use the yield statement).
@@ -36,28 +37,4 @@ public class Tree {
 	public WoodQuantity Wood {
 		get { return wood; }
 	}
-}
-
-// A WoodQuantity a non-negative quantity.
-//    Represents wood resource amounts.
-public struct WoodQuantity {
-	public int Count;
-	public WoodQuantity(int c) {
-		Count = c;
-	}
-	public WoodQuantity RemoveAll() {
-		WoodQuantity removed = new WoodQuantity(Count);
-		Count = 0;
-		return removed;
-	}
-	public static bool operator >(WoodQuantity w1, WoodQuantity w2) {
-		return w1.Count > w2.Count;
-	}
-	public static bool operator <(WoodQuantity w1, WoodQuantity w2) {
-		return w1.Count < w2.Count;
-	}
-	public static WoodQuantity Zero {
-		get { return new WoodQuantity(0); }
-	}
-
 }

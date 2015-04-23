@@ -25,10 +25,10 @@ public class AgentSpawner : Layer {
 	public override void CreateObjects() {
 		// Create habitants
 		// Find the meeting point of a tribe
-		List<WorldInfo.Tribe> tribes = worldInfo.tribes;
+		List<Tribe> tribes = worldInfo.tribes;
 		int num_agents = 4;
-		foreach (WorldInfo.Tribe t in tribes) {
-			WorldInfo.MeetingPoint mp = t.meetingPoint;
+		foreach (Tribe t in tribes) {
+			MeetingPoint mp = t.meetingPoint;
 			Vector2I cp = mp.centralPoint;
 			int mp_bound = WorldInfo.MEETING_POINT_WIDTH / 2; // Limit for agent creation positions
 			for (int i = -mp_bound; i <= mp_bound; i++) {
@@ -54,10 +54,7 @@ public class AgentSpawner : Layer {
                         wood.GetComponent<Renderer>().enabled = false;
 
 						// Create the habitant and add him to the right tribe
-						Habitant habitant = new Habitant(
-							new Vector2(x, z),
-							t,
-							1);
+						Habitant habitant = new Habitant(worldInfo,	new Vector2(x, z), t, 1);
 						worldInfo.addAgentToTribe(t, habitant);
 
 						// Save this agent
@@ -93,7 +90,7 @@ public class AgentSpawner : Layer {
 						agentModel.SetActive(true);
 
 						// Create the animal and add him to the right habitat
-						Animal animal = new Animal(new Vector2(x, z));
+						Animal animal = new Animal(worldInfo, new Vector2(x, z));
 						worldInfo.addAgentToHabitat(h, animal);
 						
 						// Save this agent
@@ -112,7 +109,7 @@ public class AgentSpawner : Layer {
 		List<KeyValuePair<Habitant, GameObject>> hsToRemove=new List<KeyValuePair<Habitant, GameObject>>();
 		foreach(KeyValuePair<Habitant,GameObject> ourH in list_habitants) {
 			bool ourHPresent = false;
-			foreach(WorldInfo.Tribe t in worldInfo.tribes) {
+			foreach(Tribe t in worldInfo.tribes) {
 				foreach(Habitant h in t.habitants) {
 					if(h.Equals(ourH.Key)){
 						ourHPresent = true;
@@ -151,11 +148,11 @@ public class AgentSpawner : Layer {
 		//TODO: add animals and habitants that appeared
 
 		foreach (KeyValuePair<Habitant,GameObject> kvp in list_habitants) {
-			Agent a = kvp.Key;
+			Habitant h = kvp.Key;
 			GameObject g = kvp.Value;
-			g.transform.localPosition = AgentPosToVec3(a.pos);
-			g.transform.localRotation = a.orientation.ToQuaternion();
-            if (((Habitant) a).isCarryingWood) {
+			g.transform.localPosition = AgentPosToVec3(h.pos);
+			g.transform.localRotation = h.orientation.ToQuaternion();
+            if (h.CarryingWood) {
                 Transform wood = g.transform.Find("Wood");
                 wood.GetComponent<Renderer>().enabled = true;
             }
