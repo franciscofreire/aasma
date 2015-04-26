@@ -30,7 +30,7 @@ public class AgentSpawner : Layer {
 		foreach (Tribe t in tribes) {
 			MeetingPoint mp = t.meetingPoint;
 			Vector2I cp = mp.centralPoint;
-			int mp_bound = WorldInfo.MEETING_POINT_WIDTH / 2; // Limit for agent creation positions
+			int mp_bound = WorldInfo.MEETING_POINT_SIDE / 2; // Limit for agent creation positions
 			for (int i = -mp_bound; i <= mp_bound; i++) {
 				for (int j = -mp_bound; j <= mp_bound; j++) {
 					if (num_agents-- > 0) {
@@ -74,8 +74,8 @@ public class AgentSpawner : Layer {
 			Vector2 pos = h.corner_pos;
 			int posx = (int) pos[0];
 			int posz = (int) pos[1]; 
-			for(int x = posx; x < posx + WorldInfo.HABITAT_SIZE; x++) {
-				for(int z = posz; z > posz - WorldInfo.HABITAT_SIZE; z--) {
+			for(int x = posx; x < posx + WorldInfo.HABITAT_SIDE; x++) {
+				for(int z = posz; z > posz - WorldInfo.HABITAT_SIDE; z--) {
 					Vector2I tileCoord = new Vector2I(x,z);
 					if (num_animals-- > 0) {
 						// Update WordTileInfo

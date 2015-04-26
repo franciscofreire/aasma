@@ -3,11 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class WorldInfo : MonoBehaviour {
-	public const int TRIBE_TERRITORY_SIZE = 15;
-	public const int HABITAT_SIZE = 7;
-	public const int MEETING_POINT_WIDTH = 3;
 
-	private const int NUM_PARTITIONS = 5;
 	private const int UPDATE_FRAME_INTERVAL = 2;
 	public int MilisecondsPerTick = 50;//
 	
@@ -144,10 +140,14 @@ public class WorldInfo : MonoBehaviour {
 	//// TILE CREATION
 	////
 
+	public const int TRIBE_TERRITORY_SIDE = 15;
+	public const int HABITAT_SIDE = 7;
+	public const int MEETING_POINT_SIDE = 3;
+	private const int NUM_PARTITIONS = 5;
 	public void GenerateWorldTileInfo () {
 		CreateTiles();
 		FillTribeTerritory("A", 0, 0);
-		FillTribeTerritory("B", xSize - TRIBE_TERRITORY_SIZE, zSize - TRIBE_TERRITORY_SIZE);
+		FillTribeTerritory("B", xSize - TRIBE_TERRITORY_SIDE, zSize - TRIBE_TERRITORY_SIDE);
 		FillHabitat();
 		FillTrees();
 	}
@@ -209,14 +209,14 @@ public class WorldInfo : MonoBehaviour {
     }
 
     void FillTribeTerritory(string name, int posx, int posz) {
-        int meetingPointx = posx + Mathf.FloorToInt(TRIBE_TERRITORY_SIZE/2);
-        int meetingPointz = posz + Mathf.FloorToInt(TRIBE_TERRITORY_SIZE/2);
+        int meetingPointx = posx + Mathf.FloorToInt(TRIBE_TERRITORY_SIDE/2);
+        int meetingPointz = posz + Mathf.FloorToInt(TRIBE_TERRITORY_SIDE/2);
         Vector2I centralMeetingPoint = new Vector2I(meetingPointx, meetingPointz);
-        Tribe tribe = new Tribe(name, centralMeetingPoint, MEETING_POINT_WIDTH);
+        Tribe tribe = new Tribe(name, centralMeetingPoint, MEETING_POINT_SIDE);
         tribes.Add(tribe);
 
-        for(int x=posx; x < posx + TRIBE_TERRITORY_SIZE; x++) {
-            for(int z=posz; z < posz + TRIBE_TERRITORY_SIZE; z++) {
+        for(int x=posx; x < posx + TRIBE_TERRITORY_SIDE; x++) {
+            for(int z=posz; z < posz + TRIBE_TERRITORY_SIDE; z++) {
                 worldTileInfo[x,z].tribeTerritory.hasFlag = true;
                 worldTileInfo[x,z].tribeTerritory.ownerTribe = tribe;
             }
@@ -226,8 +226,8 @@ public class WorldInfo : MonoBehaviour {
 		int posx = 0;
 		int posz = zSize - 1;
 		habitats.Add(new Habitat(posx, posz));
-		for(int x=posx; x < posx + HABITAT_SIZE; x++) {
-			for(int z=posz; z > posz - HABITAT_SIZE; z--) {
+		for(int x=posx; x < posx + HABITAT_SIDE; x++) {
+			for(int z=posz; z > posz - HABITAT_SIDE; z--) {
 				worldTileInfo[x,z].isHabitat = true;
 			}
 		}
