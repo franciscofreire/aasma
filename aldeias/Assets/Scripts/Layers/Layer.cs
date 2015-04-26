@@ -33,11 +33,16 @@ public abstract class Layer : MonoBehaviour {
 		}
 	}
 	
-	public Vector3 worldXZToVec3(int x, int z) {
+	public Vector3 WorldXZToVec3(int x, int z) {
 		float halfTileSize = tileSize * 0.5f;
 		return new Vector3(x + halfTileSize, 0, z + halfTileSize);
 	}
-	
+
+	public Vector3 AgentPosToVec3(Vector2 pos) {
+		float halfTileSize = tileSize / 2.0f;
+		return new Vector3(pos.x + halfTileSize, 0, pos.y + halfTileSize);
+	}
+
 	public abstract void CreateObjects();
 	
 	public abstract void ApplyWorldInfo();

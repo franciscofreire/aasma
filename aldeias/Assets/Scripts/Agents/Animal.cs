@@ -8,7 +8,7 @@ public class Animal : Agent {
 
 	public override Action doAction() {
 
-        int index = worldInfo.rnd.Next(sensorData.Cells.Count);
+        int index = WorldRandom.Next(sensorData.Cells.Count);
         Vector2I target = sensorData.Cells[index];
         return new Walk(this, target);
 	}

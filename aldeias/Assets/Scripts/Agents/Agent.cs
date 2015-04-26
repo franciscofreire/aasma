@@ -7,7 +7,7 @@ using System.Collections.Generic;
 //    When he is attacked, a certain amount of his Energy is removed (RemoveEnergy).
 //    He is Alive as long as his Energy is greater than zero.
 //    At any given moment, his senses (SensorData) provide him a view of its WorldInfo.
-//    When is hungry, the Agent can Eat some food and will get some Energy from it.
+//    When he is hungry, the Agent can Eat some food and will get some Energy from it.
 public abstract class Agent {
 
 	//Every agent runs on it's own thread.
@@ -27,6 +27,7 @@ public abstract class Agent {
 	public SensorData sensorData;
 
 	public Agent (WorldInfo world, Vector2 pos, Energy e) {
+		this.worldInfo = world;
 		this.pos = pos;
 		this.energy = e;
 		this.orientation = ORIENTATION.UP;
@@ -52,7 +53,7 @@ public abstract class Agent {
 		sensorData.Cells = worldInfo.nearbyFreeCells(worldInfo.nearbyCells(this));
 		
 		Vector2 posInFront = pos + orientation.ToVector2();
-		Vector2I tileCoordInFront = WorldInfo.AgentPosToWorldXZ(posInFront);
+		Vector2I tileCoordInFront = CoordConvertions.AgentPosToWorldXZ(posInFront);
 		sensorData.FrontCell = worldInfo.isInsideWorld(tileCoordInFront)
 			? tileCoordInFront
 				: new Vector2I(pos); // VERIFYME: Not sure about this...
@@ -64,13 +65,13 @@ public abstract class Agent {
 	public abstract bool EnemyInFront();
 
     public bool AliveTreeInFront() {
-		WorldInfo.WorldTileInfo t = worldInfo.WorldTileInfoAtCoord(sensorData.FrontCell);
-		return t.hasTree && t.tree.Alive;
+		WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(sensorData.FrontCell);
+		return t.HasTree && t.Tree.Alive;
     }
     
     public bool CutDownTreeWithWoodInFront() {
-		WorldInfo.WorldTileInfo t = worldInfo.WorldTileInfoAtCoord(sensorData.FrontCell);
-		return t.hasTree && !t.tree.Alive && t.tree.HasWood;
+		WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(sensorData.FrontCell);
+		return t.HasTree && !t.Tree.Alive && t.Tree.HasWood;
     }
 
 	//FIXME: I don't know where to put this function as it is not part of the Agent. Or is it? It can also belong to the WorldInfo.

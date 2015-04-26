@@ -39,8 +39,8 @@ public class AgentControl {
 	}
 	
 	private void CollectActionAndPutInWorldInfoActionQueue() {
-		Action action = agent.doAction(/*sensor*/);
-		worldInfo.pendingActionsQueue.Enqueue (action);
+		//Action action = agent.doAction(/*sensor*/);
+		//worldInfo.pendingActionsQueue.Enqueue (action);
 	}
 	
 	

@@ -1,39 +1,31 @@
 using UnityEngine;
+using System.Linq;
 using System.Collections.Generic;
 
 public class MeetingPoint {
-	public Vector2I centralPoint;
+	public Vector2I center;
 	public int width;
-	public List<Vector2I> meetingPointCells;
 	
-	public MeetingPoint(Vector2I centralPoint, int width) {
-		this.centralPoint = centralPoint;
+	public MeetingPoint(Vector2I center, int width) {
+		this.center = center;
 		this.width = width;
-		this.meetingPointCells = new List<Vector2I>();
-		
-		// width must be odd
-		int leftCornerX = (int) centralPoint.x - Mathf.FloorToInt(width/2);
-		int leftCornerZ = (int) centralPoint.y + Mathf.FloorToInt(width/2);
-		
-		//map[leftCornerX,leftCornerZ] = true;
-		//map[(int)centralPoint.x, (int)centralPoint.y] = true;
-		for(int i = 0; i < width; ++i) {
-			for(int j = 0; j < width; j++) {
-				int posX = leftCornerX + i;
-				int posZ = leftCornerZ - j;
-				this.meetingPointCells.Add(new Vector2I(posX, posZ));
+	}
+
+	public IEnumerable<Vector2I> MeetingPointTileCoords {
+		get {
+			Vector2I corner_0_0 = new Vector2I(center.x - width/2, center.y - width/2);
+			foreach(var x in Enumerable.Range(0,width)) {
+				foreach(var z in Enumerable.Range(0,width)) {
+					yield return new Vector2I(corner_0_0.x+x,corner_0_0.y+z);
+				}
 			}
 		}
 	}
 	
-	public bool IsMeetingPoint(Vector2I pos) {
-		foreach(Vector2I mpCell in meetingPointCells) {
-			if(mpCell.Equals(pos)) {
-				return true;
-			}
-		}
-		
-		return false;
+	public bool IsInMeetingPoint(Vector2I pos) {
+		//return MeetingPointTileCoords.Contains(pos);
+		return pos.x >= (center.x - width/2) && pos.x <= (center.x - width/2) 
+			&& pos.y >= (center.y - width/2) && pos.y <= (center.y - width/2);
 	}
 }            
 
@@ -46,9 +38,9 @@ public class Tribe {
 	public FoodQuantity FoodStock = FoodQuantity.Zero;
 	public WoodQuantity WoodStock = WoodQuantity.Zero;
 	
-	public Tribe(string id, Vector2I centralPoint, int width) {
+	public Tribe(string id, MeetingPoint meetingPoint) {
 		this.id = id;
-		this.meetingPoint = new MeetingPoint(centralPoint, width);
+		this.meetingPoint = meetingPoint;
 	}
 	public void AddHabitant(Habitant h) {
 		habitants.Add(h);

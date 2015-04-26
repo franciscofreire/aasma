@@ -93,7 +93,7 @@ public class MeetingPointsLayer : Layer {
 
 		foreach(Tribe tribe in worldInfo.tribes) {
 			MeetingPoint mp = tribe.meetingPoint;
-            foreach(Vector2I mpCell in mp.meetingPointCells) {
+            foreach(Vector2I mpCell in mp.MeetingPointTileCoords) {
                 map[mpCell.x, mpCell.y] = true;
             }
 		} 

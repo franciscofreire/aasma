@@ -1,14 +1,14 @@
 using UnityEngine;
-using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 
 public class AgentSpawner : Layer {
 	public GameObject habitantModel, warriorModel, animalModel;
 
-	public IList<KeyValuePair<Habitant,GameObject>> list_habitants =
-		new List<KeyValuePair<Habitant,GameObject>>();
-	public IList<KeyValuePair<Animal,GameObject>> list_animals =
-		new List<KeyValuePair<Animal,GameObject>>();
+	public IDictionary<Habitant, GameObject> list_habitants = 
+		new Dictionary<Habitant, GameObject>();
+	public IDictionary<Animal, GameObject> list_animals = 
+		new Dictionary<Animal, GameObject>();
 
 	//WorldInfo events that AgentSpawner would like to listen to:
 	//   WorldChanged
@@ -22,14 +22,46 @@ public class AgentSpawner : Layer {
 	//WorldInfo events that might be useful:
 	//   WorldCreated - to initialize information that doesn't change
 
-	public override void CreateObjects() {
+	public override void CreateObjects() {//TODO: Add habitants and add animals that exist in the world.
+		foreach (Habitant h in 
+		         worldInfo.tribes //List of tribes
+		         	.ConvertAll(t=>t.habitants.AsEnumerable()) //Lists of habitants
+		         	.Aggregate((hs1,hs2)=>hs1.Concat(hs2))) { //List of habitants
+			GameObject agentModel = (GameObject) Instantiate(
+				habitantModel,
+				AgentPosToVec3(h.pos),
+				Quaternion.identity);
+			agentModel.transform.parent = this.transform;
+			agentModel.SetActive(true);
+
+			Transform wood = agentModel.transform.Find("Wood");
+			wood.GetComponent<Renderer>().enabled = false;
+
+			list_habitants.Add(h, agentModel);
+		}
+
+		foreach (Animal a in
+		         worldInfo.habitats
+		         .ConvertAll(h=>h.animals.AsEnumerable())
+		         .Aggregate((as1,as2)=>as1.Concat(as2))) {
+			GameObject agentModel = (GameObject) Instantiate(
+				animalModel,
+				AgentPosToVec3(a.pos),
+				Quaternion.identity);
+			agentModel.transform.parent = this.transform;
+			agentModel.SetActive(true);
+
+			list_animals.Add(a, agentModel);
+		}
+
+		/*
 		// Create habitants
 		// Find the meeting point of a tribe
 		List<Tribe> tribes = worldInfo.tribes;
 		int num_agents = 4;
 		foreach (Tribe t in tribes) {
 			MeetingPoint mp = t.meetingPoint;
-			Vector2I cp = mp.centralPoint;
+			Vector2I cp = mp.center;
 			int mp_bound = WorldInfo.MEETING_POINT_SIDE / 2; // Limit for agent creation positions
 			for (int i = -mp_bound; i <= mp_bound; i++) {
 				for (int j = -mp_bound; j <= mp_bound; j++) {
@@ -65,7 +97,8 @@ public class AgentSpawner : Layer {
 			}
 			num_agents = 4;
 		}
-
+		*/
+		/*
 		// Create animals
 		// Find the first cell (corner) of a habitat
 		List<WorldInfo.Habitat> habitats = worldInfo.habitats;
@@ -101,6 +134,7 @@ public class AgentSpawner : Layer {
 			}
 			num_animals = 4;
 		}
+		*/
 	}
 
 
@@ -171,10 +205,5 @@ public class AgentSpawner : Layer {
             }
 
 		}
-	}
-
-	private Vector3 AgentPosToVec3(Vector2 pos) {
-		float halfTileSize = tileSize / 2.0f;
-		return new Vector3(pos.x + halfTileSize, 0, pos.y + halfTileSize);
 	}
 }

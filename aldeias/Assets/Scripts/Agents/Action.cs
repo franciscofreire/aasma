@@ -38,15 +38,15 @@ public abstract class AnyAgentAction : Action {
 public class Walk : AnyAgentAction {
 	public override void apply () {
 		// Update worldtileInfo
-		WorldInfo.WorldTileInfo agentTileInfo = 
-			world.WorldTileInfoAtCoord(WorldInfo.AgentPosToWorldXZ(performer.pos));
-		WorldInfo.WorldTileInfo targetTileInfo = 
-			world.WorldTileInfoAtCoord(target);
-		agentTileInfo.hasAgent = false;
-		targetTileInfo.hasAgent = true;
+		WorldTileInfo agentTileInfo = 
+			world.worldTiles.WorldTileInfoAtCoord(CoordConvertions.AgentPosToWorldXZ(performer.pos));
+		WorldTileInfo targetTileInfo = 
+			world.worldTiles.WorldTileInfoAtCoord(target);
+		agentTileInfo.Agent = null;
+		targetTileInfo.Agent = agent;
 		
 		// Orientation
-		Vector2I origin = WorldInfo.AgentPosToWorldXZ(agent.pos);
+		Vector2I origin = CoordConvertions.AgentPosToWorldXZ(agent.pos);
 		if (origin.x > target.x) {
 			performer.orientation = ORIENTATION.LEFT;
 		} else if (origin.x < target.x) {
@@ -66,11 +66,11 @@ public class Walk : AnyAgentAction {
 public class Attack : AnyAgentAction {
 	public static readonly Energy ENERGY_TO_REMOVE = new Energy(20);
 	public override void apply () {
-        if(world.WorldTileInfoAtCoord(target).hasAgent) {
-            foreach(Agent a in world.allAgents) {
-                if(a.pos.Equals(target.ToVector2())) {
+		if(world.worldTiles.WorldTileInfoAtCoord(target).HasAgent) {
+            foreach(Agent a in world.AllAgents) {
+				if(CoordConvertions.AgentPosToWorldXZ(a.pos) == target) {
 					a.RemoveEnergy(ENERGY_TO_REMOVE);
-                }
+				}
             }
         }
     }
@@ -91,8 +91,9 @@ public abstract class HabitantAction : Action {
 
 public class CutTree : HabitantAction {
 	public override void apply () {
-		if(world.WorldTileInfoAtCoord(target).tree.Alive) {
-			world.WorldTileInfoAtCoord(target).tree.Chop();
+		if(world.worldTiles.WorldTileInfoAtCoord(target).Tree.Alive) {
+			world.worldTiles.WorldTileInfoAtCoord(target).Tree.Chop();
+			//FIXME: if some WoodQuantity was dropped it is lost.
 		}
 	}
 	public CutTree(Habitant habitant, Vector2I target) : base(habitant, target) {}
@@ -100,8 +101,9 @@ public class CutTree : HabitantAction {
 
 public class PickupTree : HabitantAction {
 	public override void apply () {
-		WoodQuantity wood = world.WorldTileInfoAtCoord(target).tree.Chop();
+		WoodQuantity wood = world.worldTiles.WorldTileInfoAtCoord(target).Tree.Chop();
 		habitant.PickupWood(wood);
+		//FIXME: if the habitant can't carry the WoodQuantity than it is lost.
 	}
 	public PickupTree(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }
@@ -116,16 +118,14 @@ public class DropTree : HabitantAction {
 
 public class PlaceFlag : HabitantAction {
 	public override void apply () {
-		world.WorldTileInfoAtCoord(target).tribeTerritory.hasFlag = true;
-		world.WorldTileInfoAtCoord(target).tribeTerritory.ownerTribe = habitant.tribe;
+		world.worldTiles.WorldTileInfoAtCoord(target).tribeTerritory.OwnerTribe = habitant.tribe;
 	}
 	public PlaceFlag(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }
 
 public class RemoveFlag : HabitantAction {
 	public override void apply () {
-        world.WorldTileInfoAtCoord(target).tribeTerritory.hasFlag = false;
-        world.WorldTileInfoAtCoord(target).tribeTerritory.ownerTribe.id = "";
+		world.worldTiles.WorldTileInfoAtCoord(target).tribeTerritory.OwnerTribe = null;
     }
 	public RemoveFlag(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }
@@ -144,7 +144,8 @@ public class PickupFood : HabitantAction {
                     }
                 }
             }
-            world.removeAnimal(animalToRemove);
+			//FIXME: the animal shouldn't be collected again
+            //world.removeAnimal(animalToRemove);
 			habitant.PickupFood(AnimalFoodPotencial);
         }
     }

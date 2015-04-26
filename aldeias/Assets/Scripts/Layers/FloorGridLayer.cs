@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 public class FloorGridLayer : Layer {
@@ -15,12 +15,12 @@ public class FloorGridLayer : Layer {
 	}
 
 	int WorldInfoTileToAtlasIndexFunc(Vector2I tileCoord) {
-		WorldInfo.WorldTileInfo.TribeTerritory tt = worldInfo.WorldTileInfoAtCoord(tileCoord).tribeTerritory;
+		WorldTileInfo.TribeTerritory tt = worldInfo.worldTiles.WorldTileInfoAtCoord(tileCoord).tribeTerritory;
 
-		if (tt.hasFlag == true) {
-			if (tt.ownerTribe.id == "A")
+		if (tt.IsClaimed) {
+			if (tt.OwnerTribe.id == "A")
 				return (int) ATLAS.TRIBE_A;
-			else if (tt.ownerTribe.id == "B")
+			else if (tt.OwnerTribe.id == "B")
 				return (int) ATLAS.TRIBE_B;
 		}
 

@@ -14,12 +14,12 @@ public class TreeLayer : Layer {
 		for(int x=0; x<worldInfo.xSize; x++) {
 			for(int z=0; z<worldInfo.zSize; z++) {
 				// Add tree to WorldInfo
-				WorldInfo.WorldTileInfo t = worldInfo.WorldTileInfoAtCoord(x,z);
-				if (t.hasTree) {
+				WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(x,z);
+				if (t.HasTree) {
 					// Create tree model and save tree
 					trees[x, z] = new KeyValuePair<Tree,GameObject>(
-						t.tree,
-						(GameObject) Instantiate(treeModel, worldXZToVec3(x, z), Quaternion.identity));
+						t.Tree,
+						(GameObject) Instantiate(treeModel, WorldXZToVec3(x, z), Quaternion.identity));
 					trees[x, z].Value.transform.parent = this.transform;
 				}
 			}
@@ -29,19 +29,19 @@ public class TreeLayer : Layer {
 	public override void ApplyWorldInfo() {
 		for(int x=0; x<worldInfo.xSize; x++) {
 			for(int z=0; z<worldInfo.zSize; z++) {
-				WorldInfo.WorldTileInfo t = worldInfo.WorldTileInfoAtCoord(x, z);
-				if(t.hasTree) {
+				WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(x, z);
+				if(t.HasTree) {
 					// Remove depleted tree
-					if(!t.tree.HasWood) {
+					if(!t.Tree.HasWood) {
 						Destroy(trees[x, z].Value);
 					}
 
 					// Change to stump model when an agent starts to collect wood
-					if(!t.tree.Alive) {
+					if(!t.Tree.Alive) {
 						Destroy(trees[x, z].Value);
 						trees[x, z] = new KeyValuePair<Tree,GameObject>(
-							t.tree,
-							(GameObject) Instantiate(stumpModel, worldXZToVec3(x, z), Quaternion.identity));
+							t.Tree,
+							(GameObject) Instantiate(stumpModel, WorldXZToVec3(x, z), Quaternion.identity));
 						trees[x, z].Value.transform.parent = this.transform;
 					}
 				}

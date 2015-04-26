@@ -100,7 +100,7 @@ public class HabitatLayer : Layer {
 				int corner_1_0;
 				int corner_1_1;
 				int corner_0_1;
-				if(worldInfo.WorldTileInfoAtCoord(tileCoord).isHabitat) {
+				if(worldInfo.worldTiles.WorldTileInfoAtCoord(tileCoord).isHabitat) {
 					int quadVertexBaseIndex = quadIndex*4;
 					corner_0_0 = quadVertexBaseIndex + 0;
 					corner_1_0 = quadVertexBaseIndex + 1;
