@@ -3,157 +3,177 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
+// An Action is always performed by an Agent and target a tile (Vector2I is its coordinate) of the Agent's WorldInfo.
+//    Actions can be specific to a type of Agent (ex: action of Habitants or action of Animals).
+// An Action can be performed (Apply) only once.
 public abstract class Action {
-    // FIXME: Amounts will likely be changed
-    protected const int FOOD_AMOUNT = 100;
-    protected const int WOOD_AMOUNT = 100;
 
-	protected Agent agent;
-	protected Vector2I target;
+	public abstract Agent performer { get; }
+	public readonly Vector2I target;
 
-	// Atributes for quick access
-	protected IList<Vector2I> cells;
-	protected WorldInfo world;
-
+	public Action(Vector2I target) {
+		this.target = target;
+	}
 	public abstract void apply ();
-
-	public Action(Agent agent, Vector2I target) {
-		this.agent  = agent;
-		this.target = target;	
-
-		this.cells = agent.sensorData.Cells;
-		this.world = agent.worldInfo;
+	protected WorldInfo world { 
+		get {
+			return performer.worldInfo;
+		}
 	}
 }
 
-public class Walk : Action {
+// AnyAgentActions are actions that can be performed by any type of Agent.
+public abstract class AnyAgentAction : Action {
+	protected Agent agent;
+	public override Agent performer {
+		get {
+			return agent;
+		}
+	}
+	public AnyAgentAction(Agent agent, Vector2I target) : base(target) {
+		this.agent = agent;
+	}
+}
+
+public class Walk : AnyAgentAction {
 	public override void apply () {
 		// Update worldtileInfo
-		WorldInfo.WorldTileInfo agentTileInfo = 
-			world.WorldTileInfoAtCoord(world.AgentPosToWorldXZ(agent.pos));
-		WorldInfo.WorldTileInfo targetTileInfo = 
-			world.WorldTileInfoAtCoord(target);
-		agentTileInfo.hasAgent = false;
-		targetTileInfo.hasAgent = true;
+		WorldTileInfo agentTileInfo = 
+			world.worldTiles.WorldTileInfoAtCoord(CoordConvertions.AgentPosToWorldXZ(performer.pos));
+		WorldTileInfo targetTileInfo = 
+			world.worldTiles.WorldTileInfoAtCoord(target);
+		agentTileInfo.Agent = null;
+		targetTileInfo.Agent = agent;
 		
 		// Orientation
-		int x_origin = (int) agent.pos[0];
-		int z_origin = (int) agent.pos[1];
-		int x_target = (int) target.x;
-		int z_target = (int) target.y;
-		if (x_origin > x_target) {
-			agent.orientation = ORIENTATION.LEFT;
-		} else if (x_origin < x_target) {
-			agent.orientation = ORIENTATION.RIGHT;
-		} else if (z_origin > z_target) {
-			agent.orientation = ORIENTATION.UP;
+		Vector2I origin = CoordConvertions.AgentPosToWorldXZ(agent.pos);
+		if (origin.x > target.x) {
+			performer.orientation = ORIENTATION.LEFT;
+		} else if (origin.x < target.x) {
+			performer.orientation = ORIENTATION.RIGHT;
+		} else if (origin.y > target.y) {
+			performer.orientation = ORIENTATION.UP;
 		} else {
-			agent.orientation = ORIENTATION.DOWN;
+			performer.orientation = ORIENTATION.DOWN;
 		}
 		
 		// Position
-		agent.pos = target.ToVector2();
+		performer.pos = target.ToVector2();
 	}
-	public Walk(Agent agent, Vector2I target) : base(agent, target) {}
+	public Walk(Agent walker, Vector2I target) : base(walker, target) { }
 }
 
-public class Attack : Action {
+public class Attack : AnyAgentAction {
+	public static readonly Energy ENERGY_TO_REMOVE = new Energy(20);
 	public override void apply () {
-        if(world.WorldTileInfoAtCoord(target).hasAgent) {
-            foreach(Agent a in world.allAgents) {
-                if(a.pos.Equals(target.ToVector2())) {
-                    a.DecreaseEnergy();
-                }
+		if(world.worldTiles.WorldTileInfoAtCoord(target).HasAgent) {
+            foreach(Agent a in world.AllAgents) {
+				if(CoordConvertions.AgentPosToWorldXZ(a.pos) == target) {
+					a.RemoveEnergy(ENERGY_TO_REMOVE);
+				}
             }
         }
     }
 	public Attack(Agent agent, Vector2I target) : base(agent, target) {}
 }
 
-public class CutTree : Action {
-	public override void apply () {
-		if (world.WorldTileInfoAtCoord(target).tree.isStump == false) {
-			world.WorldTileInfoAtCoord(target).tree.turnToStump = true;
-			world.WorldTileInfoAtCoord(target).tree.isStump = true;
+public abstract class HabitantAction : Action {
+	protected Habitant habitant;
+	public override Agent performer {
+		get {
+			return habitant;
 		}
 	}
-	public CutTree(Agent agent, Vector2I target) : base(agent, target) {}
-}
-
-public class PickupTree : Action {
-	public override void apply () {
-		world.WorldTileInfoAtCoord(target).tree.Chop();
-		((Habitant) agent).isCarryingWood = true;
+	public HabitantAction(Habitant habitant, Vector2I target) : base(target) {
+		this.habitant = habitant;
 	}
-	public PickupTree(Agent agent, Vector2I target) : base(agent, target) {}
 }
 
-public class DropTree : Action {
+public class CutTree : HabitantAction {
 	public override void apply () {
-        ((Habitant) agent).tribe.wood_in_stock += WOOD_AMOUNT;
-        ((Habitant) agent).isCarryingWood = false;
-    }
-	public DropTree(Agent agent, Vector2I target) : base(agent, target) {}
-}
-
-public class PlaceFlag : Action {
-	public override void apply () {
-		world.WorldTileInfoAtCoord(target).tribeTerritory.hasFlag = true;
-		world.WorldTileInfoAtCoord(target).tribeTerritory.ownerTribe.id =
-			((Habitant) agent).tribe.id;
+		if(world.worldTiles.WorldTileInfoAtCoord(target).Tree.Alive) {
+			world.worldTiles.WorldTileInfoAtCoord(target).Tree.Chop();
+			//FIXME: if some WoodQuantity was dropped it is lost.
+		}
 	}
-	public PlaceFlag(Agent agent, Vector2I target) : base(agent, target) {}
+	public CutTree(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }
 
-public class RemoveFlag : Action {
+public class PickupTree : HabitantAction {
 	public override void apply () {
-        world.WorldTileInfoAtCoord(target).tribeTerritory.hasFlag = false;
-        world.WorldTileInfoAtCoord(target).tribeTerritory.ownerTribe.id = "";
+		WoodQuantity wood = world.worldTiles.WorldTileInfoAtCoord(target).Tree.Chop();
+		habitant.PickupWood(wood);
+		//FIXME: if the habitant can't carry the WoodQuantity than it is lost.
+	}
+	public PickupTree(Habitant habitant, Vector2I target) : base(habitant, target) {}
+}
+
+public class DropTree : HabitantAction {
+	public override void apply () {
+		WoodQuantity wood = habitant.DropWood(habitant.carriedWood);
+		habitant.tribe.AddWoodToStock(wood);
     }
-	public RemoveFlag(Agent agent, Vector2I target) : base(agent, target) {}
+	public DropTree(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }
 
-public class PickupFood : Action {
+public class PlaceFlag : HabitantAction {
 	public override void apply () {
-        Habitant habitant = (Habitant) agent;
+		world.worldTiles.WorldTileInfoAtCoord(target).tribeTerritory.OwnerTribe = habitant.tribe;
+	}
+	public PlaceFlag(Habitant habitant, Vector2I target) : base(habitant, target) {}
+}
+
+public class RemoveFlag : HabitantAction {
+	public override void apply () {
+		world.worldTiles.WorldTileInfoAtCoord(target).tribeTerritory.OwnerTribe = null;
+    }
+	public RemoveFlag(Habitant habitant, Vector2I target) : base(habitant, target) {}
+}
+
+public class PickupFood : HabitantAction {
+	public static readonly FoodQuantity AnimalFoodPotencial = new FoodQuantity(100);
+	public override void apply () {
+		//FIXME: Don't remove the Animal.
         if(!habitant.CarryingResources()) {
             Animal animalToRemove = null;
             foreach(WorldInfo.Habitat h in world.habitats) {
                 foreach(Animal a in h.animals) {
-                    if (a.pos.Equals (target) && !a.IsAlive()) {
+                    if (a.pos.Equals (target.ToVector2()) && !a.Alive) {
                         animalToRemove = a;
                         break;
                     }
                 }
             }
-            world.removeAnimal(animalToRemove);
-            ((Habitant) agent).isCarryingFood = true;
+			//FIXME: the animal shouldn't be collected again
+            //world.removeAnimal(animalToRemove);
+			habitant.PickupFood(AnimalFoodPotencial);
         }
     }
-	public PickupFood(Agent agent, Vector2I target) : base(agent, target) {}
+	public PickupFood(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }
 
 	
-public class DropFood : Action {
+public class DropFood : HabitantAction {
 	public override void apply () {
-        ((Habitant) agent).tribe.food_in_stock += FOOD_AMOUNT;
-        ((Habitant) agent).isCarryingFood = false;
+		habitant.tribe.AddFoodToStock(habitant.DropFood(habitant.carriedFood));
     }
-	public DropFood(Agent agent, Vector2I target) : base(agent, target) {}
+	public DropFood(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }
 
-public class EatInPlace : Action {
+public class EatInPlace : HabitantAction {
+	public static readonly FoodQuantity FoodConsumedByHabitant = new FoodQuantity(100);
 	public override void apply () {
-        agent.energy = FOOD_AMOUNT;
-        ((Habitant) agent).isCarryingFood = false;
+		if(habitant.carriedFood >= FoodConsumedByHabitant) {
+			habitant.Eat(habitant.DropFood(FoodConsumedByHabitant));
+		}
     }
-	public EatInPlace(Agent agent, Vector2I target) : base(agent, target) {}
+	public EatInPlace(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }
 
-public class EatInTribe : Action {
+public class EatInTribe : HabitantAction {
+	public static readonly FoodQuantity FoodConsumedByHabitant = new FoodQuantity(100);
     public override void apply () {
-        agent.energy = FOOD_AMOUNT;
-        ((Habitant) agent).tribe.food_in_stock -= FOOD_AMOUNT;
+		habitant.Eat(habitant.tribe.RemoveFoodFromStock(FoodConsumedByHabitant));
     }
-    public EatInTribe(Agent agent, Vector2I target) : base(agent, target) {}
+	public EatInTribe(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }

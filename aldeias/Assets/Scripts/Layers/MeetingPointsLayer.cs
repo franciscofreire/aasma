@@ -91,9 +91,9 @@ public class MeetingPointsLayer : Layer {
 		int[] triangles = layerMesh.triangles;
 		bool[,] map = new bool[worldInfo.xSize,worldInfo.zSize];
 
-		foreach(WorldInfo.Tribe tribe in worldInfo.tribes) {
-			WorldInfo.MeetingPoint mp = tribe.meetingPoint;
-            foreach(Vector2I mpCell in mp.meetingPointCells) {
+		foreach(Tribe tribe in worldInfo.tribes) {
+			MeetingPoint mp = tribe.meetingPoint;
+            foreach(Vector2I mpCell in mp.MeetingPointTileCoords) {
                 map[mpCell.x, mpCell.y] = true;
             }
 		} 

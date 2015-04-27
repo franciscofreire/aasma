@@ -1,107 +1,104 @@
 using UnityEngine;
-using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 
 public class AgentSpawner : Layer {
 	public GameObject habitantModel, warriorModel, animalModel;
 
-	public IList<KeyValuePair<Habitant,GameObject>> list_habitants =
-		new List<KeyValuePair<Habitant,GameObject>>();
-	public IList<KeyValuePair<Animal,GameObject>> list_animals =
-		new List<KeyValuePair<Animal,GameObject>>();
+	public IDictionary<Habitant, GameObject> list_habitants = 
+		new Dictionary<Habitant, GameObject>();
+	public IDictionary<Animal, GameObject> list_animals = 
+		new Dictionary<Animal, GameObject>();
+
+	//WorldInfo events that AgentSpawner would like to listen to:
+	//   WorldChanged
+	//      NewAgent
+	//         NewHabitant - to create and add a representation of the new habitant
+	//         NewAnimal   - to create and add a representation of the new animal
+	//      KillAgent
+	//         KillHabitant- to remove the representation of the dead habitant
+	//         KillAnimal  - to remove the representation of the dead animal
+	//      AgentMoved - to move the representation of the agent that moved
+	//WorldInfo events that might be useful:
+	//   WorldCreated - to initialize information that doesn't change
 
 	public override void CreateObjects() {
-		// Create habitants
-		// Find the meeting point of a tribe
-		List<WorldInfo.Tribe> tribes = worldInfo.tribes;
-		int num_agents = 4;
-		foreach (WorldInfo.Tribe t in tribes) {
-			WorldInfo.MeetingPoint mp = t.meetingPoint;
-			Vector2I cp = mp.centralPoint;
-			int mp_bound = WorldInfo.MEETING_POINT_WIDTH / 2; // Limit for agent creation positions
-			for (int i = -mp_bound; i <= mp_bound; i++) {
-				for (int j = -mp_bound; j <= mp_bound; j++) {
-					if (num_agents-- > 0) {
-						int x = cp.x + i;
-						int z = cp.y + j;
-						Vector2I tileCoord = new Vector2I(x,z);
+		foreach (Habitant h in worldInfo.AllHabitants) {
+			GameObject agentModel = (GameObject) Instantiate(
+				habitantModel,
+				AgentPosToVec3(h.pos),
+				Quaternion.identity);
+			agentModel.transform.parent = this.transform;
+			agentModel.SetActive(true);
 
-						// Update WordTileInfo
-						worldInfo.WorldTileInfoAtCoord(tileCoord).hasAgent = true;
+			Transform wood = agentModel.transform.Find("Wood");
+			wood.GetComponent<Renderer>().enabled = false;
 
-						// Create a model for the new agent
-						GameObject agentModel = (GameObject) Instantiate(
-							habitantModel,
-							worldXZToVec3(x, z),
-							Quaternion.identity);
-						agentModel.transform.parent = this.transform;
-						agentModel.SetActive(true);
-
-                        // Hide objects not collected by habitant
-                        Transform wood = agentModel.transform.Find("Wood");
-                        wood.GetComponent<Renderer>().enabled = false;
-
-						// Create the habitant and add him to the right tribe
-						Habitant habitant = new Habitant(
-							new Vector2(x, z),
-							t,
-							1);
-						worldInfo.addAgentToTribe(t, habitant);
-
-						// Save this agent
-						list_habitants.Add(new KeyValuePair<Habitant, GameObject>(habitant, agentModel));
-					} else
-						break;
-				}
-			}
-			num_agents = 4;
+			list_habitants.Add(h, agentModel);
 		}
 
-		// Create animals
-		// Find the first cell (corner) of a habitat
-		List<WorldInfo.Habitat> habitats = worldInfo.habitats;
-		int num_animals = 4;
-		foreach (WorldInfo.Habitat h in habitats) {
-			Vector2 pos = h.corner_pos;
-			int posx = (int) pos[0];
-			int posz = (int) pos[1]; 
-			for(int x = posx; x < posx + WorldInfo.HABITAT_SIZE; x++) {
-				for(int z = posz; z > posz - WorldInfo.HABITAT_SIZE; z--) {
-					Vector2I tileCoord = new Vector2I(x,z);
-					if (num_animals-- > 0) {
-						// Update WordTileInfo
-						worldInfo.WorldTileInfoAtCoord(tileCoord).hasAgent = true;
+		foreach (Animal a in worldInfo.AllAnimals) {
+			GameObject agentModel = (GameObject) Instantiate(
+				animalModel,
+				AgentPosToVec3(a.pos),
+				Quaternion.identity);
+			agentModel.transform.parent = this.transform;
+			agentModel.SetActive(true);
 
-						// Create a model for the new agent
-						GameObject agentModel = (GameObject) Instantiate(
-							animalModel,
-							worldXZToVec3(x, z),
-							Quaternion.identity);
-						agentModel.transform.parent = this.transform;
-						agentModel.SetActive(true);
-
-						// Create the animal and add him to the right habitat
-						Animal animal = new Animal(new Vector2(x, z));
-						worldInfo.addAgentToHabitat(h, animal);
-						
-						// Save this agent
-						list_animals.Add(new KeyValuePair<Animal, GameObject>(animal, agentModel));
-					} else
-						break;
-				}
-			}
-			num_animals = 4;
+			list_animals.Add(a, agentModel);
 		}
 	}
 
 
 	public override void ApplyWorldInfo() {
+		//Remove habitants no longer present in the worldInfo
+		List<KeyValuePair<Habitant, GameObject>> hsToRemove=new List<KeyValuePair<Habitant, GameObject>>();
+		foreach(KeyValuePair<Habitant,GameObject> ourH in list_habitants) {
+			bool ourHPresent = false;
+			foreach(Tribe t in worldInfo.tribes) {
+				foreach(Habitant h in t.habitants) {
+					if(h.Equals(ourH.Key)){
+						ourHPresent = true;
+						break;
+					}
+				}
+			}
+			if(!ourHPresent) {
+				hsToRemove.Add(ourH);
+			}
+		}
+		foreach(var hGo in hsToRemove) {
+			list_habitants.Remove (hGo);
+		}
+
+		//Remove animals no longer present in the worldInfo
+		List<KeyValuePair<Animal, GameObject>> asToRemove=new List<KeyValuePair<Animal, GameObject>>();
+		foreach(var ourA in list_animals) {
+			bool ourAPresent = false;
+			foreach(WorldInfo.Habitat hh in worldInfo.habitats) {
+				foreach(Animal a in hh.animals) {
+					if(a.Equals(ourA.Key)){
+						ourAPresent = true;
+						break;
+					} 
+				}
+			}
+			if(!ourAPresent) {
+				asToRemove.Add(ourA);
+			}
+		}
+		foreach(var aGo in asToRemove) {
+			list_animals.Remove (aGo);
+		}
+
+		//TODO: add animals and habitants that appeared
+
 		foreach (KeyValuePair<Habitant,GameObject> kvp in list_habitants) {
-			Agent a = kvp.Key;
+			Habitant h = kvp.Key;
 			GameObject g = kvp.Value;
-			g.transform.localPosition = AgentPosToVec3(a.pos);
-			g.transform.localRotation = a.orientation.ToQuaternion();
-            if (((Habitant) a).isCarryingWood) {
+			g.transform.localPosition = AgentPosToVec3(h.pos);
+			g.transform.localRotation = h.orientation.ToQuaternion();
+            if (h.CarryingWood) {
                 Transform wood = g.transform.Find("Wood");
                 wood.GetComponent<Renderer>().enabled = true;
             }
@@ -110,7 +107,7 @@ public class AgentSpawner : Layer {
 			Agent a = kvp.Key;
 			GameObject g = kvp.Value;
             g.transform.localPosition = AgentPosToVec3(a.pos);
-            if (a.IsAlive()) {
+            if (a.Alive) {
                 g.transform.localRotation = a.orientation.ToQuaternion();
             } else {
                 Vector3 pos = g.transform.localPosition;
@@ -120,10 +117,5 @@ public class AgentSpawner : Layer {
             }
 
 		}
-	}
-
-	private Vector3 AgentPosToVec3(Vector2 pos) {
-		float halfTileSize = tileSize / 2.0f;
-		return new Vector3(pos.x + halfTileSize, 0, pos.y + halfTileSize);
 	}
 }

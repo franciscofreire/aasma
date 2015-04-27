@@ -1,156 +1,78 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class WorldInfo : MonoBehaviour {
-	public const int TRIBE_TERRITORY_SIZE = 15;
-	public const int HABITAT_SIZE = 7;
-	public const int MEETING_POINT_WIDTH = 3;
 
-	private const int NUM_PARTITIONS = 5;
 	private const int UPDATE_FRAME_INTERVAL = 2;
-	
-	public System.Random rnd = new System.Random(); 
+	public int MilisecondsPerTick = 50;
 
 	// The size of the world in rows and columns.
 	public int xSize = 50;
 	public int zSize = 50;
 	
 	// The tiles of the world.
-	private WorldTileInfo[,] worldTileInfo; 
+	public WorldTiles worldTiles; 
 	
 	// All the tribes that exist in the world.
 	public List<Tribe> tribes = new List<Tribe>(); 
 	
 	// All the habitats that exist in the world.
 	public List<Habitat> habitats = new List<Habitat>();
-	
-	// All the agents that exist in the world.
-	public List<Agent> allAgents = new List<Agent>();
-	
-	public List<AgentControl> agentsThreads = new List<AgentControl>();
 
-	// Queue of actions: to be used by the agents
-	public ConcurrentQueue<Action> pendingActionsQueue =
-		new ConcurrentQueue<Action>();
-
-	public int frameCount = 0;
-
-	public class MeetingPoint {
-        public Vector2I centralPoint;
-        public int width;
-        public List<Vector2I> meetingPointCells;
-
-        public MeetingPoint(Vector2I centralPoint, int width) {
-            this.centralPoint = centralPoint;
-            this.width = width;
-            this.meetingPointCells = new List<Vector2I>();
-
-            // width must be odd
-            int leftCornerX = (int) centralPoint.x - Mathf.FloorToInt(width/2);
-            int leftCornerZ = (int) centralPoint.y + Mathf.FloorToInt(width/2);
-            
-            //map[leftCornerX,leftCornerZ] = true;
-            //map[(int)centralPoint.x, (int)centralPoint.y] = true;
-            for(int i = 0; i < width; ++i) {
-                for(int j = 0; j < width; j++) {
-                    int posX = leftCornerX + i;
-                    int posZ = leftCornerZ - j;
-                    this.meetingPointCells.Add(new Vector2I(posX, posZ));
-                }
-            }
-        }
-
-        public bool IsMeetingPoint(Vector2I pos) {
-            foreach(Vector2I mpCell in meetingPointCells) {
-                if(mpCell.Equals(pos)) {
-                    return true;
-                }
-            }
-    
-            return false;
-        }
-    }            
-
-	public class Tribe {
-		//Insert tribe identification here
-		public string id = "";
-		public MeetingPoint meetingPoint = null;
-		public List<Habitant> habitants = new List<Habitant>();
-
-        public int food_in_stock = 0;
-        public int wood_in_stock = 0;
-		
-		public Tribe(string id, Vector2I centralPoint, int width) {
-			this.id = id;
-			this.meetingPoint = new MeetingPoint(centralPoint, width);
-		}
-		
-		public Tribe() {
+	public IEnumerable<Habitant> AllHabitants {
+		get {
+			return tribes                                  //List of Tribes
+				.ConvertAll(t=>t.habitants.AsEnumerable()) //Lists of Habitants
+					.Aggregate((hs1,hs2)=>hs1.Concat(hs2));//List of Habitants
 		}
 	}
 
-	public void addAgentToTribe(Tribe t, Habitant h) {
-		t.habitants.Add(h);
-		allAgents.Add(h);
-		h.worldInfo = this;//FIXME this is not the right place to set this
+	public IEnumerable<Animal> AllAnimals {
+		get {
+			return habitats                                //List of Habitats
+				.ConvertAll(h=>h.animals.AsEnumerable())   //Lists of Animals
+					.Aggregate((as1,as2)=>as1.Concat(as2));//List of Animals
+		}
+	}
+
+	// All the agents that exist in the world.
+	public IEnumerable<Agent> AllAgents {
+		get {
+			return AllHabitants.Cast<Agent>().Concat(AllAnimals.Cast<Agent>());
+		}
 	}
 	
 	public class Habitat {
-		public Vector2 corner_pos;
+		public Vector2I corner_pos;
 		public List<Animal> animals = new List<Animal>();
 		
 		public Habitat(int x, int y) {
-			this.corner_pos = new Vector2(x, y);
+			this.corner_pos = new Vector2I(x, y);
 		}
 		
 		public Habitat() {
 		}
 	}
 
-	public void addAgentToHabitat(Habitat h, Animal a) {
-		h.animals.Add(a);
-		allAgents.Add(a);
-		a.worldInfo = this;//FIXME not the right place to set this
+	void Start () {
+		GenerateWorldTileInfo();
+		NotifyCreationListeners();
+		NotifyChangeListeners();
+		StartCoroutine(NextWorldTick());
 	}
 
-	//Information being holded in every tile
-	//The information contained in every tile is readonly.
-	public class WorldTileInfo {
-		public bool hasAgent  = false;
-		public bool isHabitat = false;
-		
-		public Tree tree = new Tree(100);
-
-		public struct TribeTerritory {
-			public bool hasFlag;
-		    public Tribe ownerTribe;
-			
-			public static implicit operator TribeTerritory(Tribe tribe) {
-				return new TribeTerritory() {
-					hasFlag = false,
-					ownerTribe = tribe
-				};
-			}
-		}
-		public TribeTerritory tribeTerritory = new Tribe();
-	}
-
-	public void Update() {
-		if(frameCount == 0) {
+	IEnumerator NextWorldTick() {
+		while(true) {
+			yield return new WaitForSeconds(MilisecondsPerTick/1000f);
 			WorldTick();
 		}
-		frameCount = (frameCount + 1) % UPDATE_FRAME_INTERVAL;
-		/*
-		if(Input.GetKeyUp("m")) {
-			NotifyChangeListeners();
-		}
-		*/
 	}
 
 	public void WorldTick () {
 
-		foreach(Agent a in allAgents) {
+		foreach(Agent a in AllAgents) {
 			a.OnWorldTick();
 		}
 		NotifyChangeListeners();
@@ -174,38 +96,31 @@ public class WorldInfo : MonoBehaviour {
 		// How do the agents perceive the world state?
 	}
 
-	void Start () {
-		GenerateWorldTileInfo();
-		NotifyCreationListeners();
-		NotifyChangeListeners();
-	}
-
 	////
 	//// TILE CREATION
 	////
 
+	public const int TRIBE_TERRITORY_SIDE = 15;
+	public const int HABITAT_SIDE = 7;
+	public const int MEETING_POINT_SIDE = 3;
+	private const int NUM_PARTITIONS = 5;
 	public void GenerateWorldTileInfo () {
-		CreateTiles();
-		FillTribeTerritory("A", 0, 0);
-		FillTribeTerritory("B", xSize - TRIBE_TERRITORY_SIZE, zSize - TRIBE_TERRITORY_SIZE);
+		worldTiles = new WorldTiles(xSize, zSize);
+		CreateTribeAt("A", 0, 0);
+		CreateTribeAt("B", xSize - TRIBE_TERRITORY_SIDE, zSize - TRIBE_TERRITORY_SIDE);
 		FillHabitat();
+		CreateAnimals();
 		FillTrees();
 	}
 
-	private void CreateTiles() {
-		worldTileInfo = new WorldTileInfo[xSize,zSize];
-		for(int x=0; x<xSize; x++) {
-			for(int z=0; z<zSize; z++) {
-				worldTileInfo[x,z] = new WorldTileInfo();
-			}
-		}
-	}
 
-	public bool isFreePartition(int x_start, int x_partition, int z_start, int z_partition) {
+
+	private bool isFreePartition(int x_start, int x_partition, int z_start, int z_partition) {
 		for(int x2 = x_start; x2 < x_start + x_partition; x2++) {
 			for(int z2 = z_start; z2 < z_start + z_partition; z2++) {
-				if (worldTileInfo[x2, z2].isHabitat ||
-				    worldTileInfo[x2, z2].tribeTerritory.hasFlag) {
+				WorldTileInfo tile = worldTiles.WorldTileInfoAtCoord(x2, z2);
+				if (tile.isHabitat ||
+				    tile.tribeTerritory.IsClaimed) {
 					return false;
 				}
 			}
@@ -213,7 +128,7 @@ public class WorldInfo : MonoBehaviour {
 		return true;
 	}
 	
-	public void FillTrees () {
+	private void FillTrees () {
 		// Fill partitions with trees
 		int x_partition = xSize / NUM_PARTITIONS;
 		int z_partition = zSize / NUM_PARTITIONS;
@@ -237,7 +152,7 @@ public class WorldInfo : MonoBehaviour {
 					for(int x2 = 0; x2 < x_partition; x2++) {
 						for(int z2 = 0; z2 < x_partition; z2++) {
 							if (num_trees-- > 0) {
-								worldTileInfo[x_start + x2, z_start + z2].tree.hasTree = true;
+								worldTiles.WorldTileInfoAtCoord(x_start + x2, z_start + z2).Tree = new Tree(new WoodQuantity(100));
 							} else {
 								break;
 							}
@@ -248,36 +163,74 @@ public class WorldInfo : MonoBehaviour {
         }
     }
 
-    void FillTribeTerritory(string name, int posx, int posz) {
-        int meetingPointx = posx + Mathf.FloorToInt(TRIBE_TERRITORY_SIZE/2);
-        int meetingPointz = posz + Mathf.FloorToInt(TRIBE_TERRITORY_SIZE/2);
-        Vector2I centralMeetingPoint = new Vector2I(meetingPointx, meetingPointz);
-        Tribe tribe = new Tribe(name, centralMeetingPoint, MEETING_POINT_WIDTH);
-        tribes.Add(tribe);
+	private void CreateTribeAt(string name, int posx, int posz) {
+		Tribe tribe = CreateTribe(name, posx, posz);
+		FillTribeTerritory(tribe, posx, posz);
+		CreateTribeHabitants(tribe);
+	}
 
-        for(int x=posx; x < posx + TRIBE_TERRITORY_SIZE; x++) {
-            for(int z=posz; z < posz + TRIBE_TERRITORY_SIZE; z++) {
-                worldTileInfo[x,z].tribeTerritory.hasFlag = true;
-                worldTileInfo[x,z].tribeTerritory.ownerTribe = tribe;
+	private Tribe CreateTribe(string name, int posx, int posz) {
+		int meetingPointx = posx + Mathf.FloorToInt(TRIBE_TERRITORY_SIDE/2);
+		int meetingPointz = posz + Mathf.FloorToInt(TRIBE_TERRITORY_SIDE/2);
+		Vector2I meetingPointCenter = new Vector2I(meetingPointx, meetingPointz);
+		MeetingPoint meetingPoint = new MeetingPoint(meetingPointCenter, MEETING_POINT_SIDE);
+		Tribe tribe = new Tribe(name, meetingPoint);
+		tribes.Add(tribe);
+		return tribe;
+	}
+
+    private void FillTribeTerritory(Tribe tribe, int posx, int posz) {
+        for(int x=posx; x < posx + TRIBE_TERRITORY_SIDE; x++) {
+            for(int z=posz; z < posz + TRIBE_TERRITORY_SIDE; z++) {
+				WorldTileInfo tile = worldTiles.WorldTileInfoAtCoord(x,z);
+                tile.tribeTerritory.OwnerTribe = tribe;
             }
         }
-    }            
-	void FillHabitat () {
+    }
+
+	private void CreateTribeHabitants(Tribe tribe) {
+		//Create four Habitants of the given Tribe.
+		//The Habitants should be created inside the Tribe's meeting point.
+		foreach( var coord in tribe.meetingPoint.MeetingPointTileCoords.Take(4)) {
+			Vector2 pos = CoordConvertions.WorldXZToAgentPos(coord);
+			Habitant h = new Habitant(this, pos, tribe, 1);
+			tribe.AddHabitant(h);
+		}
+	}
+
+	private void FillHabitat () {
 		int posx = 0;
 		int posz = zSize - 1;
 		habitats.Add(new Habitat(posx, posz));
-		for(int x=posx; x < posx + HABITAT_SIZE; x++) {
-			for(int z=posz; z > posz - HABITAT_SIZE; z--) {
-				worldTileInfo[x,z].isHabitat = true;
+		for(int x=posx; x < posx + HABITAT_SIDE; x++) {
+			for(int z=posz; z > posz - HABITAT_SIDE; z--) {
+				worldTiles.WorldTileInfoAtCoord(x,z).isHabitat = true;
 			}
 		}
 	}
 
-	void SetPerlinNoiseTreesWorldTileInfo() {
+	private void CreateAnimals() {
+		foreach (WorldInfo.Habitat h in habitats) {
+			int num_animals = 4;
+			for(int x = h.corner_pos.x; x < h.corner_pos.x + HABITAT_SIDE; x++) {
+				for(int z = h.corner_pos.y; z > h.corner_pos.y - HABITAT_SIDE; z--) {
+					if (num_animals-- > 0) {
+						Vector2I tileCoord = new Vector2I(x,z);
+						Animal a = new Animal(this, CoordConvertions.WorldXZToAgentPos(tileCoord));
+						worldTiles.WorldTileInfoAtCoord(tileCoord).Agent = a;
+						h.animals.Add(a);
+					} else
+						break;
+				}
+			}
+		}
+	}
+
+	private void SetPerlinNoiseTreesWorldTileInfo() {
 		for(int x=0; x<xSize; x++) {
 			for(int z=0; z<zSize; z++) {
 				if(Mathf.PerlinNoise(x*0.1f,z*0.1f) > 0.5) {
-					worldTileInfo[x,z].tree.hasTree = true;
+					worldTiles.WorldTileInfoAtCoord(x,z).Tree = new Tree(new WoodQuantity(100));
 				}
 			}
 		}
@@ -287,27 +240,22 @@ public class WorldInfo : MonoBehaviour {
 	//// TILE INFORMATION
 	////
 
-	public WorldTileInfo WorldTileInfoAtCoord(Vector2I tileCoord) {
-		return worldTileInfo[tileCoord.x, tileCoord.y];
-	}
 
-	public WorldTileInfo WorldTileInfoAtCoord(int x, int z) {
-		return worldTileInfo[x, z];
-	}
 
 	public IList<Vector2I> nearbyCells(Agent agent) {
+		int radius = 1;
 
-		Vector2I agentPos = AgentPosToWorldXZ(agent.pos);
-		int xmin = Mathf.Max(0, agentPos.x - 2);
-		int xmax = Mathf.Min(xSize - 1, agentPos.x + 2);
-		int zmin = Mathf.Max(0, agentPos.y - 2);
-		int zmax = Mathf.Min(zSize - 1, agentPos.y + 2); 
+		Vector2I agentPos = CoordConvertions.AgentPosToWorldXZ(agent.pos);
+		int xmin = Mathf.Max(0, agentPos.x - radius);
+		int xmax = Mathf.Min(xSize - 1, agentPos.x + radius);
+		int zmin = Mathf.Max(0, agentPos.y - radius);
+		int zmax = Mathf.Min(zSize - 1, agentPos.y + radius); 
 
 		IList<Vector2I> cells = new List<Vector2I>();
 		for (int x = xmin; x <= xmax; x++) {
 			for (int z = zmin; z <= zmax; z++) {
 				Vector2I cellCoord = new Vector2I(x,z);
-				if (!Vector2I.Equal(cellCoord, agentPos)) {
+				if (cellCoord != agentPos) {
 					cells.Add(cellCoord);
 					//Debug.Log("Agent nearby cells at " + Time.realtimeSinceStartup + " x: " + x + " z: " + z);
 				}
@@ -319,9 +267,8 @@ public class WorldInfo : MonoBehaviour {
 
 	public IList<Vector2I> nearbyFreeCells(IList<Vector2I> cells) {
 		IList<Vector2I> freeCells = new List<Vector2I>();
-
 		foreach (Vector2I pos in cells) {
-			if (isFreeCell(pos))
+			if (worldTiles.WorldTileInfoAtCoord(pos).IsEmpty)
 				freeCells.Add (pos);
 		}
 		
@@ -332,21 +279,11 @@ public class WorldInfo : MonoBehaviour {
 		return coord.x >= 0 && coord.y >= 0 && coord.x < xSize && coord.y < zSize;
 	}
 
-	public bool isFreeCell(Vector2I tileCoord) {
-		return isInsideWorld(tileCoord) &&
-			!worldTileInfo[tileCoord.x, tileCoord.y].tree.hasTree &&
-            !worldTileInfo[tileCoord.x, tileCoord.y].hasAgent;
-	}
-
-    public bool hasTree(Vector2I tileCoord) {
-        return isInsideWorld(tileCoord) &&
-            worldTileInfo[tileCoord.x, tileCoord.y].tree.hasTree;
-    }
 
 	public bool AgentPosInTile(Vector2 agentPos, Vector2I tileCoord) {
 		//Assuming pos (0,0) is in the center of the tile (0,0)
-		Vector2I agentTileCoord = AgentPosToWorldXZ(agentPos);
-		return Vector2I.Equal(agentTileCoord, tileCoord);
+		Vector2I agentTileCoord = CoordConvertions.AgentPosToWorldXZ(agentPos);
+		return agentTileCoord == tileCoord;
 	}
 
 	public Habitant habitantInTile(Vector2I tileCoord) {
@@ -360,37 +297,6 @@ public class WorldInfo : MonoBehaviour {
 		return null;
 	}
 
-	public Vector2I AgentPosToWorldXZ(Vector2 pos) {
-		return new Vector2I((int)(pos.x+0.5f), (int)(pos.y+0.5f));
-	}
-
-	public Vector2 WorldXZToAgentPos(Vector2I coord) {
-		return new Vector2(coord.x, coord.y);
-	}
-
-    public bool isUnclaimedTerritory(Vector2I coord) {
-        WorldTileInfo worldTileInfoCell = worldTileInfo[coord.x, coord.y];
-        return worldTileInfoCell.tribeTerritory.ownerTribe.id.Equals ("");
-    }
-
-    public void removeAnimal(Animal animal) {
-        // remove from allagents
-        allAgents.Remove(animal);
-        // remove from Habitat
-        foreach(Habitat h in habitats) {
-            h.animals.Remove(animal);
-        }
-        // remove from AgentSpawner
-        AgentSpawner agentSpawner = GetComponent("AgentSpawner") as AgentSpawner;
-       
-        List<KeyValuePair<Habitant,GameObject>> lst = 
-            (List<KeyValuePair<Habitant,GameObject>>) agentSpawner.list_animals; // ugly statement: blame Nunes
-        lst.RemoveAll(x => x.Key.Equals(animal));
-
-        // worldTileInfo.hasAgent = false
-        worldTileInfo[(int)animal.pos.x, (int)animal.pos.y].hasAgent = false;
-
-    }
 
 	////
 	//// LISTENERS
@@ -416,5 +322,83 @@ public class WorldInfo : MonoBehaviour {
 		foreach(WorldCreationListener listener in creationListeners) {
 			listener();
 		}
+	}
+}
+
+public class WorldTiles {
+	private WorldTileInfo[,] worldTileInfo; 
+	public WorldTiles(int xSize, int zSize) {
+		worldTileInfo = new WorldTileInfo[xSize,zSize];
+		for(int x=0; x<xSize; x++) {
+			for(int z=0; z<zSize; z++) {
+				worldTileInfo[x,z] = new WorldTileInfo();
+			}
+		}
+	}
+	public WorldTileInfo WorldTileInfoAtCoord(Vector2I tileCoord) {
+		return worldTileInfo[tileCoord.x, tileCoord.y];
+	}
+	public WorldTileInfo WorldTileInfoAtCoord(int x, int z) {
+		return worldTileInfo[x, z];
+	}
+}
+
+//Information being holded in every tile
+//The information contained in every tile is readonly.
+public class WorldTileInfo {
+	public Agent Agent  = null;
+	public bool HasAgent {
+		get {
+			return Agent != null;
+		}
+	}
+
+	public bool isHabitat = false;
+	
+	public Tree Tree = null;
+	public bool HasTree {
+		get { return Tree != null; }
+	}
+
+	// Can an agent go here?
+	public bool IsEmpty {
+		get {
+			return !HasTree && ! HasAgent;
+		}
+	}
+
+	public struct TribeTerritory {
+		public Tribe OwnerTribe;
+
+		public bool IsClaimed {
+			get {
+				return OwnerTribe != null;
+			}
+		}
+
+		public static implicit operator TribeTerritory(Tribe tribe) {
+			return new TribeTerritory() {
+				OwnerTribe = tribe
+			};
+		}
+	}
+	public TribeTerritory tribeTerritory = new TribeTerritory();
+
+}
+
+public static class WorldRandom {
+	private static System.Random rnd = new System.Random(); 
+	public static int Next(int max) {
+		return rnd.Next(max);
+	}
+}
+
+public static class CoordConvertions {
+	public static Vector2I AgentPosToWorldXZ(Vector2 pos) {
+		return new Vector2I((int)(pos.x+0.5f), (int)(pos.y+0.5f));
+	}
+	
+	public static Vector2 WorldXZToAgentPos(Vector2I coord) {
+		return new Vector2(coord.x, coord.y);
 	}
 }
