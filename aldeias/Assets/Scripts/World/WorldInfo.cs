@@ -20,20 +20,27 @@ public class WorldInfo : MonoBehaviour {
 	
 	// All the habitats that exist in the world.
 	public List<Habitat> habitats = new List<Habitat>();
-	
+
+	public IEnumerable<Habitant> AllHabitants {
+		get {
+			return tribes                                  //List of Tribes
+				.ConvertAll(t=>t.habitants.AsEnumerable()) //Lists of Habitants
+					.Aggregate((hs1,hs2)=>hs1.Concat(hs2));//List of Habitants
+		}
+	}
+
+	public IEnumerable<Animal> AllAnimals {
+		get {
+			return habitats                                //List of Habitats
+				.ConvertAll(h=>h.animals.AsEnumerable())   //Lists of Animals
+					.Aggregate((as1,as2)=>as1.Concat(as2));//List of Animals
+		}
+	}
+
 	// All the agents that exist in the world.
 	public IEnumerable<Agent> AllAgents {
 		get {
-			foreach(var t in tribes) {
-				foreach(var h in t.habitants) {
-					yield return h;
-				}
-			}
-			foreach(var h in habitats) {
-				foreach(var a in h.animals) {
-					yield return a;
-				}
-			}
+			return AllHabitants.Cast<Agent>().Concat(AllAnimals.Cast<Agent>());
 		}
 	}
 	

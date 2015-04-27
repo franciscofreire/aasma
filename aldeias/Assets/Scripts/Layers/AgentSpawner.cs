@@ -22,11 +22,8 @@ public class AgentSpawner : Layer {
 	//WorldInfo events that might be useful:
 	//   WorldCreated - to initialize information that doesn't change
 
-	public override void CreateObjects() {//TODO: Add habitants and add animals that exist in the world.
-		foreach (Habitant h in 
-		         worldInfo.tribes //List of tribes
-		         	.ConvertAll(t=>t.habitants.AsEnumerable()) //Lists of habitants
-		         	.Aggregate((hs1,hs2)=>hs1.Concat(hs2))) { //List of habitants
+	public override void CreateObjects() {
+		foreach (Habitant h in worldInfo.AllHabitants) {
 			GameObject agentModel = (GameObject) Instantiate(
 				habitantModel,
 				AgentPosToVec3(h.pos),
@@ -40,10 +37,7 @@ public class AgentSpawner : Layer {
 			list_habitants.Add(h, agentModel);
 		}
 
-		foreach (Animal a in
-		         worldInfo.habitats
-		         .ConvertAll(h=>h.animals.AsEnumerable())
-		         .Aggregate((as1,as2)=>as1.Concat(as2))) {
+		foreach (Animal a in worldInfo.AllAnimals) {
 			GameObject agentModel = (GameObject) Instantiate(
 				animalModel,
 				AgentPosToVec3(a.pos),
