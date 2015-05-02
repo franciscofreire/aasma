@@ -131,14 +131,14 @@ public struct SensorData {
 	
 	public IList<Vector2I> Cells
 	{
-        get;
-        set;
+        get { return _cells; }
+        set { _cells = value; }
 	}
 	
 	public Vector2I FrontCell
 	{
-        get;
-        set;
+        get { return _front_cell; }
+        set { _front_cell = value; }
 	}
 	
 	public SensorData(IList<Vector2I> cells, Vector2I front_cell)
@@ -154,7 +154,7 @@ public struct Orientation {
 
 	public Vector2 ToVector2() {//Up=(0,1), Down=(0,-1), Left=(-1,0), Right=(1,0)
 		return new Vector2(Mathf.Sin(radiansToUp), Mathf.Cos(radiansToUp));
-	}
+	}   
 	
 	public Quaternion ToQuaternion() {
 		return Quaternion.AngleAxis(radiansToUp*Mathf.Rad2Deg, Vector3.up);

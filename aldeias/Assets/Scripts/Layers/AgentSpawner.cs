@@ -10,6 +10,9 @@ public class AgentSpawner : Layer {
 	public IDictionary<Animal, GameObject> list_animals = 
 		new Dictionary<Animal, GameObject>();
 
+    public IDictionary<string, Material> list_agent_materials =
+        new Dictionary<string, Material>();
+
 	//WorldInfo events that AgentSpawner would like to listen to:
 	//   WorldChanged
 	//      NewAgent
@@ -23,6 +26,15 @@ public class AgentSpawner : Layer {
 	//   WorldCreated - to initialize information that doesn't change
 
 	public override void CreateObjects() {
+        // Assign tribe colors to materials
+        Material mat_habitant = habitantModel.transform.Find("Body").renderer.material;
+        Material mat_tribe_A  = new Material(mat_habitant);
+        Material mat_tribe_B  = new Material(mat_habitant);
+        mat_tribe_A.color = Color.blue;
+        mat_tribe_B.color = Color.red;
+        list_agent_materials.Add("A", mat_tribe_A);
+        list_agent_materials.Add("B", mat_tribe_B);
+
 		foreach (Habitant h in worldInfo.AllHabitants) {
 			GameObject agentModel = (GameObject) Instantiate(
 				habitantModel,
@@ -30,6 +42,12 @@ public class AgentSpawner : Layer {
 				Quaternion.identity);
 			agentModel.transform.parent = this.transform;
 			agentModel.SetActive(true);
+
+            // Assign materials to habitants
+            agentModel.transform.Find("Body").renderer.sharedMaterial =
+                list_agent_materials[h.tribe.id];
+            agentModel.transform.Find("Orientation").renderer.sharedMaterial =
+                list_agent_materials[h.tribe.id];
 
 			Transform wood = agentModel.transform.Find("Wood");
 			wood.GetComponent<Renderer>().enabled = false;
