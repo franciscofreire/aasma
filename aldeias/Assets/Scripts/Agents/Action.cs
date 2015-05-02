@@ -37,22 +37,19 @@ public abstract class AnyAgentAction : Action {
 
 public class Walk : AnyAgentAction {
 	public override void apply () {
-		agent.ChangePosition(CoordConvertions.WorldXZToAgentPos(target));
-		
-		// Orientation
+		//Change the Agent's position and reorient him so he faces the same direction in which he moved.
 		Vector2I origin = CoordConvertions.AgentPosToWorldXZ(agent.pos);
+		agent.ChangePosition(CoordConvertions.WorldXZToAgentPos(target));
+		// Orientation
 		if (origin.x > target.x) {
 			performer.orientation = Orientation.Left;
 		} else if (origin.x < target.x) {
 			performer.orientation = Orientation.Right;
 		} else if (origin.y > target.y) {
-			performer.orientation = Orientation.Up;
-		} else {
 			performer.orientation = Orientation.Down;
+		} else {
+			performer.orientation = Orientation.Up;
 		}
-		
-		// Position
-		performer.pos = target.ToVector2();
 	}
 	public Walk(Agent walker, Vector2I target) : base(walker, target) { }
 }
