@@ -37,24 +37,18 @@ public abstract class AnyAgentAction : Action {
 
 public class Walk : AnyAgentAction {
 	public override void apply () {
-		// Update worldtileInfo
-		WorldTileInfo agentTileInfo = 
-			world.worldTiles.WorldTileInfoAtCoord(CoordConvertions.AgentPosToWorldXZ(performer.pos));
-		WorldTileInfo targetTileInfo = 
-			world.worldTiles.WorldTileInfoAtCoord(target);
-		agentTileInfo.Agent = null;
-		targetTileInfo.Agent = agent;
+		agent.ChangePosition(CoordConvertions.WorldXZToAgentPos(target));
 		
 		// Orientation
 		Vector2I origin = CoordConvertions.AgentPosToWorldXZ(agent.pos);
 		if (origin.x > target.x) {
-			performer.orientation = ORIENTATION.LEFT;
+			performer.orientation = Orientation.Left;
 		} else if (origin.x < target.x) {
-			performer.orientation = ORIENTATION.RIGHT;
+			performer.orientation = Orientation.Right;
 		} else if (origin.y > target.y) {
-			performer.orientation = ORIENTATION.UP;
+			performer.orientation = Orientation.Up;
 		} else {
-			performer.orientation = ORIENTATION.DOWN;
+			performer.orientation = Orientation.Down;
 		}
 		
 		// Position
