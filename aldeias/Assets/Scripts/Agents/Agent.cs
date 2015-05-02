@@ -45,6 +45,16 @@ public abstract class Agent {
 		energy.Add(EnergyFromFood(food));
 	}
 
+	public void ChangePosition(Vector2 newPosition) {
+		worldInfo.worldTiles.WorldTileInfoAtCoord(CoordConvertions.AgentPosToWorldXZ(this.pos)).Agent = null;
+		worldInfo.worldTiles.WorldTileInfoAtCoord(CoordConvertions.AgentPosToWorldXZ(newPosition)).Agent = this;
+		this.pos = newPosition;
+	}
+
+
+
+
+
 	public abstract Action doAction();
 	
 	public abstract void OnWorldTick();
