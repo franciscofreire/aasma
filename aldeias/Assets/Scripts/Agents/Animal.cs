@@ -6,7 +6,7 @@ public class Animal : Agent {
 
 	public Animal(WorldInfo world, Vector2 pos): base(world, pos, INITIAL_ENERGY) { }
 
-	public override Action doAction() {
+	public Action doAction() {
 
         int index = WorldRandom.Next(sensorData.Cells.Count);
         Vector2I target = sensorData.Cells[index];
