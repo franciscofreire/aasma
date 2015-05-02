@@ -8,6 +8,7 @@ using System.Collections.Generic;
 //    He is Alive as long as his Energy is greater than zero.
 //    At any given moment, his senses (SensorData) provide him a view of its WorldInfo.
 //    When he is hungry, the Agent can Eat some food and will get some Energy from it.
+//    He can ChangePosition to any position. When he does, he lets the WorldInfo know that he is no longer in the tile he was and that he is in a new tile.
 public abstract class Agent {
 
 	//Every agent runs on it's own thread.
@@ -150,7 +151,11 @@ public struct SensorData {
 
 public struct Orientation {
 	//The clockwise amplitude of the angle between this orientation and the up orientation.
-	public Radians radiansToUp;
+	private Radians radiansToUp;
+
+	public Radians ToRadiansToUp() {
+		return radiansToUp;
+	}
 
 	public Vector2 ToVector2() {//Up=(0,1), Down=(0,-1), Left=(-1,0), Right=(1,0)
 		return new Vector2(Mathf.Sin(radiansToUp), Mathf.Cos(radiansToUp));
@@ -166,6 +171,14 @@ public struct Orientation {
 	
 	private Orientation(Radians radiansToUp) {
 		this.radiansToUp = radiansToUp;
+	}
+
+	public static Orientation FromRadians(Radians rad) {
+		return new Orientation(rad);
+	}
+
+	public static Orientation FromDegrees(Degrees deg) {
+		return new Orientation(deg);
 	}
 
 	public static readonly Orientation Up = new Orientation(new Degrees(0));
