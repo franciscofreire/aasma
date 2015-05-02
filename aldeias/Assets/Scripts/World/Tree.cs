@@ -6,12 +6,20 @@
 //    3. once its WoodQuantity was extrated, only a useless "TreeStump" remains.
 public class Tree {
 
+	private Vector2I pos;
 	private bool isAlive;
 	private WoodQuantity wood;
 
-	public Tree (WoodQuantity woodQuantity) {
+	public Tree (Vector2I pos, WoodQuantity woodQuantity) {
+		this.pos = pos;
 		this.isAlive = true;
 		this.wood = woodQuantity;
+	}
+
+	public Vector2I Pos { 
+		get {
+			return pos;
+		}
 	}
 
 	public bool Alive {

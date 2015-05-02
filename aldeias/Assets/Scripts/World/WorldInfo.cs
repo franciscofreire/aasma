@@ -43,7 +43,14 @@ public class WorldInfo : MonoBehaviour {
 			return AllHabitants.Cast<Agent>().Concat(AllAnimals.Cast<Agent>());
 		}
 	}
-	
+
+	public List<Tree> AllTrees = new List<Tree>();
+	public void AddTree(Tree tree) {
+		AllTrees.Add(tree);
+		//Add tree to the optimized Tree at tile structure.
+		worldTiles.WorldTileInfoAtCoord(tree.Pos).Tree = tree;
+	}
+
 	public class Habitat {
 		public Vector2I corner_pos;
 		public List<Animal> animals = new List<Animal>();
@@ -152,7 +159,7 @@ public class WorldInfo : MonoBehaviour {
 					for(int x2 = 0; x2 < x_partition; x2++) {
 						for(int z2 = 0; z2 < x_partition; z2++) {
 							if (num_trees-- > 0) {
-								worldTiles.WorldTileInfoAtCoord(x_start + x2, z_start + z2).Tree = new Tree(new WoodQuantity(100));
+								AddTree(new Tree(new Vector2I(x_start + x2, z_start + z2), new WoodQuantity(100)));
 							} else {
 								break;
 							}
@@ -230,7 +237,7 @@ public class WorldInfo : MonoBehaviour {
 		for(int x=0; x<xSize; x++) {
 			for(int z=0; z<zSize; z++) {
 				if(Mathf.PerlinNoise(x*0.1f,z*0.1f) > 0.5) {
-					worldTiles.WorldTileInfoAtCoord(x,z).Tree = new Tree(new WoodQuantity(100));
+					AddTree(new Tree(new Vector2I(x,z), new WoodQuantity(100)));
 				}
 			}
 		}

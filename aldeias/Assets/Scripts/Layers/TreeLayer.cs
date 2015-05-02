@@ -7,44 +7,29 @@ using System.Collections.Generic;
 public class TreeLayer : Layer {
 	public GameObject treeModel, stumpModel;
 	
-	private KeyValuePair<Tree,GameObject>[,] trees;
+	private IDictionary<Tree, GameObject> treesGameObjects=new Dictionary<Tree, GameObject>();
 
 	public override void CreateObjects() {
-		trees = new KeyValuePair<Tree,GameObject>[worldInfo.xSize, worldInfo.zSize];
-		for(int x=0; x<worldInfo.xSize; x++) {
-			for(int z=0; z<worldInfo.zSize; z++) {
-				// Add tree to WorldInfo
-				WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(x,z);
-				if (t.HasTree) {
-					// Create tree model and save tree
-					trees[x, z] = new KeyValuePair<Tree,GameObject>(
-						t.Tree,
-						(GameObject) Instantiate(treeModel, WorldXZToVec3(x, z), Quaternion.identity));
-					trees[x, z].Value.transform.parent = this.transform;
-				}
-			}
+		foreach (Tree t in worldInfo.AllTrees) {
+			GameObject g = (GameObject) Instantiate(treeModel, WorldXZToVec3(t.Pos), Quaternion.identity);
+			g.transform.parent = this.transform;
+			treesGameObjects.Add(t, g);
 		}
 	}
 
 	public override void ApplyWorldInfo() {
-		for(int x=0; x<worldInfo.xSize; x++) {
-			for(int z=0; z<worldInfo.zSize; z++) {
-				WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(x, z);
-				if(t.HasTree) {
-					// Remove depleted tree
-					if(!t.Tree.HasWood) {
-						Destroy(trees[x, z].Value);
-					}
+		foreach (Tree t in worldInfo.AllTrees) {
+		
+			// Remove depleted tree
+			if(!t.HasWood) {
+				Destroy(treesGameObjects[t]);
+			}
 
-					// Change to stump model when an agent starts to collect wood
-					if(!t.Tree.Alive) {
-						Destroy(trees[x, z].Value);
-						trees[x, z] = new KeyValuePair<Tree,GameObject>(
-							t.Tree,
-							(GameObject) Instantiate(stumpModel, WorldXZToVec3(x, z), Quaternion.identity));
-						trees[x, z].Value.transform.parent = this.transform;
-					}
-				}
+			// Change to stump model when an agent starts to collect wood
+			if(!t.Alive) {
+				Destroy(treesGameObjects[t]);
+				treesGameObjects[t] = (GameObject) Instantiate(stumpModel, WorldXZToVec3(t.Pos), Quaternion.identity);
+				treesGameObjects[t].transform.parent = this.transform;
 			}
 		}
 	}
