@@ -30,7 +30,7 @@ public abstract class Agent {
 		this.worldInfo = world;
 		this.pos = pos;
 		this.energy = e;
-		this.orientation = ORIENTATION.UP;
+		this.orientation = Orientation.Up;
 	}
 
 	public bool Alive {
@@ -44,6 +44,16 @@ public abstract class Agent {
 	public void Eat(FoodQuantity food) {
 		energy.Add(EnergyFromFood(food));
 	}
+
+	public void ChangePosition(Vector2 newPosition) {
+		worldInfo.worldTiles.WorldTileInfoAtCoord(CoordConvertions.AgentPosToWorldXZ(this.pos)).Agent = null;
+		worldInfo.worldTiles.WorldTileInfoAtCoord(CoordConvertions.AgentPosToWorldXZ(newPosition)).Agent = this;
+		this.pos = newPosition;
+	}
+
+
+
+
 
 	public abstract Action doAction();
 	
@@ -138,44 +148,28 @@ public struct SensorData {
 	}
 }
 
-
-public enum ORIENTATION {UP=0, DOWN=180, LEFT=270, RIGHT=90};
-
 public struct Orientation {
-	private ORIENTATION orientation;
-	
-	public static implicit operator Orientation(ORIENTATION orientation) {
-		return new Orientation(orientation);
-	}
-	
-	public static Orientation FromORIENTATION(ORIENTATION orientation) {
-		return orientation;
-	}
-	
+	//The clockwise amplitude of the angle between this orientation and the up orientation.
+	public Radians radiansToUp;
+
 	public Vector2 ToVector2() {//Up=(0,1), Down=(0,-1), Left=(-1,0), Right=(1,0)
-		switch (orientation) {
-		case ORIENTATION.UP:
-			return new Vector2(0f,1f);
-		case ORIENTATION.DOWN:
-			return new Vector2(0f,-1f);
-		case ORIENTATION.LEFT:
-			return new Vector2(-1f,0f);
-		case ORIENTATION.RIGHT:
-			return new Vector2(1f,0f);
-		default:
-			throw new System.Exception("Cannot convert "+orientation+" to UnityEngine.Vector2.");
-		}
+		return new Vector2(Mathf.Sin(radiansToUp), Mathf.Cos(radiansToUp));
 	}
 	
 	public Quaternion ToQuaternion() {
-		return Quaternion.AngleAxis((float)orientation, Vector3.up);
+		return Quaternion.AngleAxis(radiansToUp*Mathf.Rad2Deg, Vector3.up);
 	}
 	
 	public Quaternion ToQuaternionInX() {
-		return Quaternion.AngleAxis((float)orientation, Vector3.right);
+		return Quaternion.AngleAxis(radiansToUp*Mathf.Rad2Deg, Vector3.right);
 	}
 	
-	private Orientation(ORIENTATION orientation) {
-		this.orientation = orientation;
+	private Orientation(Radians radiansToUp) {
+		this.radiansToUp = radiansToUp;
 	}
+
+	public static readonly Orientation Up = new Orientation(new Degrees(0));
+	public static readonly Orientation Down = new Orientation(new Degrees(180));
+	public static readonly Orientation Left = new Orientation(new Degrees(270));
+	public static readonly Orientation Right = new Orientation(new Degrees(90));
 }

@@ -30,3 +30,40 @@ public struct Vector2I {
 		return !(v1 == v2);
 	}
 }
+
+public partial struct Degrees {
+	public readonly float value;
+	public Degrees(float value) {
+		this.value = value;
+	}
+}
+
+public partial struct Radians {
+	public readonly float value;
+	public Radians(float value) {
+		this.value = value;
+	}
+	public static Radians Pi {
+		get {
+			return new Radians(Mathf.PI);
+		}
+	}
+}
+
+public partial struct Degrees {
+	public static implicit operator Radians (Degrees deg) {
+		return new Radians(deg.value*Mathf.Deg2Rad);
+	}
+	public static implicit operator float (Degrees d) {
+		return d.value;
+	}
+}
+
+public partial struct Radians {
+	public static implicit operator Degrees (Radians rad) {
+		return new Degrees(rad.value*Mathf.Rad2Deg);
+	}
+	public static implicit operator float (Radians r) {
+		return r.value;
+	}
+}
