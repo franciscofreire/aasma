@@ -7,9 +7,16 @@ using System.Collections.Generic;
 public class TreeLayer : Layer {
 	public GameObject treeModel, stumpModel;
 	
-	private IDictionary<Tree, GameObject> treesGameObjects=new Dictionary<Tree, GameObject>();
+	private IDictionary<Tree, GameObject> treesGameObjects = 
+        new Dictionary<Tree, GameObject>();
 
 	public override void CreateObjects() {
+        // A tree is identified by it's position in the world.
+        // TreeLayer will use this information to know which tree will be stump'd
+        worldInfo.AddTreeDiedListener((Vector2I pos)=>{
+            TurnToStump(pos);
+        });
+
 		foreach (Tree t in worldInfo.AllTrees) {
 			GameObject g = (GameObject) Instantiate(treeModel, WorldXZToVec3(t.Pos), Quaternion.identity);
 			g.transform.parent = this.transform;
@@ -17,20 +24,21 @@ public class TreeLayer : Layer {
 		}
 	}
 
-	public override void ApplyWorldInfo() {
+    public override void ApplyWorldInfo() {
+        // Remove depleted trees
 		foreach (Tree t in worldInfo.AllTrees) {
-		
-			// Remove depleted tree
-			if(!t.HasWood) {
+			if (!t.HasWood) {
 				Destroy(treesGameObjects[t]);
-			}
-
-			// Change to stump model when an agent starts to collect wood
-			if(!t.Alive) {
-				Destroy(treesGameObjects[t]);
-				treesGameObjects[t] = (GameObject) Instantiate(stumpModel, WorldXZToVec3(t.Pos), Quaternion.identity);
-				treesGameObjects[t].transform.parent = this.transform;
 			}
 		}
 	}
+
+    public void TurnToStump(Vector2I pos) {
+        Tree t = worldInfo.worldTiles.WorldTileInfoAtCoord(pos).Tree;
+
+        // Change to stump model when an agent starts to collect wood
+        Destroy(treesGameObjects[t]);
+        treesGameObjects[t] = (GameObject) Instantiate(stumpModel, WorldXZToVec3(pos), Quaternion.identity);
+        treesGameObjects[t].transform.parent = this.transform;
+    }
 }

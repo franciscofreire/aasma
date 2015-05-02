@@ -122,27 +122,16 @@ public class RemoveFlag : HabitantAction {
 }
 
 public class PickupFood : HabitantAction {
-	public static readonly FoodQuantity AnimalFoodPotencial = new FoodQuantity(100);
-	public override void apply () {
-		//FIXME: Don't remove the Animal.
-        if(!habitant.CarryingResources()) {
-            Animal animalToRemove = null;
-            foreach(WorldInfo.Habitat h in world.habitats) {
-                foreach(Animal a in h.animals) {
-                    if (a.pos.Equals (target.ToVector2()) && !a.Alive) {
-                        animalToRemove = a;
-                        break;
-                    }
-                }
-            }
-			//FIXME: the animal shouldn't be collected again
-            //world.removeAnimal(animalToRemove);
-			habitant.PickupFood(AnimalFoodPotencial);
+    public override void apply () {
+        Animal a = world.animalInTile(target);
+        if (a != null) {
+            FoodQuantity food = a.Tear();
+            habitant.PickupFood(food);
         }
+        //FIXME: if the habitant can't carry the FoodQuantity than it is lost.
     }
 	public PickupFood(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }
-
 	
 public class DropFood : HabitantAction {
 	public override void apply () {

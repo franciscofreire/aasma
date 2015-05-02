@@ -77,9 +77,9 @@ public class Habitant : Agent {
 		}
 	}
 
-	//*************
+	//***************
 	//** DECISIONS **
-	//*************
+	//***************
 
     public void logFrontCell() {
         Debug.Log("Agent & Front: " + pos + " ; (" +
@@ -99,12 +99,12 @@ public class Habitant : Agent {
         else if (FoodInFront() && !CarryingResources()) {
             return new PickupFood(this, sensorData.FrontCell);
         }
-        else if (CutDownTreeWithWoodInFront() && !CarryingResources()) {
-            return new PickupTree(this, sensorData.FrontCell);
-        }
-        else if (AliveTreeInFront() && !CarryingResources()) {
-            return new CutTree(this, sensorData.FrontCell);
-        }
+       // else if (CutDownTreeWithWoodInFront() && !CarryingResources()) {
+       //     return new PickupTree(this, sensorData.FrontCell);
+       // }
+       // else if (AliveTreeInFront() && !CarryingResources()) {
+       //     return new CutTree(this, sensorData.FrontCell);
+       // }
         else if (MeetingPointInFront() && CarryingFood) {
             return new DropFood(this, sensorData.FrontCell);
         }
@@ -114,11 +114,11 @@ public class Habitant : Agent {
         else if (UnclaimedTerritoryInFront()) {
             return new PlaceFlag(this, sensorData.FrontCell);
         }
-            
-            // Reactive agent: Walk randomly
-            int index = WorldRandom.Next(sensorData.Cells.Count);
-            Vector2I target = sensorData.Cells[index];
-            return new Walk(this, target);
+        
+        // Reactive agent: Walk randomly
+        int index = WorldRandom.Next(sensorData.Cells.Count);
+        Vector2I target = sensorData.Cells[index];
+        return new Walk(this, target);
     }
 
 	public override void OnWorldTick () {

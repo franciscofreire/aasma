@@ -47,7 +47,7 @@ public class WorldInfo : MonoBehaviour {
 	public List<Tree> AllTrees = new List<Tree>();
 	public void AddTree(Tree tree) {
 		AllTrees.Add(tree);
-		//Add tree to the optimized Tree at tile structure.
+		// Add tree to the optimized Tree at tile structure.
 		worldTiles.WorldTileInfoAtCoord(tree.Pos).Tree = tree;
 	}
 
@@ -78,7 +78,6 @@ public class WorldInfo : MonoBehaviour {
 	}
 
 	public void WorldTick () {
-
 		foreach(Agent a in AllAgents) {
 			a.OnWorldTick();
 		}
@@ -91,8 +90,7 @@ public class WorldInfo : MonoBehaviour {
 		// Apply actions to the world.
 
 
-
-		// Rules:
+        // Rules:
 		//    Agents cannot change the world state directly. They must produce an action that will be applied to the world.
 
 		// Ideas:
@@ -109,7 +107,7 @@ public class WorldInfo : MonoBehaviour {
 
 	public const int TRIBE_TERRITORY_SIDE = 15;
 	public const int HABITAT_SIDE = 7;
-	public const int MEETING_POINT_SIDE = 3;
+	public const int MEETING_POINT_SIDE = 5;
 	private const int NUM_PARTITIONS = 5;
 	public void GenerateWorldTileInfo () {
 		worldTiles = new WorldTiles(xSize, zSize);
@@ -119,8 +117,6 @@ public class WorldInfo : MonoBehaviour {
 		CreateAnimals();
 		FillTrees();
 	}
-
-
 
 	private bool isFreePartition(int x_start, int x_partition, int z_start, int z_partition) {
 		for(int x2 = x_start; x2 < x_start + x_partition; x2++) {
@@ -159,7 +155,10 @@ public class WorldInfo : MonoBehaviour {
 					for(int x2 = 0; x2 < x_partition; x2++) {
 						for(int z2 = 0; z2 < x_partition; z2++) {
 							if (num_trees-- > 0) {
-								AddTree(new Tree(new Vector2I(x_start + x2, z_start + z2), new WoodQuantity(100)));
+								AddTree(new Tree(
+                                    this,
+                                    new Vector2I(x_start + x2, z_start + z2),
+                                    new WoodQuantity(100)));
 							} else {
 								break;
 							}
@@ -198,7 +197,7 @@ public class WorldInfo : MonoBehaviour {
 	private void CreateTribeHabitants(Tribe tribe) {
 		//Create four Habitants of the given Tribe.
 		//The Habitants should be created inside the Tribe's meeting point.
-		foreach( var coord in tribe.meetingPoint.MeetingPointTileCoords.Take(4)) {
+		foreach( var coord in tribe.meetingPoint.MeetingPointTileCoords.Take(20)) {
 			Vector2 pos = CoordConvertions.WorldXZToAgentPos(coord);
 			Habitant h = new Habitant(this, pos, tribe, 1);
 			tribe.AddHabitant(h);
@@ -223,7 +222,10 @@ public class WorldInfo : MonoBehaviour {
 				for(int z = h.corner_pos.y; z > h.corner_pos.y - HABITAT_SIDE; z--) {
 					if (num_animals-- > 0) {
 						Vector2I tileCoord = new Vector2I(x,z);
-						Animal a = new Animal(this, CoordConvertions.WorldXZToAgentPos(tileCoord));
+						Animal a = new Animal(
+                            this,
+                            CoordConvertions.WorldXZToAgentPos(tileCoord),
+                            new FoodQuantity(100));
 						worldTiles.WorldTileInfoAtCoord(tileCoord).Agent = a;
 						h.animals.Add(a);
 					} else
@@ -237,7 +239,10 @@ public class WorldInfo : MonoBehaviour {
 		for(int x=0; x<xSize; x++) {
 			for(int z=0; z<zSize; z++) {
 				if(Mathf.PerlinNoise(x*0.1f,z*0.1f) > 0.5) {
-					AddTree(new Tree(new Vector2I(x,z), new WoodQuantity(100)));
+					AddTree(new Tree(
+                        this,
+                        new Vector2I(x,z),
+                        new WoodQuantity(100)));
 				}
 			}
 		}
@@ -246,8 +251,6 @@ public class WorldInfo : MonoBehaviour {
 	////
 	//// TILE INFORMATION
 	////
-
-
 
 	public IList<Vector2I> nearbyCells(Agent agent) {
 		int radius = 1;
@@ -304,6 +307,16 @@ public class WorldInfo : MonoBehaviour {
 		return null;
 	}
 
+    public Animal animalInTile(Vector2I tileCoord) {
+        foreach(Habitat h in habitats) {
+            foreach(Animal a in h.animals) {
+                if (AgentPosInTile(a.pos, tileCoord)) {
+                    return a;
+                }
+            }
+        }
+        return null;
+    }
 
 	////
 	//// LISTENERS
@@ -330,6 +343,28 @@ public class WorldInfo : MonoBehaviour {
 			listener();
 		}
 	}
+    
+    public delegate void TreeDiedListener(Vector2I pos);
+    private List<TreeDiedListener> treeListeners = new List<TreeDiedListener>();
+    public void AddTreeDiedListener(TreeDiedListener func) {
+        treeListeners.Add(func);
+    }
+    public void NotifyTreeDiedListeners(Vector2I pos) {
+        foreach(TreeDiedListener listener in treeListeners) {
+            listener(pos);
+        }
+    }
+    
+    public delegate void AgentDiedListener(Vector2I pos);
+    private List<AgentDiedListener> agentListeners = new List<AgentDiedListener>();
+    public void AddAgentDiedListener(AgentDiedListener func) {
+        agentListeners.Add(func);
+    }
+    public void NotifyAgentDiedListeners(Vector2I pos) {
+        foreach(AgentDiedListener listener in agentListeners) {
+            listener(pos);
+        }
+    }
 }
 
 public class WorldTiles {
@@ -347,7 +382,7 @@ public class WorldTiles {
 	}
 	public WorldTileInfo WorldTileInfoAtCoord(int x, int z) {
 		return worldTileInfo[x, z];
-	}
+    }         
 }
 
 //Information being holded in every tile

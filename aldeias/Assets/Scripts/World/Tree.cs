@@ -1,3 +1,4 @@
+using UnityEngine;
 
 // A Tree starts alive with a certain WoodQuantity.
 // To collect its wood:
@@ -6,13 +7,16 @@
 //    3. once its WoodQuantity was extrated, only a useless "TreeStump" remains.
 public class Tree {
 
+    public WorldInfo worldInfo;
+
 	private Vector2I pos;
 	private bool isAlive;
 	private WoodQuantity wood;
 
-	public Tree (Vector2I pos, WoodQuantity woodQuantity) {
+    public Tree (WorldInfo worldInfo, Vector2I pos, WoodQuantity woodQuantity) {
+        this.worldInfo = worldInfo;
 		this.pos = pos;
-		this.isAlive = true;
+        this.isAlive = true;
 		this.wood = woodQuantity;
 	}
 
@@ -28,11 +32,14 @@ public class Tree {
 
 	public WoodQuantity Chop() {
 		if (isAlive) {
-			isAlive = false; // Die...
+            isAlive = false; // Die...
+            Debug.Log("[RIP] Tree @(" + pos.x + "," + pos.y + ")");
+            worldInfo.NotifyTreeDiedListeners(pos);
 			return WoodQuantity.Zero;
-		} else {
-			WoodQuantity removed = wood;
-			wood = WoodQuantity.Zero;
+        } else {
+            //FIXME: These are testing values!
+            wood.Count -= 50;
+			WoodQuantity removed = wood; 
 			return removed;
 		}
 		//Implementation detail: This method could be an Iterator method (use the yield statement).

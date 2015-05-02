@@ -3,7 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class AgentSpawner : Layer {
-	public GameObject habitantModel, warriorModel, animalModel;
+	public GameObject habitantModel, warriorModel, animalModel, foodModel;
 
 	public IDictionary<Habitant, GameObject> list_habitants = 
 		new Dictionary<Habitant, GameObject>();
@@ -26,6 +26,12 @@ public class AgentSpawner : Layer {
 	//   WorldCreated - to initialize information that doesn't change
 
 	public override void CreateObjects() {
+        // An animal is identified by it's position in the world (not ideal, but...)
+        // AgentSpawner will use this information to know which animal will be turned to food
+        worldInfo.AddAgentDiedListener((Vector2I pos)=>{
+            TurnToFood(pos);
+        });
+
         // Assign tribe colors to materials
         Material mat_habitant = habitantModel.transform.Find("Body").renderer.material;
         Material mat_tribe_A  = new Material(mat_habitant);
@@ -69,6 +75,7 @@ public class AgentSpawner : Layer {
 
 
 	public override void ApplyWorldInfo() {
+        /*
 		//Remove habitants no longer present in the worldInfo
 		List<KeyValuePair<Habitant, GameObject>> hsToRemove=new List<KeyValuePair<Habitant, GameObject>>();
 		foreach(KeyValuePair<Habitant,GameObject> ourH in list_habitants) {
@@ -108,8 +115,22 @@ public class AgentSpawner : Layer {
 		foreach(var aGo in asToRemove) {
 			list_animals.Remove (aGo);
 		}
-
-		//TODO: add animals and habitants that appeared
+*/
+        //TODO: add animals and habitants that appeared
+        
+        // Remove depleted food
+        List<Animal> keys_animals = new List<Animal>(list_animals.Keys);
+        foreach (Animal a in keys_animals) {
+            GameObject g = list_animals[a];
+            g.transform.localPosition = AgentPosToVec3(a.pos);
+            if (a.Alive) {
+                g.transform.localRotation = a.orientation.ToQuaternion();
+            } 
+            else if (!a.HasFood) {
+                Destroy(list_animals[a]);
+                list_animals.Remove(a);
+            }
+        }
 
 		foreach (KeyValuePair<Habitant,GameObject> kvp in list_habitants) {
 			Habitant h = kvp.Key;
@@ -121,19 +142,14 @@ public class AgentSpawner : Layer {
                 wood.GetComponent<Renderer>().enabled = true;
             }
 		}
-		foreach (KeyValuePair<Animal,GameObject> kvp in list_animals) {
-			Agent a = kvp.Key;
-			GameObject g = kvp.Value;
-            g.transform.localPosition = AgentPosToVec3(a.pos);
-            if (a.Alive) {
-                g.transform.localRotation = a.orientation.ToQuaternion();
-            } else {
-                Vector3 pos = g.transform.localPosition;
-                pos.y = 1;
-                g.transform.localPosition = pos;
-                g.transform.localRotation = a.orientation.ToQuaternionInX();
-            }
-
-		}
 	}
+    
+    public void TurnToFood(Vector2I pos) {
+        Animal a = (Animal) worldInfo.worldTiles.WorldTileInfoAtCoord(pos).Agent;
+        
+        // Change to food model when an agent starts to collect food
+        Destroy(list_animals[a]);
+        list_animals[a] = (GameObject) Instantiate(foodModel, WorldXZToVec3(pos), Quaternion.identity);
+        list_animals[a].transform.parent = this.transform;
+    }
 }

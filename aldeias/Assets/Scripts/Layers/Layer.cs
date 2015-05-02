@@ -23,7 +23,9 @@ public abstract class Layer : MonoBehaviour {
 		worldInfo.AddCreationListener(()=>{
 			CreateObjects();
 		});
-		worldInfo.AddChangeListener(()=>{worldHasChanged=true;});
+		worldInfo.AddChangeListener(()=>{
+            worldHasChanged = true;
+        });
 	}
 	
 	void Update() {

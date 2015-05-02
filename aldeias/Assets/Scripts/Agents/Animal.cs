@@ -2,9 +2,22 @@ using UnityEngine;
 
 public class Animal : Agent {
 
-	public static readonly Energy INITIAL_ENERGY = new Energy(20);
+    public static readonly Energy INITIAL_ENERGY = new Energy(20);
+    private FoodQuantity food;
 
-	public Animal(WorldInfo world, Vector2 pos): base(world, pos, INITIAL_ENERGY) { }
+    public FoodQuantity Food {
+        get {
+            return food;
+        }
+        set {
+            food = value;
+        }
+    }
+
+	public Animal(WorldInfo world, Vector2 pos, FoodQuantity food)
+            : base(world, pos, INITIAL_ENERGY) {
+        this.food = food;
+    }
 
 	public override Action doAction() {
 
@@ -14,12 +27,32 @@ public class Animal : Agent {
 	}
 
 	public override void OnWorldTick () {
-		//Vector2 sum = pos+Vector2.right;
-		//pos = new Vector2(sum.x%worldInfo.xSize, sum.y);
-        /*updateSensorData();
-        Action a = doAction();
-        a.apply();*/
 	}
+    
+    public bool HasFood {
+        get { 
+            return food > FoodQuantity.Zero;
+        }
+    }
+    
+    public override void RemoveEnergy(Energy e) {
+        energy.Subtract(e);
+        if (!Alive) {
+            Debug.Log("[RIP] Animal @(" + pos.x + "," + pos.y + ")");
+            worldInfo.NotifyAgentDiedListeners(new Vector2I(pos));
+        }
+    }
+
+    public FoodQuantity Tear() {
+        if (Alive) {
+            return FoodQuantity.Zero;
+        } else {
+            //FIXME: These are testing values!
+            food.Count -= 50;
+            FoodQuantity removed = food;
+            return removed;
+        }
+    }
 
 	//*************
 	//** SENSORS **

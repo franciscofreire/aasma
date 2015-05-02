@@ -37,7 +37,7 @@ public abstract class Agent {
 		get { return energy > Energy.Zero; }
 	}
 
-    public void RemoveEnergy(Energy e) {
+    public virtual void RemoveEnergy(Energy e) {
 		energy.Subtract(e);
     }
 
@@ -51,10 +51,6 @@ public abstract class Agent {
 		this.pos = newPosition;
 	}
 
-
-
-
-
 	public abstract Action doAction();
 	
 	public abstract void OnWorldTick();
@@ -66,8 +62,9 @@ public abstract class Agent {
 		Vector2I tileCoordInFront = CoordConvertions.AgentPosToWorldXZ(posInFront);
 		sensorData.FrontCell = worldInfo.isInsideWorld(tileCoordInFront)
 			? tileCoordInFront
-				: new Vector2I(pos); // VERIFYME: Not sure about this...
+			: new Vector2I(pos); // VERIFYME: Not sure about this...
 	}
+
 	//*************
 	//** SENSORS **
 	//*************
