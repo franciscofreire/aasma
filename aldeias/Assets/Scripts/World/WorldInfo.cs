@@ -211,7 +211,7 @@ public class WorldInfo : MonoBehaviour {
 
 	private void CreateAnimals() {
 		foreach (WorldInfo.Habitat h in habitats) {
-			int num_animals = 4;
+			int num_animals = 40;
 			for(int x = h.corner_pos.x; x < h.corner_pos.x + HABITAT_SIDE; x++) {
 				for(int z = h.corner_pos.y; z > h.corner_pos.y - HABITAT_SIDE; z--) {
 					if (num_animals-- > 0) {

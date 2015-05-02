@@ -121,14 +121,14 @@ public struct SensorData {
 	
 	public IList<Vector2I> Cells
 	{
-		get { return _cells; }
-		set { _cells = value; }
+        get;
+        set;
 	}
 	
 	public Vector2I FrontCell
 	{
-		get { return _front_cell; }
-		set { _front_cell = value; }
+        get;
+        set;
 	}
 	
 	public SensorData(IList<Vector2I> cells, Vector2I front_cell)
