@@ -68,7 +68,8 @@ public abstract class Agent {
 
     public void updateSensorData () {
         sensorData.Cells = worldInfo.nearbyFreeCells (worldInfo.nearbyCells (this));
-        
+        sensorData.FillAdjacentCells(new Vector2I(pos));
+
         Vector2 posInFront = pos + orientation.ToVector2 ();
         Vector2I tileCoordInFront = CoordConvertions.AgentPosToWorldXZ (posInFront);
         sensorData.FrontCell = worldInfo.isInsideWorld (tileCoordInFront)
@@ -142,12 +143,18 @@ public struct Energy {
 public struct SensorData {
     public IList<Vector2I> _cells;
     public Vector2I _front_cell;
+    public IList<Vector2I> _adjacent_cells;
     
     public IList<Vector2I> Cells {
         get { return _cells; }
         set { _cells = value; }
     }
-    
+
+    public IList<Vector2I> AdjacentCells {
+        get { return _adjacent_cells; }
+        set { _adjacent_cells = value; }
+    }
+
     public Vector2I FrontCell {
         get { return _front_cell; }
         set { _front_cell = value; }
@@ -156,6 +163,18 @@ public struct SensorData {
     public SensorData (IList<Vector2I> cells, Vector2I front_cell) {
         _cells = cells;
         _front_cell = front_cell;
+        _adjacent_cells = null;
+    }
+
+    public void FillAdjacentCells(Vector2I agentPos) {
+        if (Cells != null) {
+            AdjacentCells = new List<Vector2I>();
+            foreach(Vector2I pos in Cells) {
+                if(agentPos.isAdjacent(pos)) {
+                    AdjacentCells.Add(pos);
+                }
+            }
+        }
     }
 }
 
@@ -177,6 +196,13 @@ public struct Orientation {
     
     private Orientation (Radians radiansToUp) {
         this.radiansToUp = radiansToUp;
+    }
+
+    public static bool operator==(Orientation o1, Orientation o2) { 
+        return o1.radiansToUp.value == o2.radiansToUp.value;
+    }
+    public static bool operator!=(Orientation o1, Orientation o2) { 
+        return o1.radiansToUp.value != o2.radiansToUp.value;
     }
 
     public static readonly Orientation Up = new Orientation (new Degrees (0));
