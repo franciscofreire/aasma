@@ -75,47 +75,6 @@ public class AgentSpawner : Layer {
 
 
 	public override void ApplyWorldInfo() {
-        /*
-		//Remove habitants no longer present in the worldInfo
-		List<KeyValuePair<Habitant, GameObject>> hsToRemove=new List<KeyValuePair<Habitant, GameObject>>();
-		foreach(KeyValuePair<Habitant,GameObject> ourH in list_habitants) {
-			bool ourHPresent = false;
-			foreach(Tribe t in worldInfo.tribes) {
-				foreach(Habitant h in t.habitants) {
-					if(h.Equals(ourH.Key)){
-						ourHPresent = true;
-						break;
-					}
-				}
-			}
-			if(!ourHPresent) {
-				hsToRemove.Add(ourH);
-			}
-		}
-		foreach(var hGo in hsToRemove) {
-			list_habitants.Remove (hGo);
-		}
-
-		//Remove animals no longer present in the worldInfo
-		List<KeyValuePair<Animal, GameObject>> asToRemove=new List<KeyValuePair<Animal, GameObject>>();
-		foreach(var ourA in list_animals) {
-			bool ourAPresent = false;
-			foreach(WorldInfo.Habitat hh in worldInfo.habitats) {
-				foreach(Animal a in hh.animals) {
-					if(a.Equals(ourA.Key)){
-						ourAPresent = true;
-						break;
-					} 
-				}
-			}
-			if(!ourAPresent) {
-				asToRemove.Add(ourA);
-			}
-		}
-		foreach(var aGo in asToRemove) {
-			list_animals.Remove (aGo);
-		}
-*/
         //TODO: add animals and habitants that appeared
         
         // Remove depleted food
@@ -146,8 +105,9 @@ public class AgentSpawner : Layer {
     
     public void TurnToFood(Vector2I pos) {
         Animal a = (Animal) worldInfo.worldTiles.WorldTileInfoAtCoord(pos).Agent;
-        
+
         // Change to food model when an agent starts to collect food
+        //GameObject g = list_animals[a];
         Destroy(list_animals[a]);
         list_animals[a] = (GameObject) Instantiate(foodModel, WorldXZToVec3(pos), Quaternion.identity);
         list_animals[a].transform.parent = this.transform;

@@ -36,12 +36,24 @@ public partial struct Degrees {
 	public Degrees(float value) {
 		this.value = value;
 	}
+	public static Degrees operator + (Degrees d1, Degrees d2) {
+		return new Degrees(d1.value + d2.value);
+	}
+	public static Degrees operator - (Degrees d1, Degrees d2) {
+		return new Degrees(d1.value - d2.value);
+	}
 }
 
 public partial struct Radians {
 	public readonly float value;
 	public Radians(float value) {
 		this.value = value;
+	}
+	public static Radians operator + (Radians r1, Radians r2) {
+		return new Radians(r1.value + r2.value);
+	}
+	public static Radians operator - (Radians r1, Radians r2) {
+		return new Radians(r1.value - r2.value);
 	}
 	public static Radians Pi {
 		get {
@@ -65,5 +77,14 @@ public partial struct Radians {
 	}
 	public static implicit operator float (Radians r) {
 		return r.value;
+	}
+}
+
+public static class Vector2Extensions {
+	public static float ProjectIntoFactor(this Vector2 projected, Vector2 other) {
+		return Vector2.Dot(projected, other) / other.magnitude;
+	}
+	public static Vector2 ProjectInto(this Vector2 projected, Vector2 other) {
+		return other * projected.ProjectIntoFactor(other);
 	}
 }

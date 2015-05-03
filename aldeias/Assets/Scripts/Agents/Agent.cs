@@ -8,6 +8,7 @@ using System.Collections.Generic;
 //    He is Alive as long as his Energy is greater than zero.
 //    At any given moment, his senses (SensorData) provide him a view of its WorldInfo.
 //    When he is hungry, the Agent can Eat some food and will get some Energy from it.
+//    He can ChangePosition to any position. When he does, he lets the WorldInfo know that he is no longer in the tile he was and that he is in a new tile.
 public abstract class Agent {
 
 	//Every agent runs on it's own thread.
@@ -25,6 +26,16 @@ public abstract class Agent {
 	public Energy energy; // 0: No energy; 100: Full energy
 
 	public SensorData sensorData;
+    
+    private AgentImplementation agentImplementation;
+    protected AgentImplementation AgentImpl {
+        get {
+            return agentImplementation;
+        }
+        set {
+            agentImplementation = value;
+        }
+    }
 
 	public Agent (WorldInfo world, Vector2 pos, Energy e) {
 		this.worldInfo = world;
@@ -51,7 +62,9 @@ public abstract class Agent {
 		this.pos = newPosition;
 	}
 
-	public abstract Action doAction();
+	public Action doAction() {
+      return agentImplementation.doAction();
+   }
 	
 	public abstract void OnWorldTick();
 
@@ -81,7 +94,8 @@ public abstract class Agent {
 		return t.HasTree && !t.Tree.Alive && t.Tree.HasWood;
     }
 
-	//FIXME: I don't know where to put this function as it is not part of the Agent. Or is it? It can also belong to the WorldInfo.
+	// FIXME: I don't know where to put this function as it is not part of the Agent.
+    // Or is it? It can also belong to the WorldInfo.
 	public static Energy EnergyFromFood(FoodQuantity food) {
 		return new Energy(food.Count);
 	}
@@ -89,7 +103,7 @@ public abstract class Agent {
 
 // Energy represents the energy that an agent has.
 //    It is a non-negative quantity.
-//TODO: How to ensure that no Energy is wrongly kept? That is, adding the same Energy multiple times.
+// TODO: How to ensure that no Energy is wrongly kept? That is, adding the same Energy multiple times.
 public struct Energy {
 	public int Count;
 	public Energy(int c) {
@@ -121,7 +135,6 @@ public struct Energy {
 	}
 }
 
-
 public struct SensorData {
 	public IList<Vector2I> _cells;
 	public Vector2I _front_cell;
@@ -146,27 +159,47 @@ public struct SensorData {
 }
 
 public struct Orientation {
-	//The clockwise amplitude of the angle between this orientation and the up orientation.
-	public Radians radiansToUp;
+    //The clockwise amplitude of the angle between this orientation and the up orientation.
+    private Radians radiansToUp;
+    
+    public Radians ToRadiansToUp() {
+        return radiansToUp;
+    }
+    
+    public Vector2 ToVector2() {//Up=(0,1), Down=(0,-1), Left=(-1,0), Right=(1,0)
+        return new Vector2(Mathf.Sin(radiansToUp), Mathf.Cos(radiansToUp));
+    }
+    
+    public Quaternion ToQuaternion() {
+        return Quaternion.AngleAxis(radiansToUp*Mathf.Rad2Deg, Vector3.up);
+    }
+    
+    public Quaternion ToQuaternionInX() {
+        return Quaternion.AngleAxis(radiansToUp*Mathf.Rad2Deg, Vector3.right);
+    }
+    
+    private Orientation(Radians radiansToUp) {
+        this.radiansToUp = radiansToUp;
+    }
+    
+    public static Orientation FromRadians(Radians rad) {
+        return new Orientation(rad);
+    }
+    
+    public static Orientation FromDegrees(Degrees deg) {
+        return new Orientation(deg);
+    }
+    
+    public static bool operator== (Orientation o1, Orientation o2) { 
+        return o1.radiansToUp.value == o2.radiansToUp.value;
+    }
+    
+    public static bool operator!= (Orientation o1, Orientation o2) { 
+        return !(o1 == o2);
+    }
 
-	public Vector2 ToVector2() {//Up=(0,1), Down=(0,-1), Left=(-1,0), Right=(1,0)
-		return new Vector2(Mathf.Sin(radiansToUp), Mathf.Cos(radiansToUp));
-	}   
-	
-	public Quaternion ToQuaternion() {
-		return Quaternion.AngleAxis(radiansToUp*Mathf.Rad2Deg, Vector3.up);
-	}
-	
-	public Quaternion ToQuaternionInX() {
-		return Quaternion.AngleAxis(radiansToUp*Mathf.Rad2Deg, Vector3.right);
-	}
-	
-	private Orientation(Radians radiansToUp) {
-		this.radiansToUp = radiansToUp;
-	}
-
-	public static readonly Orientation Up = new Orientation(new Degrees(0));
-	public static readonly Orientation Down = new Orientation(new Degrees(180));
-	public static readonly Orientation Left = new Orientation(new Degrees(270));
+	public static readonly Orientation Up    = new Orientation(new Degrees(0));
+	public static readonly Orientation Down  = new Orientation(new Degrees(180));
+	public static readonly Orientation Left  = new Orientation(new Degrees(270));
 	public static readonly Orientation Right = new Orientation(new Degrees(90));
 }

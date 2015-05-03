@@ -39,6 +39,7 @@ public class Habitant : Agent {
 		this.tribe  = tribe;
 		this.affinity = affinity;
 		this.isLeader = false;
+        AgentImpl = new HabitantReactive(this);
 	}
 
 	public WoodQuantity PickupWood(WoodQuantity wood) {
@@ -86,41 +87,6 @@ public class Habitant : Agent {
                   sensorData.FrontCell.x + "," + sensorData.FrontCell.y + ")");
     }
 
-	public override Action doAction() {
-        if ((EnemyInFront() || AnimalInFront()) && LowEnergy()) {
-            // Reactive agent: Flee randomly
-            int fleeIndex = WorldRandom.Next(sensorData.Cells.Count);
-            Vector2I fleeTarget = sensorData.Cells[fleeIndex];
-            return new Walk(this, fleeTarget);
-        }
-        else if (EnemyInFront() || AnimalInFront()) {
-            return new Attack(this, sensorData.FrontCell);
-        }
-        else if (FoodInFront() && !CarryingResources()) {
-            return new PickupFood(this, sensorData.FrontCell);
-        }
-       // else if (CutDownTreeWithWoodInFront() && !CarryingResources()) {
-       //     return new PickupTree(this, sensorData.FrontCell);
-       // }
-       // else if (AliveTreeInFront() && !CarryingResources()) {
-       //     return new CutTree(this, sensorData.FrontCell);
-       // }
-        else if (MeetingPointInFront() && CarryingFood) {
-            return new DropFood(this, sensorData.FrontCell);
-        }
-        else if (MeetingPointInFront() && CarryingWood) {
-            return new DropTree(this, sensorData.FrontCell);
-        }
-        else if (UnclaimedTerritoryInFront()) {
-            return new PlaceFlag(this, sensorData.FrontCell);
-        }
-        
-        // Reactive agent: Walk randomly
-        int index = WorldRandom.Next(sensorData.Cells.Count);
-        Vector2I target = sensorData.Cells[index];
-        return new Walk(this, target);
-    }
-
 	public override void OnWorldTick () {
 		updateSensorData();
 
@@ -137,7 +103,7 @@ public class Habitant : Agent {
 		return habInFront != null && habInFront.tribe != this.tribe;
 	}
 
-	private bool AnimalInFront() {
+	public bool AnimalInFront() {
         foreach(WorldInfo.Habitat h in worldInfo.habitats) {
             foreach(Agent a in h.animals) {
                 if (a.pos.Equals (sensorData.FrontCell.ToVector2()) && a.Alive) {
@@ -148,7 +114,7 @@ public class Habitant : Agent {
         return false;
 	}
 
-	private bool UnclaimedTerritoryInFront() {
+	public bool UnclaimedTerritoryInFront() {
         return worldInfo.isInsideWorld(sensorData.FrontCell) 
 			&& !worldInfo.worldTiles.WorldTileInfoAtCoord(sensorData.FrontCell).tribeTerritory.IsClaimed;
     }
@@ -158,11 +124,11 @@ public class Habitant : Agent {
     }
 
 	private static Energy CRITICAL_ENERGY_LEVEL = new Energy(20);
-	private bool LowEnergy() {
+	public bool LowEnergy() {
 		return this.energy <= CRITICAL_ENERGY_LEVEL;
 	}
 
-    private bool FoodInFront() {
+    public bool FoodInFront() {
         foreach(WorldInfo.Habitat h in worldInfo.habitats) {
             foreach(Agent a in h.animals) {
                 if (a.pos.Equals (sensorData.FrontCell.ToVector2()) && !a.Alive) {
