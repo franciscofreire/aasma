@@ -70,6 +70,7 @@ public abstract class Agent {
 
 	public void updateSensorData() {
 		sensorData.Cells = worldInfo.nearbyFreeCells(worldInfo.nearbyCells(this));
+        sensorData.FillAdjacentCells (new Vector2I (pos));
 		
 		Vector2 posInFront = pos + orientation.ToVector2();
 		Vector2I tileCoordInFront = CoordConvertions.AgentPosToWorldXZ(posInFront);
@@ -155,7 +156,19 @@ public struct SensorData {
 	{
 		_cells = cells;
 		_front_cell = front_cell;
+        _adjacent_cells = null;
 	}
+
+    public void FillAdjacentCells (Vector2I agentPos) {
+        if (Cells != null) {
+            AdjacentCells = new List<Vector2I> ();
+            foreach (Vector2I pos in Cells) {
+                if (agentPos.isAdjacent (pos)) {
+                    AdjacentCells.Add (pos);
+                }
+            }
+        }
+    }
 }
 
 public struct Orientation {

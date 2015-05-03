@@ -252,26 +252,49 @@ public class WorldInfo : MonoBehaviour {
 	//// TILE INFORMATION
 	////
 
-	public IList<Vector2I> nearbyCells(Agent agent) {
-		int radius = 1;
+    public IList<Vector2I> nearbyCells(Agent agent) {
+        int height = 4;
+        int width = 3;
+
+        int xMaxSize;
+        int zMaxSize;
 
 		Vector2I agentPos = CoordConvertions.AgentPosToWorldXZ(agent.pos);
-		int xmin = Mathf.Max(0, agentPos.x - radius);
-		int xmax = Mathf.Min(xSize - 1, agentPos.x + radius);
-		int zmin = Mathf.Max(0, agentPos.y - radius);
-		int zmax = Mathf.Min(zSize - 1, agentPos.y + radius); 
+        Vector2I leftCorner;
 
-		IList<Vector2I> cells = new List<Vector2I>();
-		for (int x = xmin; x <= xmax; x++) {
-			for (int z = zmin; z <= zmax; z++) {
-				Vector2I cellCoord = new Vector2I(x,z);
-				if (cellCoord != agentPos) {
-					cells.Add(cellCoord);
-					//Debug.Log("Agent nearby cells at " + Time.realtimeSinceStartup + " x: " + x + " z: " + z);
-				}
-			}
-		}
-		
+        IList<Vector2I> cells = new List<Vector2I>();
+
+        if(agent.orientation == Orientation.Up) {
+            leftCorner = new Vector2I(agentPos.x - 1, agentPos.y + (height-1));
+            xMaxSize = width;
+            zMaxSize = height;
+
+        } else if(agent.orientation == Orientation.Down) {
+            leftCorner = new Vector2I(agentPos.x - 1, agentPos.y);
+            xMaxSize = width;
+            zMaxSize = height;
+
+        } else if(agent.orientation == Orientation.Left) {
+            leftCorner = new Vector2I(agentPos.x - (height-1), agentPos.y + 1);
+            xMaxSize = height;
+            zMaxSize = width;
+
+        } else { // RIGHT
+            leftCorner = new Vector2I(agentPos.x, agentPos.y + 1);
+            xMaxSize = height;
+            zMaxSize = width;
+
+        }
+
+        for(int i = 0; i < xMaxSize; i++) {
+            for(int j = 0; j < zMaxSize; j++) {
+                Vector2I cell = new Vector2I(leftCorner.x + i, leftCorner.y - j);
+                if(isInsideWorld(cell)) {
+                    cells.Add(cell);
+                }
+            }
+        }
+
 		return cells;
 	}
 

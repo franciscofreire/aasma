@@ -31,8 +31,8 @@ public class HabitantReactive : AgentImplementation {
         }
         
         // Reactive agent: Walk randomly
-        int index = WorldRandom.Next(habitant.sensorData.Cells.Count);
-        Vector2I target = habitant.sensorData.Cells[index];
+        int index = WorldRandom.Next(habitant.sensorData.AdjacentCells.Count);
+        Vector2I target = habitant.sensorData.AdjacentCells[index];
         return new Walk(habitant, target);
     }
     

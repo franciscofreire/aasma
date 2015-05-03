@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using System;
 
 public struct Vector2I {
 	public int x;
@@ -26,9 +26,22 @@ public struct Vector2I {
 	public static bool operator ==(Vector2I v1, Vector2I v2) {
 		return v1.x == v2.x && v1.y == v2.y;
 	}
-	public static bool operator !=(Vector2I v1, Vector2I v2) {
+	
+    public static bool operator !=(Vector2I v1, Vector2I v2) {
 		return !(v1 == v2);
 	}
+
+    public bool isAdjacent(Vector2I v) {
+        //sqrt((x0-x1)^2 + (y0-y1)^2)
+        int dx = Math.Abs(this.x - v.x);
+        int dy = Math.Abs(this.y - v.y);
+        if(dx != dy) { // not diagonal
+            return dx <= 1 && dy <= 1;
+        }
+        else {
+            return false;
+        }
+    }
 }
 
 public partial struct Degrees {
