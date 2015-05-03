@@ -78,7 +78,6 @@ public class WorldInfo : MonoBehaviour {
 	}
 
 	public void WorldTick () {
-
 		foreach(Agent a in AllAgents) {
 			a.OnWorldTick();
 		}
@@ -253,8 +252,7 @@ public class WorldInfo : MonoBehaviour {
 
         int xMaxSize;
         int zMaxSize;
-        int incX;
-        int incZ;
+
 		Vector2I agentPos = CoordConvertions.AgentPosToWorldXZ(agent.pos);
         Vector2I leftCorner;
 
@@ -429,5 +427,10 @@ public static class CoordConvertions {
 	
 	public static Vector2 WorldXZToAgentPos(Vector2I coord) {
 		return new Vector2(coord.x, coord.y);
+	}
+	public static Vector2 ClampAgentPosToWorldSize(Vector2 pos, WorldInfo world) {
+		Vector2 maxWorldCoord = new Vector2(world.xSize-1,world.zSize-1);
+		Vector2 minWorldCoord = Vector2.zero;
+		return Vector2.Max(minWorldCoord, Vector2.Min(maxWorldCoord, pos));
 	}
 }
