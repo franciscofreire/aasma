@@ -6,34 +6,50 @@ public class Animal : Agent {
 
 	public static readonly Energy INITIAL_ENERGY = new Energy(20);
 
-	public static float MaximumSpeed = 0.25f;
-	public static float MaximumSpeedDelta = 0.1f;
-	public static Degrees MaximumOrientationDelta = new Degrees(15f);
-
-    public static float SeparatioWeight = 1.0f;
+    public static float MaximumSpeed = 0.75f;
+    public static float MaximumSpeedDelta = 0.05f;
+    public static float MaximumDirDelta = 0.25f;
+    
+    public static float SeparatioWeight = 5.0f;
     public static float AlignmentWeight = 1.0f;
     public static float CohesionWeight = 1.0f;
     public static float AvoidBorderWeight = 10f;
+    
+    public static float MaxVisDist = 5.0f;
+    public static Degrees HalfFieldOfViewAngle = new Degrees(330f/2f);
 
-	public static float MaxVisDist = 5.0f;
-	public static Degrees HalfFieldOfViewAngle = new Degrees(330f/2f);
+    public float InstantSpeed = 0.001f;
+    public Vector2 InstantVelocity {
+        get {
+            return InstantSpeed * orientation.ToVector2();
+        }
+        set {
+            InstantSpeed = Mathf.Min (value.magnitude, MaximumSpeed);
+            Vector2 dir = value.normalized;
+            orientation = Orientation.FromRadians(new Radians(-Mathf.Atan2(dir.y, dir.x))+(Radians)new Degrees(90));
+            
+            /*Vector2 forward = orientation.ToVector2();
+            float desiredSpeed = value.ProjectIntoFactor(forward);
+            float speedDelta = desiredSpeed - InstantSpeed;
+            Vector2 right = new Orientation(orientation.ToRadiansToUp()+new Degrees(90)).ToVector2();
+            float  = value.ProjectIntoFactor(right);*/
+            
+            
+            /*var speedDelta = Mathf.Min (value.magnitude, MaximumSpeedDelta);
+            InstantSpeed = Mathf.Min(InstantSpeed+speedDelta, MaximumSpeed);
+            var angleToX = new Radians(Mathf.Atan2(value.y, value.x));//Sentido directo
+            var angleToY = angleToX - (Radians)new Degrees(90);//Sentido directo
+            var desiredOrienAngle = -angleToY;//Converter para sentido indirecto
+            var desiredOrienDelta = desiredOrienAngle - orientation.ToRadiansToUp();
+            var orienDelta = new Degrees(Mathf.Clamp(Angles.ToZero360(desiredOrienDelta)-180, 
+                                                     -MaximumOrientationDelta, 
+                                                     MaximumOrientationDelta)
+                                         +180);
 
 
-	public float InstantSpeed = 0.001f;
-	public Vector2 InstantVelocity {
-		get {
-			return InstantSpeed * orientation.ToVector2();
-		}
-		set {
-			var speedDelta = Mathf.Min (value.magnitude, MaximumSpeedDelta);
-			InstantSpeed = Mathf.Min(InstantSpeed+speedDelta, MaximumSpeed);
-			var desiredOrienAngle = new Degrees(Vector2.Angle(Vector2.up, value));//FIXME: This is only giving half a circle. We need the full circle.
-			var desiredOrienDelta = new Degrees(desiredOrienAngle - (Degrees)orientation.ToRadiansToUp());
-			var orienDelta = new Degrees(Mathf.Min (MaximumOrientationDelta, Mathf.Max (-MaximumOrientationDelta, desiredOrienDelta)));
-
-			orientation = Orientation.FromDegrees((Degrees)orientation.ToRadiansToUp()+orienDelta);
-		}
-	}
+            orientation = Orientation.FromRadians(orientation.ToRadiansToUp()+orienDelta);*/
+        }
+    }
 
     private FoodQuantity food;
     public  FoodQuantity Food {
@@ -183,22 +199,25 @@ public class Animal : Agent {
         return acc;
     }
 
-	private void ApplyAcceleration(Vector2 a) {
-		//TODO: Clamp the acceleration
-		Vector2 currentVelocity = InstantVelocity;
-		Vector2 desiredVelocity = currentVelocity + a;
-		InstantVelocity = desiredVelocity;
-
-		//float speedDelta = a.ProjectIntoFactor(orientation.ToVector2());
-		//Degrees orientationDelta = //the signed angle between the current orienation and 
-	}
+    private void ApplyAcceleration(Vector2 a) {
+        Vector2 curDir = orientation.ToVector2();
+        float desiredSpeedDelta = a.ProjectIntoFactor(curDir);
+        float clampedSpeedDelta = Mathf.Clamp(desiredSpeedDelta, -MaximumSpeedDelta, MaximumSpeedDelta);
+        
+        Vector2 orthoDir = Orientation.FromDegrees((Degrees)orientation.ToRadiansToUp()+new Degrees(90)).ToVector2();
+        float desiredDirDelta = a.ProjectIntoFactor(orthoDir);
+        float clampedDirDelta = Mathf.Clamp(desiredDirDelta, -MaximumDirDelta, MaximumDirDelta);
+        
+        Vector2 clampedDelta = curDir * clampedSpeedDelta + orthoDir * clampedDirDelta;
+        Debug.DrawRay(new Vector3(pos.x, 2, pos.y), new Vector3(clampedDelta.x, 0, clampedDelta.y), Color.cyan);
+        InstantVelocity = InstantVelocity + clampedDelta;
+    }
 
 	private void MoveLikeAVehicle() {
 		Vector2 desiredPos = pos + InstantVelocity;
 		Vector2 newPos = CoordConvertions.ClampAgentPosToWorldSize(desiredPos,worldInfo);
 		ChangePosition(newPos);
 	}
-
 
 	public override void OnWorldTick () {
 		BehaveLikeABoid();

@@ -49,12 +49,20 @@ public partial struct Degrees {
 	public Degrees(float value) {
 		this.value = value;
 	}
+    public Radians Radians { 
+        get {
+            return this;
+        }
+    }
 	public static Degrees operator + (Degrees d1, Degrees d2) {
 		return new Degrees(d1.value + d2.value);
 	}
 	public static Degrees operator - (Degrees d1, Degrees d2) {
 		return new Degrees(d1.value - d2.value);
 	}
+    public static Degrees operator - (Degrees d) {
+        return new Degrees(-d.value);
+    }
 }
 
 public partial struct Radians {
@@ -62,12 +70,20 @@ public partial struct Radians {
 	public Radians(float value) {
 		this.value = value;
 	}
+    public Degrees Degrees {
+        get {
+            return this;
+        }
+    }
 	public static Radians operator + (Radians r1, Radians r2) {
 		return new Radians(r1.value + r2.value);
 	}
 	public static Radians operator - (Radians r1, Radians r2) {
 		return new Radians(r1.value - r2.value);
 	}
+    public static Radians operator - (Radians r) {
+        return new Radians(-r.value);
+    }
 	public static Radians Pi {
 		get {
 			return new Radians(Mathf.PI);
@@ -91,6 +107,17 @@ public partial struct Radians {
 	public static implicit operator float (Radians r) {
 		return r.value;
 	}
+}
+
+public static class Angles {
+    public static Radians ToZero2Pi(Radians r) {
+        float val = r.value % (2*Mathf.PI);
+        return val < 0 ? new Radians(val+2*Mathf.PI) : new Radians(val);
+    }
+    public static Degrees ToZero360(Degrees d) {
+        float val = d.value % 360;
+        return val < 0 ? new Degrees(val+360) : new Degrees(val);
+    }
 }
 
 public static class Vector2Extensions {
