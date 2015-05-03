@@ -1,12 +1,23 @@
+using UnityEngine;
+
 public class HabitantReactive : AgentImplementation {
     private Habitant habitant;
 
+    private Action walkRandomly() {
+        int index = WorldRandom.Next(habitant.sensorData.AdjacentCells.Count);
+        Vector2I target = new Vector2I(habitant.pos);
+        try {
+            target = habitant.sensorData.AdjacentCells[index];
+        }
+        catch (System.Exception e) {
+            Debug.Log("[ERROR] @AdjacentCells: " + e.ToString());
+        }
+        return new Walk(habitant, target);
+    }
+
     public Action doAction() {
         if ((habitant.EnemyInFront() || habitant.AnimalInFront()) && habitant.LowEnergy()) {
-            // Reactive agent: Flee randomly
-            int fleeIndex = WorldRandom.Next(habitant.sensorData.Cells.Count);
-            Vector2I fleeTarget = habitant.sensorData.Cells[fleeIndex];
-            return new Walk(habitant, fleeTarget);
+            return walkRandomly();
         }
         else if (habitant.EnemyInFront() || habitant.AnimalInFront()) {
             return new Attack(habitant, habitant.sensorData.FrontCell);
@@ -29,11 +40,8 @@ public class HabitantReactive : AgentImplementation {
         else if (habitant.UnclaimedTerritoryInFront()) {
             return new PlaceFlag(habitant, habitant.sensorData.FrontCell);
         }
-        
-        // Reactive agent: Walk randomly
-        int index = WorldRandom.Next(habitant.sensorData.AdjacentCells.Count);
-        Vector2I target = habitant.sensorData.AdjacentCells[index];
-        return new Walk(habitant, target);
+
+        return walkRandomly();
     }
     
     public HabitantReactive(Habitant habitant) {
