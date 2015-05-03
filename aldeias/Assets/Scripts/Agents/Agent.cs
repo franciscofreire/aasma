@@ -138,7 +138,8 @@ public struct Energy {
 
 public struct SensorData {
 	public IList<Vector2I> _cells;
-	public Vector2I _front_cell;
+    public Vector2I _front_cell;
+    public IList<Vector2I> _adjacent_cells;
 	
 	public IList<Vector2I> Cells
 	{
@@ -151,6 +152,11 @@ public struct SensorData {
         get { return _front_cell; }
         set { _front_cell = value; }
 	}
+    
+    public IList<Vector2I> AdjacentCells {
+        get { return _adjacent_cells; }
+        set { _adjacent_cells = value; }
+    }
 	
 	public SensorData(IList<Vector2I> cells, Vector2I front_cell)
 	{
