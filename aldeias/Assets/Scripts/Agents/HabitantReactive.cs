@@ -5,12 +5,15 @@ public class HabitantReactive : AgentImplementation {
 
     private Action walkRandomly() {
         int index = WorldRandom.Next(habitant.sensorData.AdjacentCells.Count);
-        Vector2I target = new Vector2I(habitant.pos);
+        Vector2I target;
         try {
             target = habitant.sensorData.AdjacentCells[index];
         }
-        catch (System.Exception e) {
-            Debug.Log("[ERROR] @AdjacentCells: " + e.ToString());
+        catch (System.Exception) {
+            //Debug.Log("[ERROR] @AdjacentCells: " + e.ToString());
+            // we don't have nearby free cells, so we do nothing
+            // and stay at the same position
+            target = new Vector2I(habitant.pos);
         }
         return new Walk(habitant, target);
     }
