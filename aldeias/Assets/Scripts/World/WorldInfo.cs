@@ -8,6 +8,8 @@ public class WorldInfo : MonoBehaviour {
 	private const int UPDATE_FRAME_INTERVAL = 2;
 	public int MilisecondsPerTick = 50;
 
+    public AnimalBoidParameters BoidParams = new AnimalBoidParameters();
+
 	// The size of the world in rows and columns.
 	public int xSize = 50;
 	public int zSize = 50;
