@@ -9,12 +9,12 @@ public class MeetingPointsLayer : Layer {
 
 		int numQuads = numTiles;
 		int numVerts = numQuads * 4;
-		int numTris = numQuads * 2;
+		int numTris  = numQuads * 2;
 		
 		// Generate the mesh data
 		Vector3[] vertices = new Vector3[ numVerts ];
-		Vector3[] normals = new Vector3[ numVerts ];
-		Vector2[] uv = new Vector2[ numVerts ];
+		Vector3[] normals  = new Vector3[ numVerts ];
+		Vector2[] uv       = new Vector2[ numVerts ];
 		
 		int[] triangles = new int[ numTris * 3 ];
 		
@@ -132,4 +132,3 @@ public class MeetingPointsLayer : Layer {
 		layerMesh.triangles = triangles;
 	}
 }
-

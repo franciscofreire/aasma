@@ -57,9 +57,9 @@ public class Walk : AnyAgentAction {
 public class Attack : AnyAgentAction {
 	public static readonly Energy ENERGY_TO_REMOVE = new Energy(20);
 	public override void apply () {
-		if(world.worldTiles.WorldTileInfoAtCoord(target).HasAgent) { //FIXME: Unnecessary check (already done in decision cycle)
+		if(world.worldTiles.WorldTileInfoAtCoord(target).HasAgent) {
             Agent enemy = world.worldTiles.WorldTileInfoAtCoord(target).Agent;
-			enemy.RemoveEnergy(ENERGY_TO_REMOVE); // FIXME: Check if he's from an enemy tribe :p
+			enemy.RemoveEnergy(ENERGY_TO_REMOVE);
         }
     }
 	public Attack(Agent agent, Vector2I target) : base(agent, target) {}

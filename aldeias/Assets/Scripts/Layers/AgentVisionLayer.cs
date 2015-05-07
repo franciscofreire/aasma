@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class MeetingPointsLayer : Layer {
+public class AgentVisionLayer : Layer {
 	private Mesh layerMesh;
 	
 	public override void CreateObjects() {
@@ -91,10 +91,10 @@ public class MeetingPointsLayer : Layer {
 		int[] triangles = layerMesh.triangles;
 		bool[,] map = new bool[worldInfo.xSize,worldInfo.zSize];
 
-		foreach(Tribe tribe in worldInfo.tribes) {
-			MeetingPoint mp = tribe.meetingPoint;
-            foreach(Vector2I mpCell in mp.MeetingPointTileCoords) {
-                map[mpCell.x, mpCell.y] = true;
+        foreach(Habitant h in worldInfo.AllHabitants) {
+            foreach(Vector2I cell in h.sensorData.Cells) {
+                if(h.Alive)
+                    map[cell.x, cell.y] = true;
             }
 		} 
 
