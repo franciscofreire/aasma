@@ -13,6 +13,11 @@ public class WorldInfo : MonoBehaviour {
 	// The size of the world in rows and columns.
 	public int xSize = 50;
 	public int zSize = 50;
+    public Vector2I Size {
+        get {
+            return new Vector2I(xSize,zSize);
+        }
+    }
 	
 	// The tiles of the world.
 	public WorldTiles worldTiles; 

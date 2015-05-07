@@ -66,7 +66,12 @@ public abstract class Agent {
       return agentImplementation.doAction();
    }
 	
-	public abstract void OnWorldTick();
+	public virtual void OnWorldTick() {
+        updateSensorData();
+        
+        Action a = doAction();
+        a.apply();
+    }
 
 	public void updateSensorData() {
 		sensorData.Cells = worldInfo.nearbyFreeCells(worldInfo.nearbyCells(this));
