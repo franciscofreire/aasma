@@ -47,18 +47,29 @@ public abstract class Agent {
 	public bool Alive {
 		get { return energy > Energy.Zero; }
 	}
-
-    public virtual void RemoveEnergy(Energy e) {
-		energy.Subtract(e);
+    
+    public void RemoveEnergy(Energy e) {
+        if (!Alive) { // Already dead: Do nothing
+            return;
+        }
+        energy.Subtract(e);
+        if (!Alive) { // First time he died: Notify listeners
+            //Debug.Log("[RIP] Agent @(" + pos.x + "," + pos.y + ")");
+            AnnounceDeath();
+        }
     }
+    public abstract void AnnounceDeath();
+    public abstract void AnnounceDeletion();
+
+    public abstract void removeFromWorldInfo();
 
 	public void Eat(FoodQuantity food) {
 		energy.Add(EnergyFromFood(food));
 	}
 
 	public void ChangePosition(Vector2 newPosition) {
-		worldInfo.worldTiles.WorldTileInfoAtCoord(CoordConvertions.AgentPosToWorldXZ(this.pos)).Agent = null;
-		worldInfo.worldTiles.WorldTileInfoAtCoord(CoordConvertions.AgentPosToWorldXZ(newPosition)).Agent = this;
+		worldInfo.worldTiles.WorldTileInfoAtCoord(CoordConvertions.AgentPosToTile(this.pos)).Agent = null;
+		worldInfo.worldTiles.WorldTileInfoAtCoord(CoordConvertions.AgentPosToTile(newPosition)).Agent = this;
 		this.pos = newPosition;
 	}
 
@@ -68,12 +79,17 @@ public abstract class Agent {
 	
 	public abstract void OnWorldTick();
 
-	public void updateSensorData() {
-		sensorData.Cells = worldInfo.nearbyFreeCells(worldInfo.nearbyCells(this));
-        sensorData.FillAdjacentCells (new Vector2I (pos));
+	public void UpdateSensorData() {
+        try {
+            sensorData.Cells = worldInfo.nearbyFreeCells(worldInfo.nearbyCells(this));
+            sensorData.FillAdjacentCells (new Vector2I (pos));
+        }
+        catch(System.Exception e) {
+            Debug.Log("[ERROR] @UpdateSensorData: " + e.ToString());
+        }
 		
 		Vector2 posInFront = pos + orientation.ToVector2();
-		Vector2I tileCoordInFront = CoordConvertions.AgentPosToWorldXZ(posInFront);
+		Vector2I tileCoordInFront = CoordConvertions.AgentPosToTile(posInFront);
 		sensorData.FrontCell = worldInfo.isInsideWorld(tileCoordInFront)
 			? tileCoordInFront
 			: new Vector2I(pos); // VERIFYME: Not sure about this...

@@ -3,7 +3,8 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class AgentSpawner : Layer {
-	public GameObject habitantModel, warriorModel, animalModel, foodModel;
+	public GameObject habitantModel, warriorModel, tombstoneModel,
+                      animalModel, foodModel;
 
 	public IDictionary<Habitant, GameObject> list_habitants = 
 		new Dictionary<Habitant, GameObject>();
@@ -28,8 +29,12 @@ public class AgentSpawner : Layer {
 	public override void CreateObjects() {
         // An animal is identified by it's position in the world (not ideal, but...)
         // AgentSpawner will use this information to know which animal will be turned to food
-        worldInfo.AddAgentDiedListener((Vector2I pos)=>{
-            TurnToFood(pos);
+        worldInfo.AddAnimalDiedListener((Animal a)=>{
+            TurnToFood(a);
+        });
+
+        worldInfo.AddHabitantDiedListener((Habitant h)=>{
+            TurnToTombstone(h);
         });
 
         // Assign tribe colors to materials
@@ -56,8 +61,8 @@ public class AgentSpawner : Layer {
                 list_agent_materials[h.tribe.id];
 
 			Transform wood = agentModel.transform.Find("Wood");
-			wood.GetComponent<Renderer>().enabled = false;
-
+            wood.GetComponent<Renderer>().enabled = false;
+            
 			list_habitants.Add(h, agentModel);
 		}
 
@@ -76,8 +81,7 @@ public class AgentSpawner : Layer {
 
 	public override void ApplyWorldInfo() {
         //TODO: add animals and habitants that appeared
-        
-        // Remove depleted food
+
         List<Animal> keys_animals = new List<Animal>(list_animals.Keys);
         foreach (Animal a in keys_animals) {
             GameObject g = list_animals[a];
@@ -85,31 +89,59 @@ public class AgentSpawner : Layer {
             if (a.Alive) {
                 g.transform.localRotation = a.orientation.ToQuaternion();
             } 
-            else if (!a.HasFood) {
+            else if (!a.HasFood) { // Remove depleted food
                 Destroy(list_animals[a]);
                 list_animals.Remove(a);
+                a.removeFromWorldInfo();
             }
         }
-
-		foreach (KeyValuePair<Habitant,GameObject> kvp in list_habitants) {
-			Habitant h = kvp.Key;
-			GameObject g = kvp.Value;
+        
+        List<Habitant> keys_habitants = new List<Habitant>(list_habitants.Keys);
+		foreach (Habitant h in keys_habitants) {
+			GameObject g = list_habitants[h];
 			g.transform.localPosition = AgentPosToVec3(h.pos);
 			g.transform.localRotation = h.orientation.ToQuaternion();
-            if (h.CarryingWood) {
-                Transform wood = g.transform.Find("Wood");
-                wood.GetComponent<Renderer>().enabled = true;
+            if(h.Alive) {
+                if (h.CarryingWood) {
+                    Transform wood = g.transform.Find("Wood");
+                    wood.GetComponent<Renderer>().enabled = true;
+                }
+            }
+            else if(h.OldTombstone) { // Remove old tombstone
+                Destroy(list_habitants[h]);
+                list_habitants.Remove(h);
+                h.removeFromWorldInfo();
             }
 		}
 	}
     
-    public void TurnToFood(Vector2I pos) {
-        Animal a = (Animal) worldInfo.worldTiles.WorldTileInfoAtCoord(pos).Agent;
-
+    public void TurnToFood(Animal a) {
         // Change to food model when an agent starts to collect food
-        //GameObject g = list_animals[a];
-        Destroy(list_animals[a]);
-        list_animals[a] = (GameObject) Instantiate(foodModel, WorldXZToVec3(pos), Quaternion.identity);
-        list_animals[a].transform.parent = this.transform;
+        try {
+            Destroy(list_animals[a]);
+            list_animals[a] = (GameObject) Instantiate(
+                foodModel,
+                TileToVec3(CoordConvertions.AgentPosToTile(a.pos)),
+                Quaternion.identity);
+            list_animals[a].transform.parent = this.transform;
+        }
+        catch (System.ArgumentNullException e) {
+            Debug.Log("[ERROR] @TurnToFood: " + e);
+        }
+    }
+    
+    public void TurnToTombstone(Habitant h) {
+        // Change to tombstone model when habitant is dead
+        try {
+            Destroy(list_habitants[h]);
+            list_habitants[h] = (GameObject) Instantiate(
+                tombstoneModel,
+                TileToVec3(CoordConvertions.AgentPosToTile(h.pos)),
+                Quaternion.identity);
+            list_habitants[h].transform.parent = this.transform;
+        }
+        catch (System.ArgumentNullException e) {
+            Debug.Log("[ERROR] @TurnToTombstone: " + e);
+        }
     }
 }

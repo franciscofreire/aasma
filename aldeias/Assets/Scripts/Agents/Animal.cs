@@ -6,6 +6,8 @@ public class Animal : Agent {
 
 	public static readonly Energy INITIAL_ENERGY = new Energy(20);
 
+    public Habitat habitat;
+
     public static float MaximumSpeed = 0.75f;
     public static float MaximumSpeedDelta = 0.05f;
     public static float MaximumDirDelta = 0.25f;
@@ -65,13 +67,13 @@ public class Animal : Agent {
             return food > FoodQuantity.Zero;
         }
     }
-
-    public override void RemoveEnergy(Energy e) {
-        energy.Subtract(e);
-        if (!Alive) {
-            Debug.Log("[RIP] Animal @(" + pos.x + "," + pos.y + ")");
-            worldInfo.NotifyAgentDiedListeners(new Vector2I(pos));
-        }
+    
+    public override void AnnounceDeath() {
+        worldInfo.NotifyAnimalDiedListeners(this);
+    }
+    
+    public override void AnnounceDeletion() {
+        worldInfo.NotifyAnimalDeletedListeners(this);
     }
 
     public FoodQuantity Tear() {
@@ -85,11 +87,22 @@ public class Animal : Agent {
         }
     }
 
-    public Animal(WorldInfo world, Vector2 pos, FoodQuantity food)
+    public Animal(WorldInfo world, Vector2 pos, Habitat h, FoodQuantity food)
     : base(world, pos, INITIAL_ENERGY) {
         this.food = food;
-    }
+        this.habitat = h;
 
+        worldInfo.AddAnimalDeletedListener(removeFromWorldInfo);
+    }
+    
+    public override void removeFromWorldInfo() {
+        // Remove agent reference in tile
+        worldInfo.worldTiles.WorldTileInfoAtCoord(
+            CoordConvertions.AgentPosToTile(pos)).Agent = null;
+        
+        // Remove agent from tribe
+        habitat.RemoveAnimal(this);
+    }
 
     /********************
      ** BOID BEHAVIOUR **
@@ -220,7 +233,7 @@ public class Animal : Agent {
 	}
 
 	public override void OnWorldTick () {
-		BehaveLikeABoid();
+		//BehaveLikeABoid();
 		//Vector2 sum = pos+Vector2.right;
 		//pos = new Vector2(sum.x%worldInfo.xSize, sum.y);
         /*updateSensorData();

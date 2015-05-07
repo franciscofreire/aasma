@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-public class WorldInfo : MonoBehaviour {
+public partial class WorldInfo : MonoBehaviour {
 
 	private const int UPDATE_FRAME_INTERVAL = 2;
 	public int MilisecondsPerTick = 50;
@@ -31,9 +31,9 @@ public class WorldInfo : MonoBehaviour {
 
 	public IEnumerable<Animal> AllAnimals {
 		get {
-			return habitats                                //List of Habitats
-				.ConvertAll(h=>h.animals.AsEnumerable())   //Lists of Animals
-					.Aggregate((as1,as2)=>as1.Concat(as2));//List of Animals
+			return habitats                              // List  of Habitats
+				.ConvertAll(h=>h.animals.AsEnumerable()) // Lists of Animals
+				.Aggregate((as1,as2)=>as1.Concat(as2));  // List  of Animals
 		}
 	}
 
@@ -49,18 +49,6 @@ public class WorldInfo : MonoBehaviour {
 		AllTrees.Add(tree);
 		// Add tree to the optimized Tree at tile structure.
 		worldTiles.WorldTileInfoAtCoord(tree.Pos).Tree = tree;
-	}
-
-	public class Habitat {
-		public Vector2I corner_pos;
-		public List<Animal> animals = new List<Animal>();
-		
-		public Habitat(int x, int y) {
-			this.corner_pos = new Vector2I(x, y);
-		}
-		
-		public Habitat() {
-		}
 	}
 
 	void Start () {
@@ -79,7 +67,7 @@ public class WorldInfo : MonoBehaviour {
 
 	public void WorldTick () {
 		foreach(Agent a in AllAgents) {
-			a.OnWorldTick();
+		    a.OnWorldTick();
 		}
 		NotifyChangeListeners();
 
@@ -198,7 +186,7 @@ public class WorldInfo : MonoBehaviour {
 		//Create four Habitants of the given Tribe.
 		//The Habitants should be created inside the Tribe's meeting point.
 		foreach( var coord in tribe.meetingPoint.MeetingPointTileCoords.Take(20)) {
-			Vector2 pos = CoordConvertions.WorldXZToAgentPos(coord);
+			Vector2 pos = CoordConvertions.TileToAgentPos(coord);
 			Habitant h = new Habitant(this, pos, tribe, 1);
 			tribe.AddHabitant(h);
 		}
@@ -216,7 +204,7 @@ public class WorldInfo : MonoBehaviour {
 	}
 
 	private void CreateAnimals() {
-		foreach (WorldInfo.Habitat h in habitats) {
+		foreach (Habitat h in habitats) {
 			int num_animals = 40;
 			for(int x = h.corner_pos.x; x < h.corner_pos.x + HABITAT_SIDE; x++) {
 				for(int z = h.corner_pos.y; z > h.corner_pos.y - HABITAT_SIDE; z--) {
@@ -224,7 +212,8 @@ public class WorldInfo : MonoBehaviour {
 						Vector2I tileCoord = new Vector2I(x,z);
 						Animal a = new Animal(
                             this,
-                            CoordConvertions.WorldXZToAgentPos(tileCoord),
+                            CoordConvertions.TileToAgentPos(tileCoord),
+                            h,
                             new FoodQuantity(100));
 						worldTiles.WorldTileInfoAtCoord(tileCoord).Agent = a;
 						h.animals.Add(a);
@@ -253,37 +242,37 @@ public class WorldInfo : MonoBehaviour {
 	////
 
     public IList<Vector2I> nearbyCells(Agent agent) {
-        int height = 4;
-        int width = 3;
+        const int height = 4;
+        const int width = 3;
 
         int xMaxSize;
         int zMaxSize;
 
-		Vector2I agentPos = CoordConvertions.AgentPosToWorldXZ(agent.pos);
+		Vector2I agentPos = CoordConvertions.AgentPosToTile(agent.pos);
         Vector2I leftCorner;
 
         IList<Vector2I> cells = new List<Vector2I>();
-
+        
+        int width_delta  = (int) System.Math.Floor((double) width / 2); 
         if(agent.orientation == Orientation.Up) {
-            leftCorner = new Vector2I(agentPos.x - 1, agentPos.y + (height-1));
+            leftCorner = new Vector2I(agentPos.x - width_delta, agentPos.y + (height-1));
             xMaxSize = width;
             zMaxSize = height;
 
         } else if(agent.orientation == Orientation.Down) {
-            leftCorner = new Vector2I(agentPos.x - 1, agentPos.y);
+            leftCorner = new Vector2I(agentPos.x - width_delta, agentPos.y);
             xMaxSize = width;
             zMaxSize = height;
 
         } else if(agent.orientation == Orientation.Left) {
-            leftCorner = new Vector2I(agentPos.x - (height-1), agentPos.y + 1);
+            leftCorner = new Vector2I(agentPos.x - (height-1), agentPos.y + width_delta);
             xMaxSize = height;
             zMaxSize = width;
 
         } else { // RIGHT
-            leftCorner = new Vector2I(agentPos.x, agentPos.y + 1);
+            leftCorner = new Vector2I(agentPos.x, agentPos.y + width_delta);
             xMaxSize = height;
             zMaxSize = width;
-
         }
 
         for(int i = 0; i < xMaxSize; i++) {
@@ -312,17 +301,16 @@ public class WorldInfo : MonoBehaviour {
 		return coord.x >= 0 && coord.y >= 0 && coord.x < xSize && coord.y < zSize;
 	}
 
-
 	public bool AgentPosInTile(Vector2 agentPos, Vector2I tileCoord) {
 		//Assuming pos (0,0) is in the center of the tile (0,0)
-		Vector2I agentTileCoord = CoordConvertions.AgentPosToWorldXZ(agentPos);
+		Vector2I agentTileCoord = CoordConvertions.AgentPosToTile(agentPos);
 		return agentTileCoord == tileCoord;
 	}
 
 	public Habitant habitantInTile(Vector2I tileCoord) {
 		foreach(Tribe t in tribes) {
 			foreach(Habitant h in t.habitants) {
-				if(AgentPosInTile(h.pos, tileCoord)){
+				if(AgentPosInTile(h.pos, tileCoord) && h.Alive){
 					return h;
 				}
 			}
@@ -339,54 +327,6 @@ public class WorldInfo : MonoBehaviour {
             }
         }
         return null;
-    }
-
-	////
-	//// LISTENERS
-	////
-
-	public delegate void WorldChangeListener();
-	private List<WorldChangeListener> changeListeners = new List<WorldChangeListener>();
-	public void AddChangeListener(WorldChangeListener func) {
-		changeListeners.Add(func);
-	}
-	private void NotifyChangeListeners() {
-		foreach(WorldChangeListener listener in changeListeners) {
-			listener();
-		}
-	}
-
-	public delegate void WorldCreationListener();
-	private List<WorldCreationListener> creationListeners = new List<WorldCreationListener>();
-	public void AddCreationListener(WorldCreationListener func) {
-		creationListeners.Add(func);
-	}
-	private void NotifyCreationListeners() {
-		foreach(WorldCreationListener listener in creationListeners) {
-			listener();
-		}
-	}
-    
-    public delegate void TreeDiedListener(Vector2I pos);
-    private List<TreeDiedListener> treeListeners = new List<TreeDiedListener>();
-    public void AddTreeDiedListener(TreeDiedListener func) {
-        treeListeners.Add(func);
-    }
-    public void NotifyTreeDiedListeners(Vector2I pos) {
-        foreach(TreeDiedListener listener in treeListeners) {
-            listener(pos);
-        }
-    }
-    
-    public delegate void AgentDiedListener(Vector2I pos);
-    private List<AgentDiedListener> agentListeners = new List<AgentDiedListener>();
-    public void AddAgentDiedListener(AgentDiedListener func) {
-        agentListeners.Add(func);
-    }
-    public void NotifyAgentDiedListeners(Vector2I pos) {
-        foreach(AgentDiedListener listener in agentListeners) {
-            listener(pos);
-        }
     }
 }
 
@@ -459,11 +399,11 @@ public static class WorldRandom {
 }
 
 public static class CoordConvertions {
-	public static Vector2I AgentPosToWorldXZ(Vector2 pos) {
+	public static Vector2I AgentPosToTile(Vector2 pos) {
 		return new Vector2I((int)(pos.x+0.5f), (int)(pos.y+0.5f));
 	}
 	
-	public static Vector2 WorldXZToAgentPos(Vector2I coord) {
+	public static Vector2 TileToAgentPos(Vector2I coord) {
 		return new Vector2(coord.x, coord.y);
 	}
 	public static Vector2 ClampAgentPosToWorldSize(Vector2 pos, WorldInfo world) {

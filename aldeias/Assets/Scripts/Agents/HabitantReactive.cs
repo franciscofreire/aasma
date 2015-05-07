@@ -23,17 +23,20 @@ public class HabitantReactive : AgentImplementation {
             return walkRandomly();
         }
         else if (habitant.EnemyInFront() || habitant.AnimalInFront()) {
+            Debug.Log("Attacker pos: " + habitant.pos.x + "," + habitant.pos.y);
             return new Attack(habitant, habitant.sensorData.FrontCell);
         }
         else if (habitant.FoodInFront() && !habitant.CarryingResources()) {
             return new PickupFood(habitant, habitant.sensorData.FrontCell);
         }
+        /*
         else if (habitant.CutDownTreeWithWoodInFront() && !habitant.CarryingResources()) {
             return new PickupTree(habitant, habitant.sensorData.FrontCell);
         }
         else if (habitant.AliveTreeInFront() && !habitant.CarryingResources()) {
             return new CutTree(habitant, habitant.sensorData.FrontCell);
         }
+        */
         else if (habitant.MeetingPointInFront() && habitant.CarryingFood) {
             return new DropFood(habitant, habitant.sensorData.FrontCell);
         }

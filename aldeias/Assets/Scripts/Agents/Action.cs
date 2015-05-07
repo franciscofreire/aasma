@@ -38,8 +38,8 @@ public abstract class AnyAgentAction : Action {
 public class Walk : AnyAgentAction {
 	public override void apply () {
 		//Change the Agent's position and reorient him so he faces the same direction in which he moved.
-		Vector2I origin = CoordConvertions.AgentPosToWorldXZ(agent.pos);
-		agent.ChangePosition(CoordConvertions.WorldXZToAgentPos(target));
+		Vector2I origin = CoordConvertions.AgentPosToTile(agent.pos);
+		agent.ChangePosition(CoordConvertions.TileToAgentPos(target));
 		// Orientation
 		if (origin.x > target.x) {
 			performer.orientation = Orientation.Left;
@@ -57,12 +57,9 @@ public class Walk : AnyAgentAction {
 public class Attack : AnyAgentAction {
 	public static readonly Energy ENERGY_TO_REMOVE = new Energy(20);
 	public override void apply () {
-		if(world.worldTiles.WorldTileInfoAtCoord(target).HasAgent) {
-            foreach(Agent a in world.AllAgents) {
-				if(CoordConvertions.AgentPosToWorldXZ(a.pos) == target) {
-					a.RemoveEnergy(ENERGY_TO_REMOVE);
-				}
-            }
+		if(world.worldTiles.WorldTileInfoAtCoord(target).HasAgent) { //FIXME: Unnecessary check (already done in decision cycle)
+            Agent enemy = world.worldTiles.WorldTileInfoAtCoord(target).Agent;
+			enemy.RemoveEnergy(ENERGY_TO_REMOVE); // FIXME: Check if he's from an enemy tribe :p
         }
     }
 	public Attack(Agent agent, Vector2I target) : base(agent, target) {}

@@ -42,9 +42,23 @@ public class Tribe {
 		this.id = id;
 		this.meetingPoint = meetingPoint;
 	}
+
+    //
+    // Habitants
+    //
+
 	public void AddHabitant(Habitant h) {
 		habitants.Add(h);
 	}
+
+    public void RemoveHabitant(Habitant h) {
+        habitants.Remove(h);
+    }
+
+    //
+    // Wood
+    //
+
 	public void AddWoodToStock(WoodQuantity wood) {
 		WoodStock = WoodStock + wood;
 	}
@@ -56,6 +70,11 @@ public class Tribe {
 			return WoodQuantity.Zero;
 		}
 	}
+
+    //
+    // Food
+    //
+
 	public void AddFoodToStock(FoodQuantity food) {
 		FoodStock = FoodStock + food;
 	}

@@ -33,6 +33,20 @@ public class Habitant : Agent {
 	public float affinity; // 0: Complete Civil; 1: Complete Warrior
 	public bool  isLeader;
 
+    public int tombstoneTickCounter = 0;
+    public static readonly int MAX_TOMBSTONE = 50;
+    public bool OldTombstone {
+        get {
+            return tombstoneTickCounter > MAX_TOMBSTONE;
+        }
+    }
+
+    public void UpdateTombstoneCounter() {
+        if(!Alive) {
+            tombstoneTickCounter++;
+        }
+    }
+
 	public static readonly Energy INITIAL_ENERGY = new Energy(100);
 
 	public Habitant(WorldInfo world, Vector2 pos, Tribe tribe, float affinity): base(world, pos, INITIAL_ENERGY) {
@@ -40,7 +54,18 @@ public class Habitant : Agent {
 		this.affinity = affinity;
 		this.isLeader = false;
         AgentImpl = new HabitantReactive(this);
+
+        worldInfo.AddHabitantDeletedListener(removeFromWorldInfo);
 	}
+
+    public override void removeFromWorldInfo() {
+        // Remove agent reference in tile
+        worldInfo.worldTiles.WorldTileInfoAtCoord(
+            CoordConvertions.AgentPosToTile(pos)).Agent = null;
+
+        // Remove agent from tribe
+        tribe.RemoveHabitant(this);
+    }
 
 	public WoodQuantity PickupWood(WoodQuantity wood) {
 		if((CarriedWeight + wood.Weight) <= MaximumCarriedWeight) {
@@ -77,6 +102,14 @@ public class Habitant : Agent {
 			return FoodQuantity.Zero;
 		}
 	}
+    
+    public override void AnnounceDeath() {
+        worldInfo.NotifyHabitantDiedListeners(this);
+    }
+    
+    public override void AnnounceDeletion() {
+        worldInfo.NotifyHabitantDeletedListeners(this);
+    }
 
 	//***************
 	//** DECISIONS **
@@ -87,11 +120,15 @@ public class Habitant : Agent {
                   sensorData.FrontCell.x + "," + sensorData.FrontCell.y + ")");
     }
 
-	public override void OnWorldTick () {
-		updateSensorData();
+    public override void OnWorldTick () {
+        UpdateTombstoneCounter();
+		
+        if (Alive) {
+            UpdateSensorData();
 
-		Action a = doAction();
-		a.apply();
+            Action a = doAction();
+            a.apply();
+        }
 	}
 
 	//*************
@@ -104,7 +141,7 @@ public class Habitant : Agent {
 	}
 
 	public bool AnimalInFront() {
-        foreach(WorldInfo.Habitat h in worldInfo.habitats) {
+        foreach(Habitat h in worldInfo.habitats) {
             foreach(Agent a in h.animals) {
                 if (a.pos.Equals (sensorData.FrontCell.ToVector2()) && a.Alive) {
                     return true;
@@ -129,7 +166,7 @@ public class Habitant : Agent {
 	}
 
     public bool FoodInFront() {
-        foreach(WorldInfo.Habitat h in worldInfo.habitats) {
+        foreach(Habitat h in worldInfo.habitats) {
             foreach(Agent a in h.animals) {
                 if (a.pos.Equals (sensorData.FrontCell.ToVector2()) && !a.Alive) {
                     return true;
