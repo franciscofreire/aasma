@@ -14,6 +14,7 @@ public class Habitant : Agent {
 	public static readonly Weight MaximumCarriedWeight = new Weight(200);
 	public FoodQuantity carriedFood;
 	public WoodQuantity carriedWood;
+
 	public bool CarryingFood {
 		get {
 			return (carriedFood != FoodQuantity.Zero);
@@ -53,6 +54,7 @@ public class Habitant : Agent {
 		this.tribe  = tribe;
 		this.affinity = affinity;
 		this.isLeader = false;
+        this.tribe = tribe;
         AgentImpl = new HabitantReactive(this);
 
         worldInfo.AddHabitantDeletedListener(removeFromWorldInfo);
@@ -124,7 +126,7 @@ public class Habitant : Agent {
         UpdateTombstoneCounter();
 		
         if (Alive) {
-            UpdateSensorData();
+            updateSensorData();
 
             Action a = doAction();
             a.apply();

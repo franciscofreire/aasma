@@ -126,5 +126,13 @@ public static class Vector2Extensions {
 	}
 	public static Vector2 ProjectInto(this Vector2 projected, Vector2 other) {
 		return other * projected.ProjectIntoFactor(other);
-	}
+    }
+    public static void Clamp(this Vector2 vec) {
+        vec.x = ((int) vec.x) + 0.5 > vec.x
+            ? (float) (((int) vec.x) + 0.5)
+            : (float) (((int) vec.x) + 1.5); // Advance one cell and center
+        vec.y = ((int) vec.y) + 0.5 > vec.y
+            ? (float) (((int) vec.y) + 0.5)
+            : (float) (((int) vec.y) + 1.5); // Advance one cell and center
+    }
 }
