@@ -69,7 +69,19 @@ public abstract class Agent {
 	public abstract void OnWorldTick();
 
 	public void updateSensorData() {
-		sensorData.Cells = worldInfo.nearbyFreeCells(worldInfo.nearbyCells(this));
+        IList<Tree> _trees;
+        IList<Tree> _stumps;
+        IList<Habitant> _enemies;
+        IList<Animal> _animals;
+
+		sensorData.Cells = worldInfo.nearbyFreeCells(
+            worldInfo.nearbyCells(this, out _trees,out _stumps,out _enemies,out _animals));
+
+        sensorData._trees = _trees;
+        sensorData._stumps = _stumps;
+        sensorData._enemies = _enemies;
+        sensorData._animals = _animals;
+
         sensorData.FillAdjacentCells (new Vector2I (pos));
 		
 		Vector2 posInFront = pos + orientation.ToVector2();
@@ -140,6 +152,10 @@ public struct SensorData {
 	public IList<Vector2I> _cells;
     public Vector2I _front_cell;
     public IList<Vector2I> _adjacent_cells;
+    public IList<Tree> _trees;
+    public IList<Tree> _stumps;
+    public IList<Habitant> _enemies;
+    public IList<Animal> _animals;
 	
 	public IList<Vector2I> Cells
 	{
@@ -163,6 +179,10 @@ public struct SensorData {
 		_cells = cells;
 		_front_cell = front_cell;
         _adjacent_cells = null;
+        _trees = null;
+        _stumps = null;
+        _enemies = null;
+        _animals = null;
 	}
 
     public void FillAdjacentCells (Vector2I agentPos) {

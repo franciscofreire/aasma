@@ -31,6 +31,14 @@ public class WorldInfo : MonoBehaviour {
 		}
 	}
 
+    public Tribe GetEnemyTribe(Tribe tribe) {
+        foreach(Tribe t in tribes) {
+            if(!t.id.Equals (tribe)) {
+                return t;
+            }
+        }
+        return null;
+    }
 	public IEnumerable<Animal> AllAnimals {
 		get {
 			return habitats                                //List of Habitats
@@ -254,7 +262,12 @@ public class WorldInfo : MonoBehaviour {
 	//// TILE INFORMATION
 	////
 
-    public IList<Vector2I> nearbyCells(Agent agent) {
+    public IList<Vector2I> nearbyCells(Agent agent,
+        out IList<Tree> _trees,
+        out IList<Tree> _stumps,
+        out IList<Habitant> _enemies,
+        out IList<Animal> _animals) {
+
         int height = 4;
         int width = 3;
 
@@ -263,6 +276,14 @@ public class WorldInfo : MonoBehaviour {
 
 		Vector2I agentPos = CoordConvertions.AgentPosToWorldXZ(agent.pos);
         Vector2I leftCorner;
+
+        Tribe enemyTribe = agent.GetType() == typeof(Habitant) ? 
+            GetEnemyTribe(((Habitant) agent).tribe) : null; 
+
+        _trees = new List<Tree>();
+        _stumps = new List<Tree>();
+        _enemies = new List<Habitant>();
+        _animals = new List<Animal>();
 
         IList<Vector2I> cells = new List<Vector2I>();
 
@@ -293,6 +314,30 @@ public class WorldInfo : MonoBehaviour {
                 Vector2I cell = new Vector2I(leftCorner.x + i, leftCorner.y - j);
                 if(isInsideWorld(cell)) {
                     cells.Add(cell);
+                    if(enemyTribe != null) {
+                        foreach(Habitant h in enemyTribe.habitants) {
+                            if(CoordConvertions.AgentPosToWorldXZ(h.pos) == cell) {
+                                _enemies.Add(h);
+                            }
+                        }
+                        foreach(Habitat hab in habitats) {
+                            foreach(Animal a in hab.animals) {
+                                if(CoordConvertions.AgentPosToWorldXZ(a.pos) == cell) {
+                                    _animals.Add(a);
+                                }
+                            }
+                        }
+                        foreach(Tree t in AllTrees) {
+                            if(t.Pos == cell) {
+                                if(t.Alive) {
+                                    _trees.Add(t);
+                                } else {
+                                    _stumps.Add(t);
+                                }
+                            }
+                        }
+                    }
+
                 }
             }
         }
