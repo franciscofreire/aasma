@@ -29,7 +29,7 @@ public class AnimalBoidImplementation : AgentImplementation {
     }
     IEnumerable<Animal> Neighbors {
         get {
-            return animal.Neighbors;
+            return animal.VisibleAnimals;
         }
     }
     Vector2I WorldSize {
@@ -43,12 +43,40 @@ public class AnimalBoidImplementation : AgentImplementation {
         }
     }
 
+    IEnumerable<Habitant> VisibleHabitants {
+        get {
+            return animal.VisibleHabitants;
+        }
+    }
+    Habitant ClosestHabitant {
+        get {
+            var noHabitant = new KeyValuePair<float, Habitant>(Mathf.Infinity,null);
+            var closeHabitant = VisibleHabitants.Aggregate(noHabitant, (KeyValuePair<float, Habitant> closest, Habitant candidate)=>{
+                var candDist = (this.Pos-candidate.pos).sqrMagnitude;
+                return candDist < closest.Key ? new KeyValuePair<float, Habitant>(candDist, candidate)
+                    : closest;
+            });
+            return closeHabitant.Value;
+        }
+    }
+
     public AnimalBoidImplementation(Animal animal) {
         this.animal = animal;
     }
 
     public Action doAction() {
-        return new AnimalAccelerate(animal, BoidAcceleration());
+        Habitant closest = ClosestHabitant;
+        bool habitantVisible = closest != null;
+        if (habitantVisible && animal.AttackMechanism.AgentInRange(closest)) {
+            return new AnimalAttackHabitant(animal, closest);
+        } else if (habitantVisible) {
+            //Steer toward the habitant.
+            var towardsHabitant = closest.pos-Pos;
+            var accTowardsHabitant = towardsHabitant*10f;
+            return new AnimalAccelerate(animal, accTowardsHabitant);
+        } else {
+            return new AnimalAccelerate(animal, BoidAcceleration());
+        }
     }
 
     private Vector2 BoidAcceleration() {
@@ -147,6 +175,23 @@ public class AnimalAccelerate : Action {
     }
 }
 
+public class AnimalAttackHabitant : Action {
+    private Animal animal;
+    private Habitant habitant;
+    public override Agent performer {
+        get {
+            return animal;
+        }
+    }
+    public AnimalAttackHabitant(Animal animal, Habitant habitant):base(new Vector2I(0,0)) {
+        this.animal = animal;
+        this.habitant = habitant;
+    }
+    public override void apply() {
+        animal.AttackMechanism.TryAttackAgent(habitant);
+    }
+}
+
 public class Animal : Agent {
 
 	public static readonly Energy INITIAL_ENERGY = new Energy(20);
@@ -205,10 +250,12 @@ public class Animal : Agent {
         }
     }
 
+    public AnimalAttackMechanism AttackMechanism;
+
     public Animal(WorldInfo world, Vector2 pos, Habitat h, FoodQuantity food)
     : base(world, pos, INITIAL_ENERGY) {
         this.food = food;
-        this.habitat = h;
+        this.AttackMechanism = new AnimalAttackMechanism(this);
         this.AgentImpl = new AnimalBoidImplementation(this);
 
         worldInfo.AddAnimalDeletedListener(removeFromWorldInfo);
@@ -229,7 +276,7 @@ public class Animal : Agent {
 		}
 	}
 
-	public IEnumerable<Animal> Neighbors {
+	public IEnumerable<Animal> VisibleAnimals {
 		get {
 			var all = worldInfo.AllAnimals;
 			var others = all.Except(Myself);
@@ -241,6 +288,18 @@ public class Animal : Agent {
 			return inFront;
 		}
 	}
+
+    public IEnumerable<Habitant> VisibleHabitants {
+        get {
+            var all = worldInfo.AllHabitants;
+            var closeEnough = all.Where(h=>(h.pos-this.pos).sqrMagnitude < BoidParams.MaxVisDist*BoidParams.MaxVisDist);
+            var insideFieldOfView = closeEnough.Where(h=>{
+                Degrees forwardToHabitant = new Degrees(Vector2.Angle(this.orientation.ToVector2(), (h.pos-this.pos).normalized));
+                return forwardToHabitant.value < BoidParams.HalfFieldOfViewAngle.value;
+            });
+            return insideFieldOfView;
+        }
+    }
 
     public void ApplyAcceleration(Vector2 a) {
         Vector2 curDir = orientation.ToVector2();
@@ -270,5 +329,28 @@ public class Animal : Agent {
         base.OnWorldTick ();
         if (Alive)
             MoveLikeAVehicle();
+    }
+}
+
+public class AnimalAttackMechanism {
+    Animal animal;
+    float maxDistance = 2f;
+    Degrees maxAngleFromHeading = new Degrees(45);
+    Energy attackRemovedEnergy = new Energy(20);
+    public AnimalAttackMechanism(Animal animal) {
+        this.animal = animal;
+    }
+    public void TryAttackAgent(Agent target) {
+        if(AgentInRange(target)) {
+            Attack(target);
+        }
+    }
+    private void Attack(Agent target) {
+        target.RemoveEnergy(attackRemovedEnergy);
+    }
+    public bool AgentInRange(Agent agent) {
+        var dist = agent.pos-animal.pos;
+        return dist.sqrMagnitude < maxDistance*maxDistance &&
+            Vector2.Angle(dist, animal.orientation.ToVector2()) < maxAngleFromHeading;
     }
 }
