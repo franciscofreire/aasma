@@ -143,11 +143,9 @@ public class Habitant : Agent {
 	}
 
 	public bool AnimalInFront() {
-        foreach(Habitat h in worldInfo.habitats) {
-            foreach(Agent a in h.animals) {
-                if (a.pos.Equals (sensorData.FrontCell.ToVector2()) && a.Alive) {
-                    return true;
-                }
+        foreach(Animal a in worldInfo.AllAnimals) {
+            if ((CoordConvertions.AgentPosToTile(a.pos) == sensorData.FrontCell) && a.Alive) {
+                return true;
             }
         }
         return false;

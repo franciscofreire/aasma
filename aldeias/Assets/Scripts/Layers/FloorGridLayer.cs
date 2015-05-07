@@ -23,7 +23,7 @@ public class FloorGridLayer : Layer {
 			else if (tt.OwnerTribe.id == "B")
 				return (int) ATLAS.TRIBE_B;
 		}
-
+        
 		return (int) ATLAS.GRASS;
 	}
 }

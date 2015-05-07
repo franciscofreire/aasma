@@ -55,7 +55,7 @@ public abstract class Agent {
         energy.Subtract(e);
         if (!Alive) { // First time he died: Notify listeners
             //Debug.Log("[RIP] Agent @(" + pos.x + "," + pos.y + ")");
-            pos.Clamp();
+            Clamp();
             AnnounceDeath();
         }
     }
@@ -67,6 +67,15 @@ public abstract class Agent {
 	public void Eat(FoodQuantity food) {
 		energy.Add(EnergyFromFood(food));
 	}
+
+    public void Clamp() {
+        pos.x = ((int) pos.x) > pos.x
+            ? (float) ((int) pos.x)
+            : (float) ((int) pos.x) + 1;
+        pos.y = ((int) pos.y) > pos.y
+            ? (float) ((int) pos.y)
+            : (float) ((int) pos.y) + 1;
+    }
 
 	public void ChangePosition(Vector2 newPosition) {
 		worldInfo.worldTiles.WorldTileInfoAtCoord(CoordConvertions.AgentPosToTile(this.pos)).Agent = null;
