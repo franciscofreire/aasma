@@ -89,13 +89,6 @@ public class Habitant : Agent {
                   sensorData.FrontCell.x + "," + sensorData.FrontCell.y + ")");
     }
 
-	public override void OnWorldTick () {
-		updateSensorData();
-
-		Action a = doAction();
-		a.apply();
-	}
-
 	//*************
 	//** SENSORS **
 	//*************
