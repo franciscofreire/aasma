@@ -47,30 +47,52 @@ public abstract class Agent {
 	public bool Alive {
 		get { return energy > Energy.Zero; }
 	}
-
-    public virtual void RemoveEnergy(Energy e) {
-		energy.Subtract(e);
+    
+    public void RemoveEnergy(Energy e) {
+        if (!Alive) { // Already dead: Do nothing
+            return;
+        }
+        energy.Subtract(e);
+        if (!Alive) { // First time he died: Notify listeners
+            Logger.Log("[RIP] Agent @(" + pos.x + "," + pos.y + ")", Logger.VERBOSITY.AGENTS);
+            Clamp();
+            AnnounceDeath();
+        }
     }
+    public abstract void AnnounceDeath();
+    public abstract void AnnounceDeletion();
+
+    public abstract void removeFromWorldInfo();
 
 	public void Eat(FoodQuantity food) {
 		energy.Add(EnergyFromFood(food));
 	}
 
+    public void Clamp() {
+        pos.x = ((int) pos.x) > pos.x
+            ? (float) ((int) pos.x)
+            : (float) ((int) pos.x) + 1;
+        pos.y = ((int) pos.y) > pos.y
+            ? (float) ((int) pos.y)
+            : (float) ((int) pos.y) + 1;
+    }
+
 	public void ChangePosition(Vector2 newPosition) {
-		worldInfo.worldTiles.WorldTileInfoAtCoord(CoordConvertions.AgentPosToWorldXZ(this.pos)).Agent = null;
-		worldInfo.worldTiles.WorldTileInfoAtCoord(CoordConvertions.AgentPosToWorldXZ(newPosition)).Agent = this;
+		worldInfo.worldTiles.WorldTileInfoAtCoord(CoordConvertions.AgentPosToTile(this.pos)).Agent = null;
+		worldInfo.worldTiles.WorldTileInfoAtCoord(CoordConvertions.AgentPosToTile(newPosition)).Agent = this;
 		this.pos = newPosition;
 	}
 
 	public Action doAction() {
       return agentImplementation.doAction();
-   }
+    }
 	
 	public virtual void OnWorldTick() {
-        updateSensorData();
-        
-        Action a = doAction();
-        a.apply();
+        if(Alive) {
+            updateSensorData();
+            Action a = doAction();
+            a.apply();
+        }
     }
 
 	public void updateSensorData() {
@@ -92,19 +114,19 @@ public abstract class Agent {
         sensorData.FillAdjacentCells (new Vector2I (pos));
 		
 		Vector2 posInFront = pos + orientation.ToVector2();
-		Vector2I tileCoordInFront = CoordConvertions.AgentPosToWorldXZ(posInFront);
+		Vector2I tileCoordInFront = CoordConvertions.AgentPosToTile(posInFront);
 		sensorData.FrontCell = worldInfo.isInsideWorld(tileCoordInFront)
 			? tileCoordInFront
 			: new Vector2I(pos); // VERIFYME: Not sure about this...
 
         Vector2 posAtLeft = pos + orientation.LeftOrientation().ToVector2();
-        Vector2I tileCoordAtLeft = CoordConvertions.AgentPosToWorldXZ(posAtLeft);
+        Vector2I tileCoordAtLeft = CoordConvertions.AgentPosToTile(posAtLeft);
         sensorData._left_cell = worldInfo.isInsideWorld(tileCoordInFront)
             ? tileCoordAtLeft
             : new Vector2I(pos);
 
         Vector2 posAtRight = pos + orientation.RightOrientation().ToVector2();
-        Vector2I tileCoordAtRight = CoordConvertions.AgentPosToWorldXZ(posAtRight);
+        Vector2I tileCoordAtRight = CoordConvertions.AgentPosToTile(posAtRight);
         sensorData._right_cell = worldInfo.isInsideWorld(tileCoordInFront)
             ? tileCoordAtRight
             : new Vector2I(pos);

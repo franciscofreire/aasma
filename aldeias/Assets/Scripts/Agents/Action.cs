@@ -38,8 +38,8 @@ public abstract class AnyAgentAction : Action {
 public class Walk : AnyAgentAction {
 	public override void apply () {
 		//Change the Agent's position and reorient him so he faces the same direction in which he moved.
-		Vector2I origin = CoordConvertions.AgentPosToWorldXZ(agent.pos);
-		agent.ChangePosition(CoordConvertions.WorldXZToAgentPos(target));
+		Vector2I origin = CoordConvertions.AgentPosToTile(agent.pos);
+		agent.ChangePosition(CoordConvertions.TileToAgentPos(target));
 		// Orientation
 		if (origin.x > target.x) {
 			performer.orientation = Orientation.Left;
@@ -58,11 +58,8 @@ public class Attack : AnyAgentAction {
 	public static readonly Energy ENERGY_TO_REMOVE = new Energy(20);
 	public override void apply () {
 		if(world.worldTiles.WorldTileInfoAtCoord(target).HasAgent) {
-            foreach(Agent a in world.AllAgents) {
-				if(CoordConvertions.AgentPosToWorldXZ(a.pos) == target) {
-					a.RemoveEnergy(ENERGY_TO_REMOVE);
-				}
-            }
+            Agent enemy = world.worldTiles.WorldTileInfoAtCoord(target).Agent;
+			enemy.RemoveEnergy(ENERGY_TO_REMOVE);
         }
     }
 	public Attack(Agent agent, Vector2I target) : base(agent, target) {}
@@ -109,6 +106,7 @@ public class DropTree : HabitantAction {
 
 public class PlaceFlag : HabitantAction {
 	public override void apply () {
+        habitant.tribe.RemoveWoodFromStock(Habitant.FLAG_WOOD_QUANTITY);
 		world.worldTiles.WorldTileInfoAtCoord(target).tribeTerritory.OwnerTribe = habitant.tribe;
 	}
 	public PlaceFlag(Habitant habitant, Vector2I target) : base(habitant, target) {}
@@ -134,8 +132,9 @@ public class PickupFood : HabitantAction {
 }
 	
 public class DropFood : HabitantAction {
-	public override void apply () {
-		habitant.tribe.AddFoodToStock(habitant.DropFood(habitant.carriedFood));
+    public override void apply () {
+        FoodQuantity food = habitant.DropFood(habitant.carriedFood);
+		habitant.tribe.AddFoodToStock(food);
     }
 	public DropFood(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }

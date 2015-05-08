@@ -126,5 +126,5 @@ public static class Vector2Extensions {
 	}
 	public static Vector2 ProjectInto(this Vector2 projected, Vector2 other) {
 		return other * projected.ProjectIntoFactor(other);
-	}
+    }
 }

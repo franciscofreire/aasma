@@ -6,6 +6,10 @@ public struct WoodQuantity {
 	public WoodQuantity(int c) {
 		Count = c;
 	}
+    public override string ToString ()
+    {
+        return string.Format ("[WoodQuantity: {0}]", Count);
+    }
 	public static readonly Weight WeightPerUnit = new Weight(1);
 	public Weight Weight {
 		get {
@@ -46,6 +50,10 @@ public struct FoodQuantity {
 	public FoodQuantity(int c) {
 		Count = c;
 	}
+    public override string ToString ()
+    {
+        return string.Format ("[FoodQuantity: {0}]", Count);
+    }
 	public static readonly Weight WeightPerUnit = new Weight(1);
 	public Weight Weight {
 		get {
@@ -86,6 +94,10 @@ public struct Weight {
 	public Weight(int c) {
 		Count = c;
 	}
+    public override string ToString ()
+    {
+        return string.Format ("[Weight: {0}]", Count);
+    }
 	public static Weight operator +(Weight w1, Weight w2) {
 		return new Weight(w1.Count + w2.Count);
 	}

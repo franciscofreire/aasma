@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -18,7 +18,7 @@ public class TreeLayer : Layer {
         });
 
 		foreach (Tree t in worldInfo.AllTrees) {
-			GameObject g = (GameObject) Instantiate(treeModel, WorldXZToVec3(t.Pos), Quaternion.identity);
+			GameObject g = (GameObject) Instantiate(treeModel, TileToVec3(t.Pos), Quaternion.identity);
 			g.transform.parent = this.transform;
 			treesGameObjects.Add(t, g);
 		}
@@ -38,7 +38,7 @@ public class TreeLayer : Layer {
 
         // Change to stump model when an agent starts to collect wood
         Destroy(treesGameObjects[t]);
-        treesGameObjects[t] = (GameObject) Instantiate(stumpModel, WorldXZToVec3(pos), Quaternion.identity);
+        treesGameObjects[t] = (GameObject) Instantiate(stumpModel, TileToVec3(pos), Quaternion.identity);
         treesGameObjects[t].transform.parent = this.transform;
     }
 }
