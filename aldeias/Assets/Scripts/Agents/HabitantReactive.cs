@@ -28,16 +28,16 @@ public class HabitantReactive : AgentImplementation {
         else if (habitant.FoodInFront() && !habitant.CarryingResources()) {
             return new PickupFood(habitant, habitant.sensorData.FrontCell);
         }
-        else if (habitant.CutDownTreeWithWoodInFront() && !habitant.CarryingResources()) {
+        else if (!habitant.CarryingResources() && habitant.CutDownTreeWithWoodInFront()) {
             return new PickupTree(habitant, habitant.sensorData.FrontCell);
         }
-        else if (habitant.AliveTreeInFront() && !habitant.CarryingResources()) {
+        else if (!habitant.CarryingResources() && habitant.AliveTreeInFront()) {
             return new CutTree(habitant, habitant.sensorData.FrontCell);
         }
-        else if (habitant.MeetingPointInFront() && habitant.CarryingFood) {
+        else if (habitant.CarryingFood && habitant.MeetingPointInFront()) {
             return new DropFood(habitant, habitant.sensorData.FrontCell);
         }
-        else if (habitant.MeetingPointInFront() && habitant.CarryingWood) {
+        else if (habitant.CarryingWood && habitant.MeetingPointInFront()) {
             return new DropTree(habitant, habitant.sensorData.FrontCell);
         }
         else if (habitant.UnclaimedTerritoryInFront()) {

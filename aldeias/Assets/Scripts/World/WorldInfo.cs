@@ -8,7 +8,10 @@ public partial class WorldInfo : MonoBehaviour {
 	private const int UPDATE_FRAME_INTERVAL = 2;
 	public int MilisecondsPerTick = 50;
 
+    private const int MAX_ANIMALS = 10;
     public AnimalBoidParameters BoidParams = new AnimalBoidParameters();
+    
+    private const int MAX_HABITANTS = 20;
 
 	// The size of the world in rows and columns.
 	public int xSize = 50;
@@ -30,9 +33,9 @@ public partial class WorldInfo : MonoBehaviour {
 
 	public IEnumerable<Habitant> AllHabitants {
 		get {
-			return tribes                                  //List of Tribes
-				.ConvertAll(t=>t.habitants.AsEnumerable()) //Lists of Habitants
-					.Aggregate((hs1,hs2)=>hs1.Concat(hs2));//List of Habitants
+			return tribes                                  // List  of Tribes
+				.ConvertAll(t=>t.habitants.AsEnumerable()) // Lists of Habitants
+				.Aggregate((hs1,hs2)=>hs1.Concat(hs2));    // List  of Habitants
 		}
 	}
 
@@ -107,10 +110,11 @@ public partial class WorldInfo : MonoBehaviour {
 	//// TILE CREATION
 	////
 
-	public const int TRIBE_TERRITORY_SIDE = 15;
-	public const int HABITAT_SIDE = 7;
-	public const int MEETING_POINT_SIDE = 5;
-	private const int NUM_PARTITIONS = 5;
+    private const int TRIBE_TERRITORY_SIDE = 15;
+    private const int MEETING_POINT_SIDE   = 5;
+    private const int HABITAT_SIDE         = 7;
+	private const int NUM_PARTITIONS       = 10;
+
 	public void GenerateWorldTileInfo () {
 		worldTiles = new WorldTiles(xSize, zSize);
 		CreateTribeAt("A", 0, 0);
@@ -197,9 +201,9 @@ public partial class WorldInfo : MonoBehaviour {
     }
 
 	private void CreateTribeHabitants(Tribe tribe) {
-		//Create four Habitants of the given Tribe.
+		//Create MAX_HABITANTS Habitants of the given Tribe.
 		//The Habitants should be created inside the Tribe's meeting point.
-		foreach( var coord in tribe.meetingPoint.MeetingPointTileCoords.Take(20)) {
+		foreach( var coord in tribe.meetingPoint.MeetingPointTileCoords.Take(MAX_HABITANTS)) {
 			Vector2 pos = CoordConvertions.TileToAgentPos(coord);
 			Habitant h = new Habitant(this, pos, tribe, 1);
 			tribe.AddHabitant(h);
@@ -218,9 +222,9 @@ public partial class WorldInfo : MonoBehaviour {
 	}
 
 	private void CreateAnimals() {
-		foreach (Habitat h in habitats) {
-			int num_animals = 40;
-			for(int x = h.corner_pos.x; x < h.corner_pos.x + HABITAT_SIDE; x++) {
+        foreach (Habitat h in habitats) {
+            int num_animals = MAX_ANIMALS;
+            for(int x = h.corner_pos.x; x < h.corner_pos.x + HABITAT_SIDE; x++) {
 				for(int z = h.corner_pos.y; z > h.corner_pos.y - HABITAT_SIDE; z--) {
 					if (num_animals-- > 0) {
 						Vector2I tileCoord = new Vector2I(x,z);

@@ -132,8 +132,9 @@ public class PickupFood : HabitantAction {
 }
 	
 public class DropFood : HabitantAction {
-	public override void apply () {
-		habitant.tribe.AddFoodToStock(habitant.DropFood(habitant.carriedFood));
+    public override void apply () {
+        FoodQuantity food = habitant.DropFood(habitant.carriedFood);
+		habitant.tribe.AddFoodToStock(food);
     }
 	public DropFood(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }

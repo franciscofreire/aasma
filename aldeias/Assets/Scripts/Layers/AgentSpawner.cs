@@ -36,6 +36,10 @@ public class AgentSpawner : Layer {
         worldInfo.AddHabitantDiedListener((Habitant h)=>{
             TurnToTombstone(h);
         });
+        
+        worldInfo.AddHabitantDroppedResourceListener((Habitant h)=>{
+            ClearCarriedResource(h);
+        });
 
         // Assign tribe colors to materials
         Material mat_habitant = habitantModel.transform.Find("Body").renderer.material;
@@ -143,5 +147,10 @@ public class AgentSpawner : Layer {
         catch (System.ArgumentNullException e) {
             Debug.Log("[ERROR] @TurnToTombstone: " + e);
         }
+    }
+    
+    public void ClearCarriedResource(Habitant h) {
+        Transform wood = list_habitants[h].transform.Find("Wood");
+        wood.GetComponent<Renderer>().enabled = false;
     }
 }

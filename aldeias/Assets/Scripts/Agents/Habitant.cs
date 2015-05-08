@@ -11,7 +11,7 @@ public class Habitant : Agent {
 
 	public Tribe tribe;
 
-    public static readonly WoodQuantity FLAG_WOOD_QUANTITY = new WoodQuantity(10); // We need 10 WoodQuantity to place 1 flag
+    public static readonly WoodQuantity FLAG_WOOD_QUANTITY = new WoodQuantity(5); // We need 5 WoodQuantity to place 1 flag
 	public static readonly Weight MAXIMUM_CARRIED_WEIGHT = new Weight(200);
 	public FoodQuantity carriedFood;
 	public WoodQuantity carriedWood;
@@ -80,7 +80,8 @@ public class Habitant : Agent {
 	}
 
 	public WoodQuantity DropWood(WoodQuantity wood) {
-		if(carriedWood >= wood) {
+        if(carriedWood >= wood) {
+            worldInfo.NotifyHabitantDroppedResourceListeners(this);
 			carriedWood = carriedWood - wood;
 			return wood;
 		} else {
@@ -98,7 +99,8 @@ public class Habitant : Agent {
 	}
 
 	public FoodQuantity DropFood(FoodQuantity food) {
-		if(carriedFood >= food) {
+        if(carriedFood >= food) {
+            worldInfo.NotifyHabitantDroppedResourceListeners(this);
 			carriedFood = carriedFood - food;
 			return food;
 		} else {

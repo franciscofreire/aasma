@@ -17,13 +17,18 @@ public partial class WorldInfo : MonoBehaviour {
     
     public delegate void WorldCreationListener();
     private List<WorldCreationListener> creationListeners = new List<WorldCreationListener>();
+    private bool alreadyNotifiedCriation = false;
     public void AddCreationListener(WorldCreationListener func) {
         creationListeners.Add(func);
+        if (alreadyNotifiedCriation) {
+            func();
+        }
     }
     private void NotifyCreationListeners() {
         foreach(WorldCreationListener listener in creationListeners) {
             listener();
         }
+        alreadyNotifiedCriation = true;
     }
     
     public delegate void TreeDiedListener(Vector2I pos);
@@ -78,6 +83,18 @@ public partial class WorldInfo : MonoBehaviour {
     public void NotifyHabitantDeletedListeners(Habitant h) {
         foreach(HabitantDeletedListener listener in habitantDeletedListeners) {
             listener();
+        }
+    }
+    
+    public delegate void HabitantDroppedResourceListener(Habitant h);
+    private List<HabitantDroppedResourceListener> habitantDroppedResourceListeners
+        = new List<HabitantDroppedResourceListener>();
+    public void AddHabitantDroppedResourceListener(HabitantDroppedResourceListener func) {
+        habitantDroppedResourceListeners.Add(func);
+    }
+    public void NotifyHabitantDroppedResourceListeners(Habitant h) {
+        foreach(HabitantDroppedResourceListener listener in habitantDroppedResourceListeners) {
+            listener(h);
         }
     }
 }
