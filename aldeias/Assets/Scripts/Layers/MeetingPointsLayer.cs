@@ -9,12 +9,12 @@ public class MeetingPointsLayer : Layer {
 
 		int numQuads = numTiles;
 		int numVerts = numQuads * 4;
-		int numTris = numQuads * 2;
+		int numTris  = numQuads * 2;
 		
 		// Generate the mesh data
 		Vector3[] vertices = new Vector3[ numVerts ];
-		Vector3[] normals = new Vector3[ numVerts ];
-		Vector2[] uv = new Vector2[ numVerts ];
+		Vector3[] normals  = new Vector3[ numVerts ];
+		Vector2[] uv       = new Vector2[ numVerts ];
 		
 		int[] triangles = new int[ numTris * 3 ];
 		
@@ -42,7 +42,7 @@ public class MeetingPointsLayer : Layer {
 				uv[ quadVertexBaseIndex + 3 ] = new Vector2( 0, 1 );
 			}
 		}
-		Debug.Log ("Done MeetingPoint Verts!");
+		Logger.Log ("Done MeetingPoint Verts!", Logger.VERBOSITY.LAYERS);
 		
 		//Default triangles
 		for(z=0; z < size_z; z++) {
@@ -64,7 +64,7 @@ public class MeetingPointsLayer : Layer {
 				triangles[ triBaseIndex + 5	] = corner_0_0;
 			}
 		}
-		Debug.Log ("Done MeetingPoint Triangles!");
+		Logger.Log ("Done MeetingPoint Triangles!", Logger.VERBOSITY.LAYERS);
 		
 		// Create a new Mesh and populate with the data
 		Mesh mesh = new Mesh();
@@ -81,7 +81,7 @@ public class MeetingPointsLayer : Layer {
 		layerMesh = mesh;
 		mesh_filter.mesh = mesh;
 		mesh_collider.sharedMesh = mesh;
-		Debug.Log ("Done MeetingPoint Mesh!");
+		Logger.Log ("Done MeetingPoint Mesh!", Logger.VERBOSITY.LAYERS);
 		
 		//MeshRenderer mesh_renderer = GetComponent<MeshRenderer>();
 		//mesh_renderer.sharedMaterials[0].mainTexture = terrainTiles;
@@ -132,4 +132,3 @@ public class MeetingPointsLayer : Layer {
 		layerMesh.triangles = triangles;
 	}
 }
-

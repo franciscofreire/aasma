@@ -33,7 +33,7 @@ public class Tree {
 	public WoodQuantity Chop() {
 		if (isAlive) {
             isAlive = false; // Die...
-            Debug.Log("[RIP] Tree @(" + pos.x + "," + pos.y + ")");
+            Logger.Log("[RIP] Tree @(" + pos.x + "," + pos.y + ")", Logger.VERBOSITY.AGENTS);
             worldInfo.NotifyTreeDiedListeners(pos);
 			return WoodQuantity.Zero;
         } else {

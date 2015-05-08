@@ -1,20 +1,20 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
-public class HabitatLayer : Layer {
+public class AgentVisionLayer : Layer {
 	private Mesh layerMesh;
-
+	
 	public override void CreateObjects() {
 		int numTiles = size_x * size_z;
 
 		int numQuads = numTiles;
 		int numVerts = numQuads * 4;
-		int numTris = numQuads * 2;
+		int numTris  = numQuads * 2;
 		
 		// Generate the mesh data
 		Vector3[] vertices = new Vector3[ numVerts ];
-		Vector3[] normals = new Vector3[ numVerts ];
-		Vector2[] uv = new Vector2[ numVerts ];
+		Vector3[] normals  = new Vector3[ numVerts ];
+		Vector2[] uv       = new Vector2[ numVerts ];
 		
 		int[] triangles = new int[ numTris * 3 ];
 		
@@ -42,8 +42,8 @@ public class HabitatLayer : Layer {
 				uv[ quadVertexBaseIndex + 3 ] = new Vector2( 0, 1 );
 			}
 		}
-		Logger.Log ("Done Habitat Verts!", Logger.VERBOSITY.LAYERS);
-
+		Logger.Log ("Done AgentVision Verts!", Logger.VERBOSITY.LAYERS);
+		
 		//Default triangles
 		for(z=0; z < size_z; z++) {
 			for(x=0; x < size_x; x++) {
@@ -64,7 +64,7 @@ public class HabitatLayer : Layer {
 				triangles[ triBaseIndex + 5	] = corner_0_0;
 			}
 		}
-		Logger.Log ("Done Habitat Triangles!", Logger.VERBOSITY.LAYERS);
+        Logger.Log ("Done AgentVision Triangles!", Logger.VERBOSITY.LAYERS);
 		
 		// Create a new Mesh and populate with the data
 		Mesh mesh = new Mesh();
@@ -75,32 +75,38 @@ public class HabitatLayer : Layer {
 		mesh.uv = uv;
 		
 		// Assign our mesh to our filter/renderer/collider
-
 		MeshFilter mesh_filter = GetComponent<MeshFilter>();
 		MeshCollider mesh_collider = GetComponent<MeshCollider>();
 		
 		layerMesh = mesh;
 		mesh_filter.mesh = mesh;
 		mesh_collider.sharedMesh = mesh;
-		Logger.Log ("Done Habitat Mesh!", Logger.VERBOSITY.LAYERS);
+        Logger.Log ("Done AgentVision Mesh!", Logger.VERBOSITY.LAYERS);
 		
 		//MeshRenderer mesh_renderer = GetComponent<MeshRenderer>();
 		//mesh_renderer.sharedMaterials[0].mainTexture = terrainTiles;
 	}
-
+	
 	public override void ApplyWorldInfo() {
 		int[] triangles = layerMesh.triangles;
+		bool[,] map = new bool[worldInfo.xSize,worldInfo.zSize];
+
+        foreach(Habitant h in worldInfo.AllHabitants) {
+            foreach(Vector2I cell in h.sensorData.Cells) {
+                if(h.Alive)
+                    map[cell.x, cell.y] = true;
+            }
+		} 
 
 		for(int z=0; z < size_z; z++) {
 			for(int x=0; x < size_x; x++) {
-				Vector2I tileCoord = new Vector2I(x,z);
 				int quadIndex = z*size_x + x;
-
+				
 				int corner_0_0;
 				int corner_1_0;
 				int corner_1_1;
 				int corner_0_1;
-				if(worldInfo.worldTiles.WorldTileInfoAtCoord(tileCoord).isHabitat) {
+				if(map[x,z]) {
 					int quadVertexBaseIndex = quadIndex*4;
 					corner_0_0 = quadVertexBaseIndex + 0;
 					corner_1_0 = quadVertexBaseIndex + 1;
@@ -112,7 +118,7 @@ public class HabitatLayer : Layer {
 					corner_1_1 = 0;
 					corner_0_1 = 0;
 				}
-
+				
 				int triBaseIndex = quadIndex * 6;
 				triangles[ triBaseIndex + 0 ] = corner_0_0;
 				triangles[ triBaseIndex + 1 ] = corner_0_1;
