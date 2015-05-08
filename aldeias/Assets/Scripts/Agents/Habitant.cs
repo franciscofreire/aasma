@@ -127,14 +127,8 @@ public class Habitant : Agent {
     }
 
     public override void OnWorldTick () {
+        base.OnWorldTick();
         UpdateTombstoneCounter();
-		
-        if (Alive) {
-            updateSensorData();
-
-            Action a = doAction();
-            a.apply();
-        }
 	}
 
 	//*************
