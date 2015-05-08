@@ -133,62 +133,75 @@ public class Habitant : Agent {
 	//*************
 	//** SENSORS **
 	//*************
-	
-	public override bool EnemyInFront() {
-		Habitant habInFront = worldInfo.habitantInTile(sensorData.FrontCell);
-		return habInFront != null && habInFront.tribe != this.tribe;
-	}
-
-    public bool EnemyAtLeft() {
-        foreach(Habitant h in sensorData._enemies) {
-            if(CoordConvertions.AgentPosToTile(h.pos) == sensorData.LeftCell) {
-                return true;
-            }
-        }
+    //FIXME
+	public override bool EnemyInFront () {
         return false;
     }
 
-    public bool EnemyAtRight() {
-        foreach(Habitant h in sensorData._enemies) {
-            if(CoordConvertions.AgentPosToTile(h.pos) == sensorData.RightCell) {
+	public bool EnemyInAdjacentPos(out Vector2I target) {
+        target = new Vector2I(-1,-1);
+        Vector2I frontCell = sensorData.FrontCell;
+        Vector2I rightCell = sensorData.RightCell;
+        Vector2I leftCell = sensorData.LeftCell;
+        foreach(Habitant enemy in sensorData.Enemies) {
+            Vector2I enemyPos = CoordConvertions.AgentPosToTile(enemy.pos);
+            if(enemyPos == frontCell || enemyPos == rightCell || enemyPos == leftCell) {
+                target = enemyPos;
                 return true;
-            }
-        }
-        return false;
-    }
-
-	public bool AnimalInFront() {
-        foreach(Animal a in worldInfo.AllAnimals) {
-            if ((CoordConvertions.AgentPosToTile(a.pos) == sensorData.FrontCell)
-                && a.Alive) {
-                return true;
-            }
+            } 
         }
         return false;
 	}
-    public bool AnimalAtLeft() {
-        foreach(Animal a in sensorData._animals) {
-            if(CoordConvertions.AgentPosToTile(a.pos) == sensorData.LeftCell) {
+
+    public bool AnimalInAdjacentPos(out Vector2I target) {
+        target = new Vector2I(-1,-1);
+        Vector2I frontCell = sensorData.FrontCell;
+        Vector2I rightCell = sensorData.RightCell;
+        Vector2I leftCell = sensorData.LeftCell;
+        foreach(Animal animal in sensorData.Animals) {
+            Vector2I animalPos = CoordConvertions.AgentPosToTile(animal.pos);
+            if(animalPos == frontCell || animalPos == rightCell || animalPos == leftCell) {
+                target = animalPos;
                 return true;
-            }
+            } 
+        }
+        return false;
+	}
+    public bool UnclaimedTerritoryInAdjacentPos(out Vector2I target){
+        target = new Vector2I(-1,-1);
+        if(UnclaimedTerritoryInFront()) {
+            target = sensorData.FrontCell;
+            return true;
+        }
+        if(UnclaimedTerritoryAtLeft()) {
+            target = sensorData.LeftCell;
+            return true;
+        }
+        if(UnclaimedTerritoryAtRight()) {
+            target = sensorData.RightCell;
+            return true;
         }
         return false;
     }
-
-    public bool AnimalAtRight() {
-        foreach(Animal a in sensorData._animals) {
-            if(CoordConvertions.AgentPosToTile(a.pos) == sensorData.RightCell) {
-                return true;
-            }
-        }
-        return false;    
-    }
-
+ 
 	public bool UnclaimedTerritoryInFront() {
         return worldInfo.isInsideWorld(sensorData.FrontCell) // Valid cell
 			&& !worldInfo.worldTiles.WorldTileInfoAtCoord(sensorData.FrontCell)
                .tribeTerritory.IsClaimed // Unoccupied cell
             && tribe.FlagMachine.CanMakeFlag(); // At least one flag available in tribe
+    }
+
+    public bool UnclaimedTerritoryAtLeft() {
+        return worldInfo.isInsideWorld(sensorData.LeftCell) // Valid cell
+            && !worldInfo.worldTiles.WorldTileInfoAtCoord(sensorData.LeftCell)
+                .tribeTerritory.IsClaimed // Unoccupied cell
+                && tribe.FlagMachine.CanMakeFlag(); // At least one flag available in tribe
+    }
+    public bool UnclaimedTerritoryAtRight() {
+        return worldInfo.isInsideWorld(sensorData.RightCell) // Valid cell
+            && !worldInfo.worldTiles.WorldTileInfoAtCoord(sensorData.RightCell)
+                .tribeTerritory.IsClaimed // Unoccupied cell
+                && tribe.FlagMachine.CanMakeFlag(); // At least one flag available in tribe
     }
 
     public bool CarryingResources() {
@@ -200,29 +213,17 @@ public class Habitant : Agent {
 		return this.energy <= CRITICAL_ENERGY_LEVEL;
 	}
 
-    public bool FoodInFront() {
-      foreach(Animal a in sensorData._food) {
-         if (CoordConvertions.AgentPosToTile(a.pos) == sensorData.FrontCell) {
-            return true;
-         }
-      }
-      return false;
-    }
-
-    public bool FoodAtLeft() {
-        foreach(Animal a in sensorData._food) {
-            if (CoordConvertions.AgentPosToTile(a.pos) == sensorData.LeftCell) {
+    public bool FoodInAdjacentPos(out Vector2I target) {
+        target = new Vector2I(-1,-1);
+        Vector2I frontCell = sensorData.FrontCell;
+        Vector2I rightCell = sensorData.RightCell;
+        Vector2I leftCell = sensorData.LeftCell;
+        foreach(Animal animal in sensorData.Food) {
+            Vector2I animalPos = CoordConvertions.AgentPosToTile(animal.pos);
+            if(animalPos == frontCell || animalPos == rightCell || animalPos == leftCell) {
+                target = animalPos;
                 return true;
-            }
-        }
-        return false;
-    }
-
-    public bool FoodAtRight() {
-        foreach(Animal a in sensorData._food) {
-            if (CoordConvertions.AgentPosToTile(a.pos) == sensorData.RightCell) {
-                return true;
-            }
+            } 
         }
         return false;
     }

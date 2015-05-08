@@ -223,7 +223,35 @@ public struct SensorData {
         get { return _cells; }
         set { _cells = value; }
 	}
-	
+    public IList<Tree> Tree
+    {
+        get { return _trees; }
+        set { _trees = value; }
+    }
+    public IList<Tree> Stumps
+    {
+        get { return _stumps; }
+        set { _stumps = value; }
+    }
+
+    public IList<Habitant> Enemies
+    {
+        get { return _enemies; }
+        set { _enemies = value; }
+    }
+
+    public IList<Animal> Animals
+    {
+        get { return _animals; }
+        set { _animals = value; }
+    }
+
+    public IList<Animal> Food
+    {
+        get { return _food; }
+        set { _food = value; }
+    }
+
 	public Vector2I FrontCell
 	{
         get { return _front_cell; }
