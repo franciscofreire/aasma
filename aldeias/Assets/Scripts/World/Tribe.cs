@@ -24,8 +24,8 @@ public class MeetingPoint {
 	
 	public bool IsInMeetingPoint(Vector2I pos) {
 		//return MeetingPointTileCoords.Contains(pos);
-		return pos.x >= (center.x - width/2) && pos.x <= (center.x - width/2) 
-			&& pos.y >= (center.y - width/2) && pos.y <= (center.y - width/2);
+		return pos.x >= (center.x - width/2) && pos.x <= (center.x + width/2) 
+			&& pos.y >= (center.y - width/2) && pos.y <= (center.y + width/2);
 	}
 }    
 
