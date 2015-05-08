@@ -149,22 +149,6 @@ public abstract class Agent {
 		return t.HasTree && !t.Tree.Alive && t.Tree.HasWood;
     }
 
-    /*public bool AliveTreeAtLeft() {
-        // TODO
-    }
-    
-    public bool CutDownTreeWithWoodAtLeft() {
-        // TODO
-    }
-    
-    public bool AliveTreeAtRight() {
-        // TODO
-    }
-    
-    public bool CutDownTreeWithWoodAtRight() {
-        // TODO
-    }*/
-
 	// FIXME: I don't know where to put this function as it is not part of the Agent.
     // Or is it? It can also belong to the WorldInfo.
 	public static Energy EnergyFromFood(FoodQuantity food) {

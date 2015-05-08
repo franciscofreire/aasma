@@ -316,8 +316,7 @@ public partial class WorldInfo : MonoBehaviour {
                     if(enemyTribe != null) {
                         foreach(Habitant h in enemyTribe.habitants) {
 
-                            if(CoordConvertions.AgentPosToTile(h.pos) == cell) {
-
+                            if(h.Alive && CoordConvertions.AgentPosToTile(h.pos) == cell) {
                                 _enemies.Add(h);
                             }
                         }
