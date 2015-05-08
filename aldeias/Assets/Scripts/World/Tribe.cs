@@ -27,20 +27,49 @@ public class MeetingPoint {
 		return pos.x >= (center.x - width/2) && pos.x <= (center.x - width/2) 
 			&& pos.y >= (center.y - width/2) && pos.y <= (center.y - width/2);
 	}
-}            
+}    
+
+public struct Flag {
+    public readonly Tribe Tribe;
+    public Flag(Tribe t) {
+        Tribe = t;
+    }
+}
+
+public class FlagMakerMachine {
+    Tribe tribe;
+    public readonly WoodQuantity WoodPerFlag = new WoodQuantity(5);
+    public FlagMakerMachine(Tribe t) {
+        this.tribe = t;
+    }
+    public bool CanMakeFlag() {
+        return tribe.WoodStock >= WoodPerFlag;
+    }
+    public Flag? MakeFlag() {
+        if(CanMakeFlag()) {
+            tribe.RemoveWoodFromStock(WoodPerFlag);
+            return new Flag(tribe);
+        } else {
+            return null;
+        }
+    }
+}
 
 public class Tribe {
 	//Insert tribe identification here
-	public string id;
-	public MeetingPoint meetingPoint;
+	public readonly string id;
+	public readonly MeetingPoint meetingPoint;
 	public List<Habitant> habitants = new List<Habitant>();
 	
     public FoodQuantity FoodStock = FoodQuantity.Zero;
     public WoodQuantity WoodStock = new WoodQuantity(1000); // We have 100 flags to place
 	
+    public readonly FlagMakerMachine FlagMachine;
+
 	public Tribe(string id, MeetingPoint meetingPoint) {
 		this.id = id;
 		this.meetingPoint = meetingPoint;
+        this.FlagMachine = new FlagMakerMachine(this);
 	}
 
     //

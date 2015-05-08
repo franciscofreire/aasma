@@ -195,7 +195,7 @@ public partial class WorldInfo : MonoBehaviour {
         for(int x=posx; x < posx + TRIBE_TERRITORY_SIDE; x++) {
             for(int z=posz; z < posz + TRIBE_TERRITORY_SIDE; z++) {
 				WorldTileInfo tile = worldTiles.WorldTileInfoAtCoord(x,z);
-                tile.tribeTerritory.OwnerTribe = tribe;
+                tile.tribeTerritory = tribe;
             }
         }
     }
@@ -441,17 +441,17 @@ public class WorldTileInfo {
 	}
 
 	public struct TribeTerritory {
-		public Tribe OwnerTribe;
+		public Flag? Flag;
 
 		public bool IsClaimed {
 			get {
-				return OwnerTribe != null;
+				return Flag.HasValue;
 			}
 		}
 
 		public static implicit operator TribeTerritory(Tribe tribe) {
 			return new TribeTerritory() {
-				OwnerTribe = tribe
+                Flag = new Flag(tribe)
 			};
 		}
 	}
