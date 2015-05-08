@@ -6,25 +6,19 @@ public class AgentSpawner : Layer {
 	public GameObject habitantModel, warriorModel, tombstoneModel,
                       animalModel, foodModel;
 
+    public HabitantResourceRepresentation HabitantPrefab;
+    public Material HabitantMaterialPrefab;
+
 	public IDictionary<Habitant, GameObject> list_habitants = 
 		new Dictionary<Habitant, GameObject>();
+    public IDictionary<Habitant, HabitantResourceRepresentation> habResReps = 
+        new Dictionary<Habitant, HabitantResourceRepresentation>();
 	public IDictionary<Animal, GameObject> list_animals = 
 		new Dictionary<Animal, GameObject>();
 
     public IDictionary<string, Material> list_agent_materials =
         new Dictionary<string, Material>();
 
-	//WorldInfo events that AgentSpawner would like to listen to:
-	//   WorldChanged
-	//      NewAgent
-	//         NewHabitant - to create and add a representation of the new habitant
-	//         NewAnimal   - to create and add a representation of the new animal
-	//      KillAgent
-	//         KillHabitant- to remove the representation of the dead habitant
-	//         KillAnimal  - to remove the representation of the dead animal
-	//      AgentMoved - to move the representation of the agent that moved
-	//WorldInfo events that might be useful:
-	//   WorldCreated - to initialize information that doesn't change
 
 	public override void CreateObjects() {
         // An animal is identified by it's position in the world (not ideal, but...)
@@ -35,6 +29,7 @@ public class AgentSpawner : Layer {
 
         worldInfo.AddHabitantDiedListener((Habitant h)=>{
             TurnToTombstone(h);
+            RemoveHabitantResRep(h);
         });
         
         worldInfo.AddHabitantDroppedResourceListener((Habitant h)=>{
@@ -42,16 +37,15 @@ public class AgentSpawner : Layer {
         });
 
         // Assign tribe colors to materials
-        Material mat_habitant = habitantModel.transform.Find("Body").renderer.material;
-        Material mat_tribe_A  = new Material(mat_habitant);
-        Material mat_tribe_B  = new Material(mat_habitant);
+        Material mat_tribe_A  = new Material(HabitantMaterialPrefab);
+        Material mat_tribe_B  = new Material(HabitantMaterialPrefab);
         mat_tribe_A.color = Color.blue;
         mat_tribe_B.color = Color.red;
         list_agent_materials.Add("A", mat_tribe_A);
         list_agent_materials.Add("B", mat_tribe_B);
 
 		foreach (Habitant h in worldInfo.AllHabitants) {
-			GameObject agentModel = (GameObject) Instantiate(
+            GameObject agentModel = (GameObject) Instantiate(
 				habitantModel,
 				AgentPosToVec3(h.pos),
 				Quaternion.identity);
@@ -66,6 +60,14 @@ public class AgentSpawner : Layer {
 
 			Transform wood = agentModel.transform.Find("Wood");
             wood.GetComponent<Renderer>().enabled = false;
+
+            HabitantResourceRepresentation habGameObj = ((GameObject)Instantiate(
+                HabitantPrefab.gameObject,
+                AgentPosToVec3(h.pos),
+                Quaternion.identity)).GetComponent<HabitantResourceRepresentation>();
+            habGameObj.transform.parent = agentModel.transform;
+            habGameObj.SetHabitantWithMaterial(h);
+            habResReps.Add(h, habGameObj);
             
 			list_habitants.Add(h, agentModel);
 		}
@@ -106,6 +108,7 @@ public class AgentSpawner : Layer {
 			g.transform.localPosition = AgentPosToVec3(h.pos);
 			g.transform.localRotation = h.orientation.ToQuaternion();
             if(h.Alive) {
+                habResReps[h].UpdateModels();
                 if (h.CarryingWood) {
                     Transform wood = g.transform.Find("Wood");
                     wood.GetComponent<Renderer>().enabled = true;
@@ -152,5 +155,10 @@ public class AgentSpawner : Layer {
     public void ClearCarriedResource(Habitant h) {
         Transform wood = list_habitants[h].transform.Find("Wood");
         wood.GetComponent<Renderer>().enabled = false;
+    }
+
+    public void RemoveHabitantResRep(Habitant h) {
+        Destroy(habResReps[h].gameObject);
+        habResReps.Remove(h);
     }
 }
