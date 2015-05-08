@@ -10,8 +10,7 @@ public class HabitantReactive : AgentImplementation {
             target = habitant.sensorData.AdjacentCells[index];
         }
         catch (System.Exception) {
-            //Debug.Log("[ERROR] @AdjacentCells: " + e.ToString());
-            // we don't have nearby free cells, so we do nothing
+            // We don't have nearby free cells, so we do nothing
             // and stay at the same position
             target = new Vector2I(habitant.pos);
         }
@@ -23,20 +22,18 @@ public class HabitantReactive : AgentImplementation {
             return walkRandomly();
         }
         else if (habitant.EnemyInFront() || habitant.AnimalInFront()) {
-            Debug.Log("Attacker pos: " + habitant.pos.x + "," + habitant.pos.y);
+            Logger.Log("Attacker pos: " + habitant.pos.x + "," + habitant.pos.y, Logger.VERBOSITY.AGENTS);
             return new Attack(habitant, habitant.sensorData.FrontCell);
         }
         else if (habitant.FoodInFront() && !habitant.CarryingResources()) {
             return new PickupFood(habitant, habitant.sensorData.FrontCell);
         }
-        /*
         else if (habitant.CutDownTreeWithWoodInFront() && !habitant.CarryingResources()) {
             return new PickupTree(habitant, habitant.sensorData.FrontCell);
         }
         else if (habitant.AliveTreeInFront() && !habitant.CarryingResources()) {
             return new CutTree(habitant, habitant.sensorData.FrontCell);
         }
-        */
         else if (habitant.MeetingPointInFront() && habitant.CarryingFood) {
             return new DropFood(habitant, habitant.sensorData.FrontCell);
         }

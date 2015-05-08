@@ -106,6 +106,7 @@ public class DropTree : HabitantAction {
 
 public class PlaceFlag : HabitantAction {
 	public override void apply () {
+        habitant.tribe.RemoveWoodFromStock(Habitant.FLAG_WOOD_QUANTITY);
 		world.worldTiles.WorldTileInfoAtCoord(target).tribeTerritory.OwnerTribe = habitant.tribe;
 	}
 	public PlaceFlag(Habitant habitant, Vector2I target) : base(habitant, target) {}

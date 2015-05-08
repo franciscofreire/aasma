@@ -54,7 +54,7 @@ public abstract class Agent {
         }
         energy.Subtract(e);
         if (!Alive) { // First time he died: Notify listeners
-            //Debug.Log("[RIP] Agent @(" + pos.x + "," + pos.y + ")");
+            Logger.Log("[RIP] Agent @(" + pos.x + "," + pos.y + ")", Logger.VERBOSITY.AGENTS);
             Clamp();
             AnnounceDeath();
         }

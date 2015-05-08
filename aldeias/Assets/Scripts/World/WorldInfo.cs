@@ -69,7 +69,6 @@ public partial class WorldInfo : MonoBehaviour {
 	void Start () {
 		GenerateWorldTileInfo();
 		NotifyCreationListeners();
-		NotifyChangeListeners();
 		StartCoroutine(NextWorldTick());
 	}
 

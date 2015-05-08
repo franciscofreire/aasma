@@ -11,7 +11,8 @@ public class Habitant : Agent {
 
 	public Tribe tribe;
 
-	public static readonly Weight MaximumCarriedWeight = new Weight(200);
+    public static readonly WoodQuantity FLAG_WOOD_QUANTITY = new WoodQuantity(10); // We need 10 WoodQuantity to place 1 flag
+	public static readonly Weight MAXIMUM_CARRIED_WEIGHT = new Weight(200);
 	public FoodQuantity carriedFood;
 	public WoodQuantity carriedWood;
 
@@ -70,7 +71,7 @@ public class Habitant : Agent {
     }
 
 	public WoodQuantity PickupWood(WoodQuantity wood) {
-		if((CarriedWeight + wood.Weight) <= MaximumCarriedWeight) {
+		if((CarriedWeight + wood.Weight) <= MAXIMUM_CARRIED_WEIGHT) {
 			carriedWood = carriedWood + wood;
 			return WoodQuantity.Zero;
 		} else {
@@ -88,7 +89,7 @@ public class Habitant : Agent {
 	}
 
 	public FoodQuantity PickupFood(FoodQuantity food) {
-		if((CarriedWeight + food.Weight) <= MaximumCarriedWeight) {
+		if((CarriedWeight + food.Weight) <= MAXIMUM_CARRIED_WEIGHT) {
 			carriedFood = carriedFood + food;
 			return FoodQuantity.Zero;
 		} else {
@@ -118,8 +119,9 @@ public class Habitant : Agent {
 	//***************
 
     public void logFrontCell() {
-        Debug.Log("Agent & Front: " + pos + " ; (" +
-                  sensorData.FrontCell.x + "," + sensorData.FrontCell.y + ")");
+        Logger.Log("Agent & Front: " + pos + " ; (" +
+                       sensorData.FrontCell.x + "," + sensorData.FrontCell.y + ")",
+                   Logger.VERBOSITY.AGENTS);
     }
 
     public override void OnWorldTick () {
@@ -144,7 +146,8 @@ public class Habitant : Agent {
 
 	public bool AnimalInFront() {
         foreach(Animal a in worldInfo.AllAnimals) {
-            if ((CoordConvertions.AgentPosToTile(a.pos) == sensorData.FrontCell) && a.Alive) {
+            if ((CoordConvertions.AgentPosToTile(a.pos) == sensorData.FrontCell)
+                && a.Alive) {
                 return true;
             }
         }
@@ -152,8 +155,10 @@ public class Habitant : Agent {
 	}
 
 	public bool UnclaimedTerritoryInFront() {
-        return worldInfo.isInsideWorld(sensorData.FrontCell) 
-			&& !worldInfo.worldTiles.WorldTileInfoAtCoord(sensorData.FrontCell).tribeTerritory.IsClaimed;
+        return worldInfo.isInsideWorld(sensorData.FrontCell) // Valid cell
+			&& !worldInfo.worldTiles.WorldTileInfoAtCoord(sensorData.FrontCell)
+               .tribeTerritory.IsClaimed // Unoccupied cell
+            && tribe.WoodStock > FLAG_WOOD_QUANTITY; // At least one flag available in tribe
     }
 
     public bool CarryingResources() {

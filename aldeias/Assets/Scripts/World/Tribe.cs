@@ -35,8 +35,8 @@ public class Tribe {
 	public MeetingPoint meetingPoint;
 	public List<Habitant> habitants = new List<Habitant>();
 	
-	public FoodQuantity FoodStock = FoodQuantity.Zero;
-	public WoodQuantity WoodStock = WoodQuantity.Zero;
+    public FoodQuantity FoodStock = FoodQuantity.Zero;
+    public WoodQuantity WoodStock = new WoodQuantity(1000); // We have 100 flags to place
 	
 	public Tribe(string id, MeetingPoint meetingPoint) {
 		this.id = id;

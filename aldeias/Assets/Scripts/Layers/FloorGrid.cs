@@ -144,7 +144,7 @@ public class FloorGrid : MonoBehaviour {
                 uv[ quadVertexBaseIndex + 3 ] = new Vector2( 0, 1 );
             }
         }
-        Debug.Log ("Done FloorGrid Verts!");
+        Logger.Log ("Done FloorGrid Verts!", Logger.VERBOSITY.LAYERS);
         
         for(z=0; z < size_z; z++) {
             for(x=0; x < size_x; x++) {
@@ -165,7 +165,7 @@ public class FloorGrid : MonoBehaviour {
                 triangles[ triBaseIndex + 5 ] = corner_0_0;
             }
         }
-        Debug.Log ("Done FloorGrid Triangles!");
+        Logger.Log ("Done FloorGrid Triangles!", Logger.VERBOSITY.LAYERS);
         
         // Create a new Mesh and populate with the data
         Mesh mesh = new Mesh();
@@ -182,7 +182,7 @@ public class FloorGrid : MonoBehaviour {
         floorMesh = mesh;
         mesh_filter.mesh = mesh;
         mesh_collider.sharedMesh = mesh;
-        Debug.Log ("Done FloorGrid Mesh!");
+        Logger.Log ("Done FloorGrid Mesh!", Logger.VERBOSITY.LAYERS);
         
         //MeshRenderer mesh_renderer = GetComponent<MeshRenderer>();
         //mesh_renderer.sharedMaterials[0].mainTexture = terrainTiles;

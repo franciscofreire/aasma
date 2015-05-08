@@ -42,7 +42,7 @@ public class HabitatLayer : Layer {
 				uv[ quadVertexBaseIndex + 3 ] = new Vector2( 0, 1 );
 			}
 		}
-		Debug.Log ("Done Habitat Verts!");
+		Logger.Log ("Done Habitat Verts!", Logger.VERBOSITY.LAYERS);
 
 		//Default triangles
 		for(z=0; z < size_z; z++) {
@@ -64,7 +64,7 @@ public class HabitatLayer : Layer {
 				triangles[ triBaseIndex + 5	] = corner_0_0;
 			}
 		}
-		Debug.Log ("Done Habitat Triangles!");
+		Logger.Log ("Done Habitat Triangles!", Logger.VERBOSITY.LAYERS);
 		
 		// Create a new Mesh and populate with the data
 		Mesh mesh = new Mesh();
@@ -82,7 +82,7 @@ public class HabitatLayer : Layer {
 		layerMesh = mesh;
 		mesh_filter.mesh = mesh;
 		mesh_collider.sharedMesh = mesh;
-		Debug.Log ("Done Habitat Mesh!");
+		Logger.Log ("Done Habitat Mesh!", Logger.VERBOSITY.LAYERS);
 		
 		//MeshRenderer mesh_renderer = GetComponent<MeshRenderer>();
 		//mesh_renderer.sharedMaterials[0].mainTexture = terrainTiles;

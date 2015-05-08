@@ -42,7 +42,7 @@ public class AgentVisionLayer : Layer {
 				uv[ quadVertexBaseIndex + 3 ] = new Vector2( 0, 1 );
 			}
 		}
-		Debug.Log ("Done MeetingPoint Verts!");
+		Logger.Log ("Done AgentVision Verts!", Logger.VERBOSITY.LAYERS);
 		
 		//Default triangles
 		for(z=0; z < size_z; z++) {
@@ -64,7 +64,7 @@ public class AgentVisionLayer : Layer {
 				triangles[ triBaseIndex + 5	] = corner_0_0;
 			}
 		}
-		Debug.Log ("Done MeetingPoint Triangles!");
+        Logger.Log ("Done AgentVision Triangles!", Logger.VERBOSITY.LAYERS);
 		
 		// Create a new Mesh and populate with the data
 		Mesh mesh = new Mesh();
@@ -81,7 +81,7 @@ public class AgentVisionLayer : Layer {
 		layerMesh = mesh;
 		mesh_filter.mesh = mesh;
 		mesh_collider.sharedMesh = mesh;
-		Debug.Log ("Done MeetingPoint Mesh!");
+        Logger.Log ("Done AgentVision Mesh!", Logger.VERBOSITY.LAYERS);
 		
 		//MeshRenderer mesh_renderer = GetComponent<MeshRenderer>();
 		//mesh_renderer.sharedMaterials[0].mainTexture = terrainTiles;
