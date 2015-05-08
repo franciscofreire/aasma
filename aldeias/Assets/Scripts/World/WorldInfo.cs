@@ -38,7 +38,7 @@ public class WorldInfo : MonoBehaviour {
 
     public Tribe GetEnemyTribe(Tribe tribe) {
         foreach(Tribe t in tribes) {
-            if(!t.id.Equals (tribe)) {
+            if(t != tribe) {
                 return t;
             }
         }
@@ -271,7 +271,8 @@ public class WorldInfo : MonoBehaviour {
         out IList<Tree> _trees,
         out IList<Tree> _stumps,
         out IList<Habitant> _enemies,
-        out IList<Animal> _animals) {
+        out IList<Animal> _animals,
+        out IList<Animal> _food) {
 
         int height = 4;
         int width = 3;
@@ -289,6 +290,7 @@ public class WorldInfo : MonoBehaviour {
         _stumps = new List<Tree>();
         _enemies = new List<Habitant>();
         _animals = new List<Animal>();
+        _food = new List<Animal>();
 
         IList<Vector2I> cells = new List<Vector2I>();
 
@@ -321,14 +323,19 @@ public class WorldInfo : MonoBehaviour {
                     cells.Add(cell);
                     if(enemyTribe != null) {
                         foreach(Habitant h in enemyTribe.habitants) {
-                            if(CoordConvertions.AgentPosToWorldXZ(h.pos) == cell) {
+                            if(CoordConvertions.AgentPosToWorldXZ(h.pos) == cell &&
+                               h.Alive) {
                                 _enemies.Add(h);
                             }
                         }
                         foreach(Habitat hab in habitats) {
                             foreach(Animal a in hab.animals) {
                                 if(CoordConvertions.AgentPosToWorldXZ(a.pos) == cell) {
-                                    _animals.Add(a);
+                                    if(a.HasFood) {
+                                        _food.Add (a);
+                                    } else {
+                                        _animals.Add(a);
+                                    }
                                 }
                             }
                         }
@@ -453,7 +460,12 @@ public class WorldTiles {
 		}
 	}
 	public WorldTileInfo WorldTileInfoAtCoord(Vector2I tileCoord) {
-		return worldTileInfo[tileCoord.x, tileCoord.y];
+        try {
+            return worldTileInfo[tileCoord.x, tileCoord.y];
+        } catch (System.Exception) {
+            Debug.Log ("WorldTileInfoAtCoord Exception: " + tileCoord.x + "," + tileCoord.y);
+            return null;
+        }
 	}
 	public WorldTileInfo WorldTileInfoAtCoord(int x, int z) {
 		return worldTileInfo[x, z];

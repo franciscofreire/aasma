@@ -67,4 +67,7 @@ public class Tribe {
 			return FoodQuantity.Zero;
 		}
 	}
+    public bool Equals (Tribe t) {
+      return this.id.Equals(t.id);
+    }
 }

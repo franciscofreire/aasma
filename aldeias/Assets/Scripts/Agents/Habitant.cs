@@ -98,6 +98,24 @@ public class Habitant : Agent {
 		return habInFront != null && habInFront.tribe != this.tribe;
 	}
 
+    public bool EnemyAtLeft() {
+        foreach(Habitant h in sensorData._enemies) {
+            if(CoordConvertions.AgentPosToWorldXZ(h.pos) == sensorData.LeftCell) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public bool EnemyAtRight() {
+        foreach(Habitant h in sensorData._enemies) {
+            if(CoordConvertions.AgentPosToWorldXZ(h.pos) == sensorData.RightCell) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 	public bool AnimalInFront() {
         foreach(WorldInfo.Habitat h in worldInfo.habitats) {
             foreach(Agent a in h.animals) {
@@ -108,6 +126,23 @@ public class Habitant : Agent {
         }
         return false;
 	}
+    public bool AnimalAtLeft() {
+        foreach(Animal a in sensorData._animals) {
+            if(CoordConvertions.AgentPosToWorldXZ(a.pos) == sensorData.LeftCell) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public bool AnimalAtRight() {
+        foreach(Animal a in sensorData._animals) {
+            if(CoordConvertions.AgentPosToWorldXZ(a.pos) == sensorData.RightCell) {
+                return true;
+            }
+        }
+        return false;    
+    }
 
 	public bool UnclaimedTerritoryInFront() {
         return worldInfo.isInsideWorld(sensorData.FrontCell) 
@@ -124,15 +159,32 @@ public class Habitant : Agent {
 	}
 
     public bool FoodInFront() {
-        foreach(WorldInfo.Habitat h in worldInfo.habitats) {
-            foreach(Agent a in h.animals) {
-                if (a.pos.Equals (sensorData.FrontCell.ToVector2()) && !a.Alive) {
-                    return true;
-                }
+      foreach(Animal a in sensorData._food) {
+         if (CoordConvertions.AgentPosToWorldXZ(a.pos) == sensorData.FrontCell) {
+            return true;
+         }
+      }
+      return false;
+    }
+
+    public bool FoodAtLeft() {
+        foreach(Animal a in sensorData._food) {
+            if (CoordConvertions.AgentPosToWorldXZ(a.pos) == sensorData.LeftCell) {
+                return true;
             }
         }
         return false;
     }
+
+    public bool FoodAtRight() {
+        foreach(Animal a in sensorData._food) {
+            if (CoordConvertions.AgentPosToWorldXZ(a.pos) == sensorData.RightCell) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public bool MeetingPointInFront() {
 		return tribe.meetingPoint.IsInMeetingPoint(sensorData.FrontCell);
 	}

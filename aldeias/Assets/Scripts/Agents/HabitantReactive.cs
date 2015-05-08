@@ -43,7 +43,18 @@ public class HabitantReactive : AgentImplementation {
         else if (habitant.UnclaimedTerritoryInFront()) {
             return new PlaceFlag(habitant, habitant.sensorData.FrontCell);
         }
-
+        else if((habitant.EnemyAtLeft() || habitant.AnimalAtLeft()) && habitant.LowEnergy()) {
+            return walkRandomly();
+        }
+        else if(habitant.EnemyAtLeft() || habitant.AnimalAtLeft()) {
+            return new Attack(habitant, habitant.sensorData.LeftCell);
+        }
+        else if(habitant.FoodAtLeft() && !habitant.CarryingResources()) {
+            return new PickupFood(habitant, habitant.sensorData.LeftCell);
+        }
+        //else if(habitant.CutDownTreeWithWoodAtLeft() && !habitant.CarryingResources()) {
+          //  return new PickupTree(habitant, habitant.sensorData.LeftCell);
+        //}
         return walkRandomly();
     }
     

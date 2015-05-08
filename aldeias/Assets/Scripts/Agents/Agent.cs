@@ -78,14 +78,16 @@ public abstract class Agent {
         IList<Tree> _stumps;
         IList<Habitant> _enemies;
         IList<Animal> _animals;
+        IList<Animal> _food;
 
 		sensorData.Cells = worldInfo.nearbyFreeCells(
-            worldInfo.nearbyCells(this, out _trees,out _stumps,out _enemies,out _animals));
+            worldInfo.nearbyCells(this, out _trees,out _stumps,out _enemies,out _animals,out _food));
 
         sensorData._trees = _trees;
         sensorData._stumps = _stumps;
         sensorData._enemies = _enemies;
         sensorData._animals = _animals;
+        sensorData._food = _food;
 
         sensorData.FillAdjacentCells (new Vector2I (pos));
 		
@@ -94,6 +96,19 @@ public abstract class Agent {
 		sensorData.FrontCell = worldInfo.isInsideWorld(tileCoordInFront)
 			? tileCoordInFront
 			: new Vector2I(pos); // VERIFYME: Not sure about this...
+
+        Vector2 posAtLeft = pos + orientation.LeftOrientation().ToVector2();
+        Vector2I tileCoordAtLeft = CoordConvertions.AgentPosToWorldXZ(posAtLeft);
+        sensorData._left_cell = worldInfo.isInsideWorld(tileCoordInFront)
+            ? tileCoordAtLeft
+            : new Vector2I(pos);
+
+        Vector2 posAtRight = pos + orientation.RightOrientation().ToVector2();
+        Vector2I tileCoordAtRight = CoordConvertions.AgentPosToWorldXZ(posAtRight);
+        sensorData._right_cell = worldInfo.isInsideWorld(tileCoordInFront)
+            ? tileCoordAtRight
+            : new Vector2I(pos);
+
 	}
 
 	//*************
@@ -111,6 +126,22 @@ public abstract class Agent {
 		WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(sensorData.FrontCell);
 		return t.HasTree && !t.Tree.Alive && t.Tree.HasWood;
     }
+
+    /*public bool AliveTreeAtLeft() {
+        // TODO
+    }
+    
+    public bool CutDownTreeWithWoodAtLeft() {
+        // TODO
+    }
+    
+    public bool AliveTreeAtRight() {
+        // TODO
+    }
+    
+    public bool CutDownTreeWithWoodAtRight() {
+        // TODO
+    }*/
 
 	// FIXME: I don't know where to put this function as it is not part of the Agent.
     // Or is it? It can also belong to the WorldInfo.
@@ -156,11 +187,14 @@ public struct Energy {
 public struct SensorData {
 	public IList<Vector2I> _cells;
     public Vector2I _front_cell;
+    public Vector2I _left_cell;
+    public Vector2I _right_cell;
     public IList<Vector2I> _adjacent_cells;
     public IList<Tree> _trees;
     public IList<Tree> _stumps;
     public IList<Habitant> _enemies;
     public IList<Animal> _animals;
+    public IList<Animal> _food;
 	
 	public IList<Vector2I> Cells
 	{
@@ -173,21 +207,37 @@ public struct SensorData {
         get { return _front_cell; }
         set { _front_cell = value; }
 	}
-    
+
+    public Vector2I LeftCell
+    {
+        get { return _left_cell; }
+        set { _left_cell = value; }
+    }
+
+    public Vector2I RightCell
+    {
+        get { return _right_cell; }
+        set { _right_cell = value; }
+    }
+
     public IList<Vector2I> AdjacentCells {
         get { return _adjacent_cells; }
         set { _adjacent_cells = value; }
     }
 	
-	public SensorData(IList<Vector2I> cells, Vector2I front_cell)
+	public SensorData(IList<Vector2I> cells, Vector2I front_cell, 
+                      Vector2I left_cell, Vector2I right_cell)
 	{
 		_cells = cells;
 		_front_cell = front_cell;
+        _left_cell = left_cell;
+        _right_cell = right_cell;
         _adjacent_cells = null;
         _trees = null;
         _stumps = null;
         _enemies = null;
         _animals = null;
+        _food = null;
 	}
 
     public void FillAdjacentCells (Vector2I agentPos) {
@@ -233,7 +283,14 @@ public struct Orientation {
     public static Orientation FromDegrees(Degrees deg) {
         return new Orientation(deg);
     }
-    
+
+    public Orientation LeftOrientation() {
+        return new Orientation(this.radiansToUp + (new Degrees(-90)).Radians);
+    }
+
+    public Orientation RightOrientation() {
+        return new Orientation(this.radiansToUp + (new Degrees(90)).Radians);
+    }
     public static bool operator== (Orientation o1, Orientation o2) { 
         return o1.radiansToUp.value == o2.radiansToUp.value;
     }
