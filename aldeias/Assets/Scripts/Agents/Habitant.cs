@@ -11,7 +11,6 @@ public class Habitant : Agent {
 
 	public Tribe tribe;
 
-    public static readonly WoodQuantity FLAG_WOOD_QUANTITY = new WoodQuantity(5); // We need 5 WoodQuantity to place 1 flag
 	public static readonly Weight MAXIMUM_CARRIED_WEIGHT = new Weight(200);
 	public FoodQuantity carriedFood;
 	public WoodQuantity carriedWood;
@@ -189,7 +188,7 @@ public class Habitant : Agent {
         return worldInfo.isInsideWorld(sensorData.FrontCell) // Valid cell
 			&& !worldInfo.worldTiles.WorldTileInfoAtCoord(sensorData.FrontCell)
                .tribeTerritory.IsClaimed // Unoccupied cell
-            && tribe.WoodStock > FLAG_WOOD_QUANTITY; // At least one flag available in tribe
+            && tribe.FlagMachine.CanMakeFlag(); // At least one flag available in tribe
     }
 
     public bool CarryingResources() {

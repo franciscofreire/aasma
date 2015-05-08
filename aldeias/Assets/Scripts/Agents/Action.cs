@@ -106,15 +106,15 @@ public class DropTree : HabitantAction {
 
 public class PlaceFlag : HabitantAction {
 	public override void apply () {
-        habitant.tribe.RemoveWoodFromStock(Habitant.FLAG_WOOD_QUANTITY);
-		world.worldTiles.WorldTileInfoAtCoord(target).tribeTerritory.OwnerTribe = habitant.tribe;
+        Flag? flag = habitant.tribe.FlagMachine.MakeFlag();
+		world.worldTiles.WorldTileInfoAtCoord(target).tribeTerritory.Flag = flag;
 	}
 	public PlaceFlag(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }
 
 public class RemoveFlag : HabitantAction {
 	public override void apply () {
-		world.worldTiles.WorldTileInfoAtCoord(target).tribeTerritory.OwnerTribe = null;
+		world.worldTiles.WorldTileInfoAtCoord(target).tribeTerritory.Flag = null;
     }
 	public RemoveFlag(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }

@@ -18,9 +18,9 @@ public class FloorGridLayer : Layer {
 		WorldTileInfo.TribeTerritory tt = worldInfo.worldTiles.WorldTileInfoAtCoord(tileCoord).tribeTerritory;
 
 		if (tt.IsClaimed) {
-			if (tt.OwnerTribe.id == "A")
+			if (tt.Flag.Value.Tribe.id == "A")
 				return (int) ATLAS.TRIBE_A;
-			else if (tt.OwnerTribe.id == "B")
+			else if (tt.Flag.Value.Tribe.id == "B")
 				return (int) ATLAS.TRIBE_B;
 		}
         
