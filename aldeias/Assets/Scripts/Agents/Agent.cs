@@ -88,10 +88,11 @@ public abstract class Agent {
     }
 	
 	public virtual void OnWorldTick() {
-        updateSensorData();
-        
-        Action a = doAction();
-        a.apply();
+        if(Alive) {
+            updateSensorData();
+            Action a = doAction();
+            a.apply();
+        }
     }
 
 	public void updateSensorData() {
