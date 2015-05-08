@@ -196,7 +196,7 @@ public class Animal : Agent {
 
 	public static readonly Energy INITIAL_ENERGY = new Energy(20);
     
-    public Habitat habitat;
+    public readonly Habitat habitat;
 
     public AnimalBoidParameters BoidParams {
         get {
@@ -244,9 +244,10 @@ public class Animal : Agent {
             return FoodQuantity.Zero;
         } else {
             //FIXME: These are testing values!
-            food.Count -= 50;
-            FoodQuantity removed = food;
-            return removed;
+            var foodToRemove = new FoodQuantity(50);
+            var removedFood = foodToRemove <= food ? foodToRemove : food;
+            food = food-removedFood;
+            return removedFood;
         }
     }
 
@@ -254,6 +255,7 @@ public class Animal : Agent {
 
     public Animal(WorldInfo world, Vector2 pos, Habitat h, FoodQuantity food)
     : base(world, pos, INITIAL_ENERGY) {
+        this.habitat = h;
         this.food = food;
         this.AttackMechanism = new AnimalAttackMechanism(this);
         this.AgentImpl = new AnimalBoidImplementation(this);
