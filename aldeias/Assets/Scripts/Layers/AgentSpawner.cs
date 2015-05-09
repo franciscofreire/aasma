@@ -33,8 +33,7 @@ public class AgentSpawner : Layer {
         });
         
         worldInfo.AddHabitantDroppedResourceListener((Habitant h)=>{
-            ClearCarriedResource(h);
-        });
+        }); // Unused for now (using bars for state)
 
         // Assign tribe colors to materials
         Material mat_tribe_A  = new Material(HabitantMaterialPrefab);
@@ -58,7 +57,7 @@ public class AgentSpawner : Layer {
             agentModel.transform.Find("Orientation").renderer.sharedMaterial =
                 list_agent_materials[h.tribe.id];
 
-			Transform wood = agentModel.transform.Find("Wood");
+            Transform wood = agentModel.transform.Find("Wood");
             wood.GetComponent<Renderer>().enabled = false;
 
             HabitantQuantitiesRepresentation habGameObj = ((GameObject)Instantiate(
@@ -109,10 +108,6 @@ public class AgentSpawner : Layer {
 			g.transform.localRotation = h.orientation.ToQuaternion();
             if(h.Alive) {
                 habResReps[h].UpdateModels();
-                if (h.CarryingWood) {
-                    Transform wood = g.transform.Find("Wood");
-                    wood.GetComponent<Renderer>().enabled = true;
-                }
             }
             else if(h.OldTombstone) { // Remove old tombstone
                 Destroy(list_habitants[h]);
@@ -150,11 +145,6 @@ public class AgentSpawner : Layer {
         catch (System.ArgumentNullException e) {
             Debug.Log("[ERROR] @TurnToTombstone: " + e);
         }
-    }
-    
-    public void ClearCarriedResource(Habitant h) {
-        Transform wood = list_habitants[h].transform.Find("Wood");
-        wood.GetComponent<Renderer>().enabled = false;
     }
 
     public void RemoveHabitantResRep(Habitant h) {
