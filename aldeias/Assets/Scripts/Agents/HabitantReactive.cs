@@ -21,7 +21,8 @@ public class HabitantReactive : AgentImplementation {
         return new Walk(habitant, habitant.sensorData.FrontCell);
     }
 
-    private Action RunAwayOrwalkRandomly() {
+    private Action RunAwayOrWalkRandomly() {
+
         Vector2 oppositePos = habitant.pos + 
             habitant.orientation.LeftOrientation().LeftOrientation().ToVector2();
         Vector2I tileCoordOppositePos = CoordConvertions.AgentPosToTile(oppositePos);
@@ -50,7 +51,7 @@ public class HabitantReactive : AgentImplementation {
     public Action doAction() {
         Vector2I target;
         if ((habitant.EnemyInAdjacentPos(out target) || habitant.AnimalInAdjacentPos(out target)) && habitant.LowEnergy()) {
-            return RunAwayOrwalkRandomlyOrEat();
+            return RunAwayOrWalkRandomly();
         }
         else if (habitant.EnemyInAdjacentPos(out target) || habitant.AnimalInAdjacentPos(out target)) {
             Logger.Log("Attacker pos: " + habitant.pos.x + "," + habitant.pos.y, Logger.VERBOSITY.AGENTS);
@@ -72,6 +73,9 @@ public class HabitantReactive : AgentImplementation {
             return new DropTree(habitant, habitant.sensorData.FrontCell);
         }
         else if (habitant.UnclaimedTerritoryInAdjacentPos(out target)) {
+            return new PlaceFlag(habitant, target);
+        }
+        else if (habitant.EnemyTerritoryInAdjacentPos(out target)) {
             return new PlaceFlag(habitant, target);
         }
         else if(habitant.LowEnergy() && 

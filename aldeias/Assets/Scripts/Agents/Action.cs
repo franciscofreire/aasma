@@ -54,7 +54,7 @@ public class Walk : AnyAgentAction {
 
         // decrement energy when a habitant walks
         if(target != origin) {
-            agent.RemoveEnergy(new Energy(WALK_DECREMENT));
+            //agent.RemoveEnergy(new Energy(WALK_DECREMENT));
         }
 	}
 	public Walk(Agent walker, Vector2I target) : base(walker, target) { }
@@ -116,13 +116,6 @@ public class PlaceFlag : HabitantAction {
 		world.worldTiles.WorldTileInfoAtCoord(target).tribeTerritory.Flag = flag;
 	}
 	public PlaceFlag(Habitant habitant, Vector2I target) : base(habitant, target) {}
-}
-
-public class RemoveFlag : HabitantAction {
-	public override void apply () {
-		world.worldTiles.WorldTileInfoAtCoord(target).tribeTerritory.Flag = null;
-    }
-	public RemoveFlag(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }
 
 public class PickupFood : HabitantAction {

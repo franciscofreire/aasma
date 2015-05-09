@@ -167,26 +167,53 @@ public class Habitant : Agent {
         }
         return false;
 	}
-    public bool UnclaimedTerritoryInAdjacentPos(out Vector2I target){
-        target = new Vector2I(-1,-1);
-        if(UnclaimedTerritoryInFront()) {
+
+    public bool UnclaimedTerritoryInAdjacentPos(out Vector2I target) {
+        if(UnclaimedTerritoryInPos(sensorData.FrontCell)) {
             target = sensorData.FrontCell;
             return true;
         }
-        if(UnclaimedTerritoryAtLeft()) {
+        if(UnclaimedTerritoryInPos(sensorData.LeftCell)) {
             target = sensorData.LeftCell;
             return true;
         }
-        if(UnclaimedTerritoryAtRight()) {
+        if(UnclaimedTerritoryInPos(sensorData.RightCell)) {
             target = sensorData.RightCell;
             return true;
         }
+        target = new Vector2I(-1,-1);
         return false;
     }
+
+    public bool EnemyTerritoryInAdjacentPos(out Vector2I target) {
+        if(EnemyTerritoryInPos(sensorData.FrontCell)) {
+            target = sensorData.FrontCell;
+            return true;
+        }
+        if(EnemyTerritoryInPos(sensorData.LeftCell)) {
+            target = sensorData.LeftCell;
+            return true;
+        }
+        if(EnemyTerritoryInPos(sensorData.RightCell)) {
+            target = sensorData.RightCell;
+            return true;
+        }
+        target = new Vector2I(-1,-1);
+        return false;
+    }
+    
+    public bool EnemyTerritoryInPos(Vector2I pos) {
+        return worldInfo.isInsideWorld(pos) // Valid cell
+            && worldInfo.worldTiles.WorldTileInfoAtCoord(pos)
+               .tribeTerritory.IsClaimed // Occupied cell
+            && !worldInfo.worldTiles.WorldTileInfoAtCoord(pos)
+               .tribeTerritory.Flag.Value.Tribe.id.Equals(tribe.id) // Cell has an enemy flag
+            && tribe.FlagMachine.CanMakeFlag(); // At least one flag available in tribe
+    }
  
-	public bool UnclaimedTerritoryInFront() {
-        return worldInfo.isInsideWorld(sensorData.FrontCell) // Valid cell
-			&& !worldInfo.worldTiles.WorldTileInfoAtCoord(sensorData.FrontCell)
+    public bool UnclaimedTerritoryInPos(Vector2I pos) {
+        return worldInfo.isInsideWorld(pos) // Valid cell
+            && !worldInfo.worldTiles.WorldTileInfoAtCoord(pos)
                .tribeTerritory.IsClaimed // Unoccupied cell
             && tribe.FlagMachine.CanMakeFlag(); // At least one flag available in tribe
     }

@@ -6,13 +6,13 @@ public class AgentSpawner : Layer {
 	public GameObject habitantModel, warriorModel, tombstoneModel,
                       animalModel, foodModel;
 
-    public HabitantResourceRepresentation HabitantPrefab;
+    public HabitantQuantitiesRepresentation HabitantPrefab;
     public Material HabitantMaterialPrefab;
 
 	public IDictionary<Habitant, GameObject> list_habitants = 
 		new Dictionary<Habitant, GameObject>();
-    public IDictionary<Habitant, HabitantResourceRepresentation> habResReps = 
-        new Dictionary<Habitant, HabitantResourceRepresentation>();
+    public IDictionary<Habitant, HabitantQuantitiesRepresentation> habResReps = 
+        new Dictionary<Habitant, HabitantQuantitiesRepresentation>();
 	public IDictionary<Animal, GameObject> list_animals = 
 		new Dictionary<Animal, GameObject>();
 
@@ -33,8 +33,7 @@ public class AgentSpawner : Layer {
         });
         
         worldInfo.AddHabitantDroppedResourceListener((Habitant h)=>{
-            ClearCarriedResource(h);
-        });
+        }); // Unused for now (using bars for state)
 
         // Assign tribe colors to materials
         Material mat_tribe_A  = new Material(HabitantMaterialPrefab);
@@ -58,13 +57,13 @@ public class AgentSpawner : Layer {
             agentModel.transform.Find("Orientation").renderer.sharedMaterial =
                 list_agent_materials[h.tribe.id];
 
-			Transform wood = agentModel.transform.Find("Wood");
+            Transform wood = agentModel.transform.Find("Wood");
             wood.GetComponent<Renderer>().enabled = false;
 
-            HabitantResourceRepresentation habGameObj = ((GameObject)Instantiate(
+            HabitantQuantitiesRepresentation habGameObj = ((GameObject)Instantiate(
                 HabitantPrefab.gameObject,
                 AgentPosToVec3(h.pos),
-                Quaternion.identity)).GetComponent<HabitantResourceRepresentation>();
+                Quaternion.identity)).GetComponent<HabitantQuantitiesRepresentation>();
             habGameObj.transform.parent = agentModel.transform;
             habGameObj.SetHabitantWithMaterial(h);
             habResReps.Add(h, habGameObj);
@@ -109,10 +108,6 @@ public class AgentSpawner : Layer {
 			g.transform.localRotation = h.orientation.ToQuaternion();
             if(h.Alive) {
                 habResReps[h].UpdateModels();
-                if (h.CarryingWood) {
-                    Transform wood = g.transform.Find("Wood");
-                    wood.GetComponent<Renderer>().enabled = true;
-                }
             }
             else if(h.OldTombstone) { // Remove old tombstone
                 Destroy(list_habitants[h]);
@@ -150,11 +145,6 @@ public class AgentSpawner : Layer {
         catch (System.ArgumentNullException e) {
             Debug.Log("[ERROR] @TurnToTombstone: " + e);
         }
-    }
-    
-    public void ClearCarriedResource(Habitant h) {
-        Transform wood = list_habitants[h].transform.Find("Wood");
-        wood.GetComponent<Renderer>().enabled = false;
     }
 
     public void RemoveHabitantResRep(Habitant h) {
