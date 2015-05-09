@@ -72,20 +72,27 @@ public class AgentSpawner : Layer {
 		}
 
 		foreach (Animal a in worldInfo.AllAnimals) {
-			GameObject agentModel = (GameObject) Instantiate(
-				animalModel,
-				AgentPosToVec3(a.pos),
-				Quaternion.identity);
-			agentModel.transform.parent = this.transform;
-			agentModel.SetActive(true);
-
-			list_animals.Add(a, agentModel);
+            CreateAnimalRepr(a);
 		}
 	}
 
+    private void CreateAnimalRepr(Animal a) {
+        GameObject agentModel = (GameObject) Instantiate(
+            animalModel,
+            AgentPosToVec3(a.pos),
+            Quaternion.identity);
+        agentModel.transform.parent = this.transform;
+        agentModel.SetActive(true);
+        
+        list_animals.Add(a, agentModel);
+    }
 
 	public override void ApplyWorldInfo() {
         //TODO: add animals and habitants that appeared
+        var newAnimals = worldInfo.AliveAnimals.Except(list_animals.Keys);
+        foreach(var a in newAnimals) {
+            CreateAnimalRepr(a);
+        }
 
         List<Animal> keys_animals = new List<Animal>(list_animals.Keys);
         foreach (Animal a in keys_animals) {
