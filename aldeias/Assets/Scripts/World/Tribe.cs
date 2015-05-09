@@ -66,10 +66,13 @@ public class Tribe {
 	
     public readonly FlagMakerMachine FlagMachine;
 
-	public Tribe(string id, MeetingPoint meetingPoint) {
+    public int cell_count;
+    
+	public Tribe(string id, MeetingPoint meetingPoint, int cell_count) {
 		this.id = id;
 		this.meetingPoint = meetingPoint;
         this.FlagMachine = new FlagMakerMachine(this);
+        this.cell_count = cell_count;
 	}
 
     //
