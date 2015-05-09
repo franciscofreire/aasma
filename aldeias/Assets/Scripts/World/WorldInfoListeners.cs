@@ -97,4 +97,16 @@ public partial class WorldInfo : MonoBehaviour {
             listener(h);
         }
     }
+
+    public delegate void GameEndedListener(string s);
+    private List<GameEndedListener> gameEndedListeners
+        = new List<GameEndedListener>();
+    public void AddGameEndedListener(GameEndedListener func) {
+        gameEndedListeners.Add(func);
+    }
+    public void NotifyGameEndedListeners(string s) {
+        foreach(GameEndedListener listener in gameEndedListeners) {
+            listener(s);
+        }
+    }
 }

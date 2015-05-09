@@ -3,11 +3,13 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Linq;
 
-public class TribeStocksOverlayLayer : Layer {
+public class TribeOverlayLayer : Layer {
     public Text Text;
 
     public override void CreateObjects () {
-        // Purposely left empty.
+        worldInfo.AddGameEndedListener((string s)=>{
+            Text.text += s;
+        });
     }
 
     public override void ApplyWorldInfo () {

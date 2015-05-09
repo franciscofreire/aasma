@@ -7,7 +7,7 @@ public class Logger {
 
     private static readonly bool DEBUG  = false;
     private static readonly bool AGENTS = false;
-    private static readonly bool LAYERS = true;
+    private static readonly bool LAYERS = false;
 
     public Logger() {
     }

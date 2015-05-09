@@ -78,15 +78,21 @@ public partial class WorldInfo : MonoBehaviour {
 	IEnumerator NextWorldTick() {
 		while(true) {
 			yield return new WaitForSeconds(MilisecondsPerTick/1000f);
+            
+            // Check if the game has ended
+            if (enemiesErradicated()) {
+                yield break;
+            }
+
 			WorldTick();
 		}
 	}
 
-	public void WorldTick () {
-		foreach(Agent a in AllAgents) {
-		    a.OnWorldTick();
-		}
-		NotifyChangeListeners();
+    public void WorldTick () {
+        foreach(Agent a in AllAgents) {
+            a.OnWorldTick();
+        }
+        NotifyChangeListeners();
 
 		// Update agents' sensors. (agent.sensors.update();)
 		// Collect actions from all agents.
@@ -389,6 +395,23 @@ public partial class WorldInfo : MonoBehaviour {
             }
         }
         return null;
+    }
+
+    private bool enemiesErradicated() {
+        int tribes_remaining = tribes.Count;
+        string tribe_id = "";
+        foreach (Tribe t in tribes) {
+            if (t.habitants.Count == 0)
+                tribes_remaining--;
+            else {
+                tribe_id = t.id;
+            }
+        }
+        if (tribes_remaining == 1) {
+            NotifyGameEndedListeners("Tribe " + tribe_id + " winned!");
+            return true;
+        }
+        return false;
     }
 }
 
