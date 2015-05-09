@@ -55,6 +55,12 @@ public partial class WorldInfo : MonoBehaviour {
 		}
 	}
 
+    public IEnumerable<Animal> AliveAnimals {
+        get {
+            return AllAnimals.Where((a)=>a.Alive);
+        }
+    }
+
 	// All the agents that exist in the world.
 	public IEnumerable<Agent> AllAgents {
 		get {
@@ -68,6 +74,24 @@ public partial class WorldInfo : MonoBehaviour {
 		// Add tree to the optimized Tree at tile structure.
 		worldTiles.WorldTileInfoAtCoord(tree.Pos).Tree = tree;
 	}
+
+    public IEnumerable<Vector2I> AllCellCoords {
+        get {
+            foreach(var x in Enumerable.Range(0,xSize)) {
+                foreach(var z in Enumerable.Range(0,zSize)) {
+                    yield return new Vector2I(x,z);
+                }
+            }
+        }
+    }
+
+    public IEnumerable<Vector2I> HabitatCellCoords {
+        get {
+            return AllCellCoords.Where(
+                (c)=>
+                worldTiles.WorldTileInfoAtCoord(c).isHabitat);
+        }
+    }
 
 	void Start () {
 		GenerateWorldTileInfo();
@@ -92,6 +116,7 @@ public partial class WorldInfo : MonoBehaviour {
         foreach(Agent a in AllAgents) {
             a.OnWorldTick();
         }
+        EnsureEnoughAliveAnimals();
         NotifyChangeListeners();
 
 		// Update agents' sensors. (agent.sensors.update();)
@@ -111,6 +136,15 @@ public partial class WorldInfo : MonoBehaviour {
 		// Is the agent's decision cycle synchronous?
 		// How do the agents perceive the world state?
 	}
+
+    public void EnsureEnoughAliveAnimals() {
+        int AliveAnimalDeficit = MAX_ANIMALS - AliveAnimals.Count();
+        if(AliveAnimalDeficit > 0) {
+            foreach(var habitatTile in HabitatCellCoords.Take(AliveAnimalDeficit)) {
+                CreateAnimalAt(habitatTile, habitats.First());
+            }
+        }
+    }
 
 	////
 	//// TILE CREATION
@@ -227,6 +261,15 @@ public partial class WorldInfo : MonoBehaviour {
 		}
 	}
 
+    private void CreateAnimalAt(Vector2I coord, Habitat habitat) {
+        Animal a = new Animal(this, 
+                          CoordConvertions.TileToAgentPos(coord),
+                          habitat,
+                          new FoodQuantity(100));
+        worldTiles.WorldTileInfoAtCoord(coord).Agent = a;
+        habitat.animals.Add(a);
+    }
+
 	private void CreateAnimals() {
         foreach (Habitat h in habitats) {
             int num_animals = MAX_ANIMALS;
@@ -234,13 +277,7 @@ public partial class WorldInfo : MonoBehaviour {
 				for(int z = h.corner_pos.y; z > h.corner_pos.y - HABITAT_SIDE; z--) {
 					if (num_animals-- > 0) {
 						Vector2I tileCoord = new Vector2I(x,z);
-						Animal a = new Animal(
-                            this,
-                            CoordConvertions.TileToAgentPos(tileCoord),
-                            h,
-                            new FoodQuantity(100));
-						worldTiles.WorldTileInfoAtCoord(tileCoord).Agent = a;
-						h.animals.Add(a);
+                        CreateAnimalAt(tileCoord, h);
 					} else
 						break;
 				}
