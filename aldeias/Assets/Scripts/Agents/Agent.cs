@@ -69,12 +69,7 @@ public abstract class Agent {
 	}
 
     public void Clamp() {
-        pos.x = ((int) pos.x) > pos.x
-            ? (float) ((int) pos.x)
-            : (float) ((int) pos.x) + 1;
-        pos.y = ((int) pos.y) > pos.y
-            ? (float) ((int) pos.y)
-            : (float) ((int) pos.y) + 1;
+        this.pos = CoordConvertions.AdjustAgentPos(this.pos);
     }
 
 	public void ChangePosition(Vector2 newPosition) {

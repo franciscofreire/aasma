@@ -473,6 +473,10 @@ public static class CoordConvertions {
 	public static Vector2 TileToAgentPos(Vector2I coord) {
 		return new Vector2(coord.x, coord.y);
 	}
+
+    public static Vector2 AdjustAgentPos(Vector2 agentPos) {
+        return TileToAgentPos(AgentPosToTile(agentPos));
+    }
 	public static Vector2 ClampAgentPosToWorldSize(Vector2 pos, WorldInfo world) {
 		Vector2 maxWorldCoord = new Vector2(world.xSize-1,world.zSize-1);
 		Vector2 minWorldCoord = Vector2.zero;

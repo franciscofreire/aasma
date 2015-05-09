@@ -36,6 +36,7 @@ public abstract class AnyAgentAction : Action {
 }
 
 public class Walk : AnyAgentAction {
+    private const int WALK_DECREMENT = 2;
 	public override void apply () {
 		//Change the Agent's position and reorient him so he faces the same direction in which he moved.
 		Vector2I origin = CoordConvertions.AgentPosToTile(agent.pos);
@@ -50,6 +51,11 @@ public class Walk : AnyAgentAction {
 		} else {
 			performer.orientation = Orientation.Up;
 		}
+
+        // decrement energy when a habitant walks
+        if(target != origin) {
+            agent.RemoveEnergy(new Energy(WALK_DECREMENT));
+        }
 	}
 	public Walk(Agent walker, Vector2I target) : base(walker, target) { }
 }
