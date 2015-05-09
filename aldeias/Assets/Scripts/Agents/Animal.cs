@@ -227,7 +227,9 @@ public class Animal : Agent {
             orientation = Orientation.FromRadians(new Radians(-Mathf.Atan2(dir.y, dir.x))+(Radians)new Degrees(90));
         }
     }
-
+    
+    public static int    FOOD_TEAR_QUANTITY = 50;
+    public static Weight FOOD_WEIGHT        = new Weight(FOOD_TEAR_QUANTITY);
     private FoodQuantity food;
     public  FoodQuantity Food {
         get {

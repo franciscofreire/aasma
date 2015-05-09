@@ -9,6 +9,8 @@ public partial class WorldInfo : MonoBehaviour {
 	public int MilisecondsPerTick = 50;
 
     private const int MAX_ANIMALS = 10;
+    private const int ANIMAL_RESPAWN_COOLDOWN = 50;
+    private int cooldown = ANIMAL_RESPAWN_COOLDOWN;
     public AnimalBoidParameters BoidParams = new AnimalBoidParameters();
     
     private const int MAX_HABITANTS = 20;
@@ -139,9 +141,11 @@ public partial class WorldInfo : MonoBehaviour {
 
     public void EnsureEnoughAliveAnimals() {
         int AliveAnimalDeficit = MAX_ANIMALS - AliveAnimals.Count();
-        if(AliveAnimalDeficit > 0) {
-            foreach(var habitatTile in HabitatCellCoords.Take(AliveAnimalDeficit)) {
-                CreateAnimalAt(habitatTile, habitats.First());
+        if (AliveAnimalDeficit > 0) {
+            if (cooldown-- == 0) {
+                foreach(var habitatTile in HabitatCellCoords.Take(AliveAnimalDeficit))
+                    CreateAnimalAt(habitatTile, habitats.First());
+                cooldown = ANIMAL_RESPAWN_COOLDOWN;
             }
         }
     }

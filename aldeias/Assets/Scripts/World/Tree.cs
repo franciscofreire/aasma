@@ -12,6 +12,9 @@ public class Tree {
 	private Vector2I pos;
 	private bool isAlive;
 	private WoodQuantity wood;
+    
+    public static int    WOOD_CHOP_QUANTITY = 50;
+    public static Weight WOOD_WEIGHT        = new Weight(WOOD_CHOP_QUANTITY);
 
     public Tree (WorldInfo worldInfo, Vector2I pos, WoodQuantity woodQuantity) {
         this.worldInfo = worldInfo;
@@ -38,7 +41,7 @@ public class Tree {
 			return WoodQuantity.Zero;
         } else {
             //FIXME: These are testing values!
-            wood.Count -= 50;
+            wood.Count -= WOOD_CHOP_QUANTITY;
 			WoodQuantity removed = wood; 
 			return removed;
 		}

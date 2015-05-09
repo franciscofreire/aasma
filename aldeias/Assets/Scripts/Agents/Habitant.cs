@@ -292,6 +292,10 @@ public class Habitant : Agent {
         return CarryingFood || CarryingWood;
     }
 
+    public bool CanCarryResource(Weight w) {
+        return CarriedWeight + w <= MAXIMUM_CARRIED_WEIGHT;
+    }
+
 	private static Energy CRITICAL_ENERGY_LEVEL = new Energy(20);
 	public bool LowEnergy() {
 		return this.energy <= CRITICAL_ENERGY_LEVEL;
