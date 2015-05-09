@@ -6,13 +6,13 @@ public class AgentSpawner : Layer {
 	public GameObject habitantModel, warriorModel, tombstoneModel,
                       animalModel, foodModel;
 
-    public HabitantResourceRepresentation HabitantPrefab;
+    public HabitantQuantitiesRepresentation HabitantPrefab;
     public Material HabitantMaterialPrefab;
 
 	public IDictionary<Habitant, GameObject> list_habitants = 
 		new Dictionary<Habitant, GameObject>();
-    public IDictionary<Habitant, HabitantResourceRepresentation> habResReps = 
-        new Dictionary<Habitant, HabitantResourceRepresentation>();
+    public IDictionary<Habitant, HabitantQuantitiesRepresentation> habResReps = 
+        new Dictionary<Habitant, HabitantQuantitiesRepresentation>();
 	public IDictionary<Animal, GameObject> list_animals = 
 		new Dictionary<Animal, GameObject>();
 
@@ -61,10 +61,10 @@ public class AgentSpawner : Layer {
 			Transform wood = agentModel.transform.Find("Wood");
             wood.GetComponent<Renderer>().enabled = false;
 
-            HabitantResourceRepresentation habGameObj = ((GameObject)Instantiate(
+            HabitantQuantitiesRepresentation habGameObj = ((GameObject)Instantiate(
                 HabitantPrefab.gameObject,
                 AgentPosToVec3(h.pos),
-                Quaternion.identity)).GetComponent<HabitantResourceRepresentation>();
+                Quaternion.identity)).GetComponent<HabitantQuantitiesRepresentation>();
             habGameObj.transform.parent = agentModel.transform;
             habGameObj.SetHabitantWithMaterial(h);
             habResReps.Add(h, habGameObj);
