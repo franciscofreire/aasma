@@ -96,15 +96,17 @@ public abstract class Agent {
         IList<Habitant> _enemies;
         IList<Animal> _animals;
         IList<Animal> _food;
+        IList<Vector2I> _far_away_cells;
 
 		sensorData.Cells = worldInfo.nearbyFreeCells(
-            worldInfo.nearbyCells(this, out _trees,out _stumps,out _enemies,out _animals,out _food));
+            worldInfo.nearbyCells(this, out _far_away_cells, out _trees,out _stumps,out _enemies,out _animals,out _food));
 
-        sensorData._trees = _trees;
-        sensorData._stumps = _stumps;
-        sensorData._enemies = _enemies;
-        sensorData._animals = _animals;
-        sensorData._food = _food;
+        sensorData.Trees = _trees;
+        sensorData.Stumps = _stumps;
+        sensorData.Enemies = _enemies;
+        sensorData.Animals = _animals;
+        sensorData.Food = _food;
+        sensorData.FarAwayCells = _far_away_cells;
 
         sensorData.FillAdjacentCells (new Vector2I (pos));
 		
@@ -137,6 +139,11 @@ public abstract class Agent {
     public bool AliveTreeInFront() {
 		WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(sensorData.FrontCell);
 		return t.HasTree && t.Tree.Alive;
+    }
+
+    public bool DeadTreeInFront() {
+        WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(sensorData.FrontCell);
+        return t.HasTree && !t.Tree.Alive;
     }
     
     public bool CutDownTreeWithWoodInFront() {
@@ -190,6 +197,7 @@ public struct SensorData {
     public Vector2I _front_cell;
     public Vector2I _left_cell;
     public Vector2I _right_cell;
+    public IList<Vector2I> _far_away_cells;
     public IList<Vector2I> _adjacent_cells;
     public IList<Tree> _trees;
     public IList<Tree> _stumps;
@@ -202,7 +210,7 @@ public struct SensorData {
         get { return _cells; }
         set { _cells = value; }
 	}
-    public IList<Tree> Tree
+    public IList<Tree> Trees
     {
         get { return _trees; }
         set { _trees = value; }
@@ -254,6 +262,11 @@ public struct SensorData {
         set { _adjacent_cells = value; }
     }
 	
+    public IList<Vector2I> FarAwayCells {
+        get { return _far_away_cells; }
+        set { _far_away_cells = value; }
+    }
+
 	public SensorData(IList<Vector2I> cells, Vector2I front_cell, 
                       Vector2I left_cell, Vector2I right_cell)
 	{
@@ -261,6 +274,7 @@ public struct SensorData {
 		_front_cell = front_cell;
         _left_cell = left_cell;
         _right_cell = right_cell;
+        _far_away_cells = null;
         _adjacent_cells = null;
         _trees = null;
         _stumps = null;

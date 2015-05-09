@@ -42,6 +42,12 @@ public struct Vector2I {
             return false;
         }
     }
+    // Manhatan distance
+    public int DistanceTo(Vector2I otherVec) {
+        int dx = Math.Abs(otherVec.x - this.x);
+        int dy = Math.Abs(otherVec.y - this.y);
+        return dx + dy;
+    }
 }
 
 public partial struct Degrees {

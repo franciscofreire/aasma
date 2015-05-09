@@ -260,6 +260,7 @@ public partial class WorldInfo : MonoBehaviour {
 	////
 
     public IList<Vector2I> nearbyCells(Agent agent,
+        out IList<Vector2I> _far_away_cells,
         out IList<Tree> _trees,
         out IList<Tree> _stumps,
         out IList<Habitant> _enemies,
@@ -283,6 +284,7 @@ public partial class WorldInfo : MonoBehaviour {
         _enemies = new List<Habitant>();
         _animals = new List<Animal>();
         _food = new List<Animal>();
+        _far_away_cells = new List<Vector2I>();
 
         IList<Vector2I> cells = new List<Vector2I>();
         
@@ -311,6 +313,9 @@ public partial class WorldInfo : MonoBehaviour {
         for(int i = 0; i < xMaxSize; i++) {
             for(int j = 0; j < zMaxSize; j++) {
                 Vector2I cell = new Vector2I(leftCorner.x + i, leftCorner.y - j);
+                if(CoordConvertions.AgentPosToTile(agent.pos).DistanceTo(cell) >= 2) {
+                    _far_away_cells.Add (cell);
+                }
                 if(isInsideWorld(cell)) {
                     cells.Add(cell);
                     if(enemyTribe != null) {

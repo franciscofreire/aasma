@@ -61,7 +61,7 @@ public class Tribe {
 	public readonly MeetingPoint meetingPoint;
 	public List<Habitant> habitants = new List<Habitant>();
 	
-    public FoodQuantity FoodStock = FoodQuantity.Zero;
+    public FoodQuantity FoodStock = new FoodQuantity(5000);
     public WoodQuantity WoodStock = new WoodQuantity(1000); // We have 100 flags to place
 	
     public readonly FlagMakerMachine FlagMachine;
