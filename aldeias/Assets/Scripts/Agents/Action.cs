@@ -149,9 +149,12 @@ public class EatInPlace : HabitantAction {
 }
 
 public class EatInTribe : HabitantAction {
-	public static readonly FoodQuantity FoodConsumedByHabitant = new FoodQuantity(100);
+	public static readonly FoodQuantity FoodConsumedByHabitant = new FoodQuantity(50);
     public override void apply () {
-		habitant.Eat(habitant.tribe.RemoveFoodFromStock(FoodConsumedByHabitant));
+        Flag? flag = world.worldTiles.WorldTileInfoAtCoord(target).tribeTerritory.Flag;
+        if(flag.HasValue && flag.Value.Tribe.Equals(habitant.tribe)) {
+		    habitant.Eat(habitant.tribe.RemoveFoodFromStock(FoodConsumedByHabitant));
+        }
     }
 	public EatInTribe(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }

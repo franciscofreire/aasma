@@ -218,6 +218,76 @@ public class Habitant : Agent {
             && tribe.FlagMachine.CanMakeFlag(); // At least one flag available in tribe
     }
 
+    public bool UnclaimedTerritoryAtLeft() {
+        return worldInfo.isInsideWorld(sensorData.LeftCell) // Valid cell
+            && !worldInfo.worldTiles.WorldTileInfoAtCoord(sensorData.LeftCell)
+                .tribeTerritory.IsClaimed // Unoccupied cell
+                && tribe.FlagMachine.CanMakeFlag(); // At least one flag available in tribe
+    }
+    public bool UnclaimedTerritoryAtRight() {
+        return worldInfo.isInsideWorld(sensorData.RightCell) // Valid cell
+            && !worldInfo.worldTiles.WorldTileInfoAtCoord(sensorData.RightCell)
+                .tribeTerritory.IsClaimed // Unoccupied cell
+                && tribe.FlagMachine.CanMakeFlag(); // At least one flag available in tribe
+    }
+
+    public bool AnimalsInFrontPositions() {
+        foreach(Animal a in sensorData.Animals) {
+            Vector2I animalPos = CoordConvertions.AgentPosToTile(a.pos);
+            foreach(Vector2I sensorPos in sensorData.FarAwayCells) {
+                if(animalPos == sensorPos) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public bool EnemiesInFrontPositions() {
+        foreach(Habitant h in sensorData.Enemies) {
+            Vector2I enemyPos = CoordConvertions.AgentPosToTile(h.pos);
+            foreach(Vector2I sensorPos in sensorData.FarAwayCells) {
+                if(enemyPos == sensorPos) {
+                    return true;
+                }
+            }
+        }      
+        return false;
+    }
+
+    public bool TreesInFrontPositions() {
+        foreach(Tree t in sensorData.Trees) {
+            foreach(Vector2I sensorPos in sensorData.FarAwayCells) {
+                if(t.Pos == sensorPos) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public bool FoodInFrontPositions() {
+        foreach(Animal a in sensorData.Food) {
+            Vector2I animalPos = CoordConvertions.AgentPosToTile(a.pos);
+            foreach(Vector2I sensorPos in sensorData.FarAwayCells) {
+                if(animalPos == sensorPos) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public bool IsInTribeTerritory() {
+        Flag? flag = 
+            worldInfo.worldTiles.WorldTileInfoAtCoord(
+                CoordConvertions.AgentPosToTile(this.pos)).tribeTerritory.Flag;
+        return flag.HasValue && flag.Value.Tribe.Equals(this.tribe);
+    }
+    public bool TribeHasFood() {
+        return tribe.FoodStock >= (new FoodQuantity(50));
+    }
+
     public bool CarryingResources() {
         return CarryingFood || CarryingWood;
     }

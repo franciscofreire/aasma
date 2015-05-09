@@ -3,7 +3,7 @@ using UnityEngine;
 public class HabitantReactive : AgentImplementation {
     private Habitant habitant;
 
-    private Action walkRandomly() {
+    private Action WalkRandomly() {
         int index = WorldRandom.Next(habitant.sensorData.AdjacentCells.Count);
         Vector2I target;
         try {
@@ -17,14 +17,34 @@ public class HabitantReactive : AgentImplementation {
         return new Walk(habitant, target);
     }
 
+    private Action WalkFront() {
+        return new Walk(habitant, habitant.sensorData.FrontCell);
+    }
+
     private Action RunAwayOrWalkRandomly() {
+
         Vector2 oppositePos = habitant.pos + 
             habitant.orientation.LeftOrientation().LeftOrientation().ToVector2();
         Vector2I tileCoordOppositePos = CoordConvertions.AgentPosToTile(oppositePos);
         if(habitant.worldInfo.isInsideWorld(tileCoordOppositePos)) {
             return new Walk(habitant, tileCoordOppositePos);
         } else {
-            return walkRandomly();
+            return WalkRandomly();
+        }
+    }
+
+    private Action RunAwayOrwalkRandomlyOrEat() {
+        Vector2 oppositePos = habitant.pos + 
+            habitant.orientation.LeftOrientation().LeftOrientation().ToVector2();
+        Vector2I tileCoordOppositePos = CoordConvertions.AgentPosToTile(oppositePos);
+        CryptoRandom rnd = new CryptoRandom();
+        if(rnd.Next (10) <= 5) {
+            return new EatInTribe(habitant,CoordConvertions.AgentPosToTile(habitant.pos));
+        }
+        if(habitant.worldInfo.isInsideWorld(tileCoordOppositePos)) {
+            return new Walk(habitant, tileCoordOppositePos);
+        } else {
+            return WalkRandomly();
         }
     }
 
@@ -58,7 +78,17 @@ public class HabitantReactive : AgentImplementation {
         else if (habitant.EnemyTerritoryInAdjacentPos(out target)) {
             return new PlaceFlag(habitant, target);
         }
-        return walkRandomly();
+        else if(habitant.LowEnergy() && 
+                habitant.IsInTribeTerritory() && 
+                habitant.TribeHasFood() ) {
+            return new EatInTribe(habitant,CoordConvertions.AgentPosToTile(habitant.pos));
+        }
+        else if((habitant.AnimalsInFrontPositions() || habitant.FoodInFrontPositions() ||
+                habitant.EnemiesInFrontPositions() || habitant.TreesInFrontPositions()) &&
+                (!habitant.AliveTreeInFront() && !habitant.DeadTreeInFront())){
+            return WalkFront();
+        }
+        return WalkRandomly();
     }
     
     public HabitantReactive(Habitant habitant) {
