@@ -40,8 +40,8 @@ public class AgentSpawner : Layer {
         Material mat_tribe_B  = new Material(HabitantMaterialPrefab);
         mat_tribe_A.color = Color.blue;
         mat_tribe_B.color = Color.red;
-        list_agent_materials.Add("A", mat_tribe_A);
-        list_agent_materials.Add("B", mat_tribe_B);
+        list_agent_materials.Add("Blue", mat_tribe_A);
+        list_agent_materials.Add("Red",  mat_tribe_B);
 
 		foreach (Habitant h in worldInfo.AllHabitants) {
             GameObject agentModel = (GameObject) Instantiate(

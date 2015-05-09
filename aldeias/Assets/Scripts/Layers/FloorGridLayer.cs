@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 
 public class FloorGridLayer : Layer {
-	enum ATLAS {GRASS, TRIBE_A, TRIBE_B};
+	enum ATLAS {GRASS, TRIBE_BLUE, TRIBE_RED};
 
 	private FloorGrid floorGrid;
 	
@@ -18,10 +18,10 @@ public class FloorGridLayer : Layer {
 		WorldTileInfo.TribeTerritory tt = worldInfo.worldTiles.WorldTileInfoAtCoord(tileCoord).tribeTerritory;
 
 		if (tt.IsClaimed) {
-			if (tt.Flag.Value.Tribe.id == "A")
-				return (int) ATLAS.TRIBE_A;
-			else if (tt.Flag.Value.Tribe.id == "B")
-				return (int) ATLAS.TRIBE_B;
+			if (tt.Flag.Value.Tribe.id == "Blue")
+				return (int) ATLAS.TRIBE_BLUE;
+			else if (tt.Flag.Value.Tribe.id == "Red")
+				return (int) ATLAS.TRIBE_RED;
 		}
         
 		return (int) ATLAS.GRASS;

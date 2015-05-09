@@ -13,11 +13,14 @@ public class TribeOverlayLayer : Layer {
     }
 
     public override void ApplyWorldInfo () {
-        var tribeViews = worldInfo.tribes
-            .Select((t)=>{
-                var tView = string.Format("Tribe {0}\n\t{1}\n\t{2}\n",t.id,t.FoodStock,t.WoodStock);
-                return tView;
-            });
+        var tribeViews = worldInfo.tribes.Select((t)=>{
+            var tView = 
+                string.Format("Tribe {0}: {1}   {2}\n"
+                              ,t.id, t.FoodStock, t.WoodStock) +
+                string.Format("             # Cells Captured: {0}   # Habitants: {1}\n"
+                              ,t.cell_count, t.habitants.Count);
+            return tView;
+        });
         var concatedViews = tribeViews.Aggregate("",(acc,next)=>acc+next);
         Text.text = concatedViews;
     }

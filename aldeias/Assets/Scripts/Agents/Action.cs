@@ -54,7 +54,7 @@ public class Walk : AnyAgentAction {
 
         // decrement energy when a habitant walks
         if(target != origin) {
-            agent.RemoveEnergy(new Energy(WALK_DECREMENT));
+            //agent.RemoveEnergy(new Energy(WALK_DECREMENT));
         }
 	}
 	public Walk(Agent walker, Vector2I target) : base(walker, target) { }
@@ -114,6 +114,8 @@ public class PlaceFlag : HabitantAction {
 	public override void apply () {
         Flag? flag = habitant.tribe.FlagMachine.MakeFlag();
 		world.worldTiles.WorldTileInfoAtCoord(target).tribeTerritory.Flag = flag;
+        //TODO: Dec cellcount of enemy
+        habitant.tribe.cell_count++;
 	}
 	public PlaceFlag(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }

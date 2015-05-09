@@ -80,7 +80,7 @@ public partial class WorldInfo : MonoBehaviour {
 			yield return new WaitForSeconds(MilisecondsPerTick/1000f);
             
             // Check if the game has ended
-            if (enemiesErradicated()) {
+            if (erradicationVictory() || territoryVictory()) {
                 yield break;
             }
 
@@ -123,8 +123,8 @@ public partial class WorldInfo : MonoBehaviour {
 
 	public void GenerateWorldTileInfo () {
 		worldTiles = new WorldTiles(xSize, zSize);
-		CreateTribeAt("A", 0, 0);
-		CreateTribeAt("B", xSize - TRIBE_TERRITORY_SIDE, zSize - TRIBE_TERRITORY_SIDE);
+		CreateTribeAt("Blue", 0, 0);
+		CreateTribeAt("Red", xSize - TRIBE_TERRITORY_SIDE, zSize - TRIBE_TERRITORY_SIDE);
 		FillHabitat();
 		CreateAnimals();
 		FillTrees();
@@ -192,7 +192,7 @@ public partial class WorldInfo : MonoBehaviour {
 		int meetingPointz = posz + Mathf.FloorToInt(TRIBE_TERRITORY_SIDE/2);
 		Vector2I meetingPointCenter = new Vector2I(meetingPointx, meetingPointz);
 		MeetingPoint meetingPoint = new MeetingPoint(meetingPointCenter, MEETING_POINT_SIDE);
-		Tribe tribe = new Tribe(name, meetingPoint);
+        Tribe tribe = new Tribe(name, meetingPoint, TRIBE_TERRITORY_SIDE * TRIBE_TERRITORY_SIDE);
 		tribes.Add(tribe);
 		return tribe;
 	}
@@ -352,7 +352,6 @@ public partial class WorldInfo : MonoBehaviour {
                             }
                         }
                     }
-
                 }
             }
         }
@@ -402,7 +401,7 @@ public partial class WorldInfo : MonoBehaviour {
         return null;
     }
 
-    private bool enemiesErradicated() {
+    private bool erradicationVictory() {
         int tribes_remaining = tribes.Count;
         string tribe_id = "";
         foreach (Tribe t in tribes) {
@@ -413,7 +412,20 @@ public partial class WorldInfo : MonoBehaviour {
             }
         }
         if (tribes_remaining == 1) {
-            NotifyGameEndedListeners("Tribe " + tribe_id + " winned!");
+            NotifyGameEndedListeners("Tribe " + tribe_id + " winned! (Erradication Victory)");
+            return true;
+        }
+        return false;
+    }
+    
+    private bool territoryVictory() {
+        string tribe_id = "";
+        foreach (Tribe t in tribes) {
+            if (t.cell_count > ((float)(xSize * zSize) / 2))
+                tribe_id = t.id;
+        }
+        if (tribe_id != "") {
+            NotifyGameEndedListeners("Tribe " + tribe_id + " winned! (Territory Victory)");
             return true;
         }
         return false;
