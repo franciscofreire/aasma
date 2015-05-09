@@ -60,6 +60,13 @@ public class AnimalBoidImplementation : AgentImplementation {
         }
     }
 
+    readonly Energy LowEnergyLimit = new Energy(20);
+    bool LowEnergy {
+        get {
+            return animal.energy <= LowEnergyLimit;
+        }
+    }
+
     public AnimalBoidImplementation(Animal animal) {
         this.animal = animal;
     }
@@ -67,7 +74,12 @@ public class AnimalBoidImplementation : AgentImplementation {
     public Action doAction() {
         Habitant closest = ClosestHabitant;
         bool habitantVisible = closest != null;
-        if (habitantVisible && animal.AttackMechanism.AgentInRange(closest)) {
+        if (habitantVisible && LowEnergy) {
+            //Steer away from the habitant.
+            var awayFromHabitant = Pos-closest.pos;
+            var accAwayFromHabitant = awayFromHabitant*10f;
+            return new AnimalAccelerate(animal, accAwayFromHabitant);
+        } else if (habitantVisible && animal.AttackMechanism.AgentInRange(closest)) {
             return new AnimalAttackHabitant(animal, closest);
         } else if (habitantVisible) {
             //Steer toward the habitant.
@@ -194,7 +206,7 @@ public class AnimalAttackHabitant : Action {
 
 public class Animal : Agent {
 
-	public static readonly Energy INITIAL_ENERGY = new Energy(20);
+	public static readonly Energy INITIAL_ENERGY = new Energy(40);
     
     public readonly Habitat habitat;
 
