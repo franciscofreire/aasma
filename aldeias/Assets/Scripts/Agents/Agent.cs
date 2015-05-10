@@ -78,15 +78,14 @@ public abstract class Agent {
 		this.pos = newPosition;
 	}
 
-	public Action doAction() {
-      return agentImplementation.doAction();
+	public void doAction() {
+        agentImplementation.doAction();
     }
 	
 	public virtual void OnWorldTick() {
         if(Alive) {
             updateSensorData();
-            Action a = doAction();
-            a.apply();
+            doAction();
         }
     }
 

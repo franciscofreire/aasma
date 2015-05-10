@@ -1,3 +1,4 @@
 public interface AgentImplementation {
-    Action doAction();
+    Action createAction();
+    void   doAction();
 }

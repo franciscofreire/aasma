@@ -71,7 +71,11 @@ public class AnimalBoidImplementation : AgentImplementation {
         this.animal = animal;
     }
 
-    public Action doAction() {
+    public void doAction() {
+        createAction().apply();
+    }
+
+    public Action createAction() {
         Habitant closest = ClosestHabitant;
         bool habitantVisible = closest != null;
         if (habitantVisible && LowEnergy) {
@@ -257,8 +261,7 @@ public class Animal : Agent {
         if (Alive) {
             return FoodQuantity.Zero;
         } else {
-            //FIXME: These are testing values!
-            var foodToRemove = new FoodQuantity(50);
+            var foodToRemove = new FoodQuantity(FOOD_TEAR_QUANTITY);
             var removedFood = foodToRemove <= food ? foodToRemove : food;
             food = food-removedFood;
             return removedFood;
