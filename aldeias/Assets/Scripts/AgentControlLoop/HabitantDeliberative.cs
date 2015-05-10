@@ -17,7 +17,13 @@ public class HabitantDeliberative : AgentImplementation {
     }
 
     public void doOptions() {
-
+        int count = beliefs.Count();
+        for (int i = 0; i < count; i++) {
+            Belief b = beliefs.Get(i);
+            if (b.IsActive) {
+                // Do shit
+            }
+        }
     }
 
     // Choose the three most important desires, converting them to intentions
@@ -42,9 +48,10 @@ public class HabitantDeliberative : AgentImplementation {
                 candidates.Insert(i, desire);
 
                 // Remove the less important candidate if we have too many candidates
-                if (candidates.Count >= MAX_COUNT) {
+                if (candidates.Count > MAX_COUNT) {
                     candidates.RemoveAt(candidates.Count - 1);
                 }
+
                 return;
             }
         }

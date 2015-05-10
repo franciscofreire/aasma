@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
@@ -236,7 +235,7 @@ public class UnclaimedTerritoryIsNear : Belief {
             RelevantCells = sensorData.UnclaimedCells;
             EnableBelief();
         } else {
-            DisableBelief ();
+            DisableBelief();
         }
     }
 }
