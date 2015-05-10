@@ -97,9 +97,17 @@ public abstract class Agent {
         IList<Animal> _animals;
         IList<Animal> _food;
         IList<Vector2I> _far_away_cells;
+        IList<Vector2I> _meeting_point_cells;
 
 		sensorData.Cells = worldInfo.nearbyFreeCells(
-            worldInfo.nearbyCells(this, out _far_away_cells, out _trees,out _stumps,out _enemies,out _animals,out _food));
+            worldInfo.nearbyCells(this, 
+                              out _far_away_cells, 
+                              out _trees,
+                              out _stumps,
+                              out _enemies,
+                              out _animals,
+                              out _food,
+                              out _meeting_point_cells));
 
         sensorData.Trees = _trees;
         sensorData.Stumps = _stumps;
@@ -107,7 +115,14 @@ public abstract class Agent {
         sensorData.Animals = _animals;
         sensorData.Food = _food;
         sensorData.FarAwayCells = _far_away_cells;
-
+        sensorData.MeetingPointCells = _meeting_point_cells;
+        try {
+            Habitant h = (Habitant) this;
+            sensorData.FoodTribe = new FoodQuantity(h.tribe.FoodStock.Count);
+            sensorData.TribeFlags = h.tribe.FlagMachine.RemainingFlags;
+        } catch(InvalidCastException) {
+            ; // do nothing
+        }
         sensorData.FillAdjacentCells (new Vector2I (pos));
 		
 		Vector2 posInFront = pos + orientation.ToVector2();
@@ -199,17 +214,25 @@ public struct SensorData {
     public Vector2I _right_cell;
     public IList<Vector2I> _far_away_cells;
     public IList<Vector2I> _adjacent_cells;
+    public IList<Vector2I> _meeting_point_cells;
     public IList<Tree> _trees;
     public IList<Tree> _stumps;
     public IList<Habitant> _enemies;
     public IList<Animal> _animals;
     public IList<Animal> _food;
+    public FoodQuantity _food_tribe;
+    public int _tribe_flags;
 	
 	public IList<Vector2I> Cells
 	{
         get { return _cells; }
         set { _cells = value; }
 	}
+    public IList<Vector2I> MeetingPointCells
+    {
+        get { return _meeting_point_cells; }
+        set { _meeting_point_cells = value; }
+    }
     public IList<Tree> Trees
     {
         get { return _trees; }
@@ -267,6 +290,16 @@ public struct SensorData {
         set { _far_away_cells = value; }
     }
 
+    public FoodQuantity FoodTribe {
+        get { return _food_tribe; }
+        set { _food_tribe = value; }
+    }
+
+    public int TribeFlags {
+        get { return _tribe_flags; }
+        set { _tribe_flags = value; }
+    }
+
 	public SensorData(IList<Vector2I> cells, Vector2I front_cell, 
                       Vector2I left_cell, Vector2I right_cell)
 	{
@@ -276,11 +309,14 @@ public struct SensorData {
         _right_cell = right_cell;
         _far_away_cells = null;
         _adjacent_cells = null;
+        _meeting_point_cells = null;
         _trees = null;
         _stumps = null;
         _enemies = null;
         _animals = null;
         _food = null;
+        _food_tribe = FoodQuantity.Zero;
+        _tribe_flags = 0;
 	}
 
     public void FillAdjacentCells (Vector2I agentPos) {

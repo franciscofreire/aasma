@@ -53,6 +53,9 @@ public class FlagMakerMachine {
             return null;
         }
     }
+    public int RemainingFlags {
+        get{ return (tribe.WoodStock / WoodPerFlag).Count; }
+    }
 }
 
 public class Tribe {
@@ -63,7 +66,11 @@ public class Tribe {
 	
     public FoodQuantity FoodStock = new FoodQuantity(5000);
     public WoodQuantity WoodStock = new WoodQuantity(1000); // We have 100 flags to place
-	
+
+    public static readonly int CRITICAL_FOOD_LEVEL = 500;
+
+    public static readonly int CRITICAL_FLAG_QUANTITY = 10;
+
     public readonly FlagMakerMachine FlagMachine;
 
     public int cell_count;
