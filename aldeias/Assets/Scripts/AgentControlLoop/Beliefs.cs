@@ -1,4 +1,4 @@
-
+using System;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,6 +10,7 @@ public abstract class Belief {
     private bool isActive;
     private IList<Vector2I> relevantCells;
     private List<SensorData> previousSensorData;
+    private const int MAX_SIZE_SENSOR_DATA = 10;
 
     public IList<Vector2I> RelevantCells {
         get { return this.relevantCells; }
@@ -20,9 +21,22 @@ public abstract class Belief {
         get { return this.isActive; }
     }
 
-    private List<SensorData> PreviousSensorData {
-        get { return this.previousSensorData; }
+    public void AddSensorData(SensorData sensorData) {
+        if(previousSensorData.Count == MAX_SIZE_SENSOR_DATA) {
+            previousSensorData.RemoveAt(previousSensorData.Count - 1);
+        }
+        previousSensorData.Insert(0, sensorData);
     }
+
+    /// <exception cref="SensorDataDoesNotExists">index given does not exists</exception>
+    public SensorData GetSensorData(int index) {
+        try {
+            return previousSensorData[index];
+        } catch (ArgumentOutOfRangeException) {
+            throw new SensorDataDoesNotExists();
+        }
+    }
+
 
     public void EnableBelief() {
         this.isActive = true;
@@ -30,6 +44,7 @@ public abstract class Belief {
 
     public void DisableBelief() {
         this.isActive = false;
+        this.previousSensorData.Clear();
     }
 
     public abstract void UpdateBelief(Agent agent, SensorData sensorData);
@@ -39,7 +54,7 @@ public abstract class Belief {
             Belief b = beliefs.Get (i);
             b.UpdateBelief (agent, sensorData);
             // append sensorData to the beginning
-            b.previousSensorData.Insert(0, sensorData);
+            b.AddSensorData(sensorData);
         }
     }
 
@@ -49,7 +64,7 @@ public abstract class Belief {
 
     public Belief() {
         this.relevantCells = new List<Vector2I>();
-        this.previousSensorData = new List<SensorData>();
+        this.previousSensorData = new List<SensorData>(MAX_SIZE_SENSOR_DATA);
         this.DisableBelief();
     }
 }
@@ -105,7 +120,16 @@ public class NearMeetingPoint : Belief {
             RelevantCells = sensorData.MeetingPointCells;
             EnableBelief();
         } else {
-            DisableBelief();
+            if(IsActive) {
+                try {
+                    SensorData prevSensorData = GetSensorData(2);
+                    if(prevSensorData.MeetingPointCells.Count != 0) {
+                        DisableBelief();
+                    }
+                } catch (SensorDataDoesNotExists) {
+                    ; // do nothing
+                }
+            }
         }
     }
 }
@@ -239,4 +263,8 @@ public class UnclaimedTerritoryIsNear : Belief {
             DisableBelief ();
         }
     }
+}
+
+public class SensorDataDoesNotExists : SystemException {
+
 }
