@@ -239,6 +239,10 @@ public class Animal : Agent {
             food = value;
         }
     }
+    public override bool LowEnergy() {
+        return false;
+    }
+
     public bool HasFood {
         get { 
             return !Alive && (food > FoodQuantity.Zero);

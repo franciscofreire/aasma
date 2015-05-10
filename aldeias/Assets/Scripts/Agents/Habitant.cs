@@ -293,8 +293,8 @@ public class Habitant : Agent {
         return CarriedWeight + w <= MAXIMUM_CARRIED_WEIGHT;
     }
 
-	private static Energy CRITICAL_ENERGY_LEVEL = new Energy(20);
-	public bool LowEnergy() {
+	private static Energy CRITICAL_ENERGY_LEVEL = new Energy(50);
+	public override bool LowEnergy() {
 		return this.energy <= CRITICAL_ENERGY_LEVEL;
 	}
 

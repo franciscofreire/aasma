@@ -313,7 +313,9 @@ public partial class WorldInfo : MonoBehaviour {
         out IList<Habitant> _enemies,
         out IList<Animal> _animals,
         out IList<Animal> _food,
-        out IList<Vector2I> _meeting_point_cells) {
+        out IList<Vector2I> _meeting_point_cells,
+        out IList<Vector2I> _enemy_tribe_cells,
+        out IList<Vector2I> _unclaimed_cells) {
 
         int height = 4;
         int width = 3;
@@ -334,6 +336,8 @@ public partial class WorldInfo : MonoBehaviour {
         _food = new List<Animal>();
         _far_away_cells = new List<Vector2I>();
         _meeting_point_cells = new List<Vector2I>();
+        _enemy_tribe_cells = new List<Vector2I>();
+        _unclaimed_cells = new List<Vector2I>();
 
         IList<Vector2I> cells = new List<Vector2I>();
         
@@ -368,9 +372,17 @@ public partial class WorldInfo : MonoBehaviour {
                 if(isInsideWorld(cell)) {
                     cells.Add(cell);
                     if(agent.GetType() == typeof(Habitant)) {
-                        if(((Habitant) agent).tribe.meetingPoint.IsInMeetingPoint(cell)) {
+                        Habitant h = (Habitant) agent;
+                        if(h.tribe.meetingPoint.IsInMeetingPoint(cell)) {
                             _meeting_point_cells.Add(cell);
                         }
+                        if(!worldTiles.WorldTileInfoAtCoord(cell).tribeTerritory.IsClaimed) {
+                            _unclaimed_cells.Add(cell);
+                        }
+                        if(worldTiles.WorldTileInfoAtCoord(cell).tribeTerritory.Flag.HasValue &&
+                           worldTiles.WorldTileInfoAtCoord(cell).tribeTerritory.Flag.Value.Tribe.Equals(enemyTribe)) {
+                            _enemy_tribe_cells.Add(cell);
+                        } 
                     }
                     if(enemyTribe != null) {
                         foreach(Habitant h in enemyTribe.habitants) {

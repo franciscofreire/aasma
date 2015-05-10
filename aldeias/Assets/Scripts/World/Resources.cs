@@ -63,9 +63,6 @@ public struct FoodQuantity {
 			return WeightPerUnit.MultiplyByInt(Count);
 		}
 	}
-    public bool IsNull() {
-        return this.Count == -1;
-    }
 
 	public static FoodQuantity operator +(FoodQuantity w1, FoodQuantity w2) {
 		return new FoodQuantity(w1.Count + w2.Count);

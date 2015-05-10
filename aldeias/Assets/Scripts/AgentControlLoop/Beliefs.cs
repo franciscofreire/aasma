@@ -9,14 +9,19 @@ public abstract class Belief {
      */
     private bool isActive;
     private IList<Vector2I> relevantCells;
+    private List<SensorData> previousSensorData;
 
     public IList<Vector2I> RelevantCells {
         get { return this.relevantCells; }
         set { this.relevantCells = value; }
     }
 
-    public IList<Vector2I> IsActive {
-        get { return this.IsActive; }
+    public bool IsActive {
+        get { return this.isActive; }
+    }
+
+    private List<SensorData> PreviousSensorData {
+        get { return this.previousSensorData; }
     }
 
     public void EnableBelief() {
@@ -32,10 +37,9 @@ public abstract class Belief {
     public static void brf(Beliefs beliefs, Agent agent, SensorData sensorData) {
         for(int i = 0; i < beliefs.Count(); i++) {
             Belief b = beliefs.Get (i);
-            // FIXME: only for testing
-            if(i == 0) {
-                b.UpdateBelief (agent, sensorData);
-            }
+            b.UpdateBelief (agent, sensorData);
+            // append sensorData to the beginning
+            b.previousSensorData.Insert(0, sensorData);
         }
     }
 
@@ -45,6 +49,7 @@ public abstract class Belief {
 
     public Belief() {
         this.relevantCells = new List<Vector2I>();
+        this.previousSensorData = new List<SensorData>();
         this.DisableBelief();
     }
 }
@@ -91,8 +96,9 @@ public class Beliefs {
 
 }
 
-// Conditions: 
-//  - MeetingPoint is on Agents' vision
+/* Conditions: 
+ *  - MeetingPoint is on Agents' vision
+ */  
 public class NearMeetingPoint : Belief {
     public override void UpdateBelief (Agent agent, SensorData sensorData) {
         if(sensorData.MeetingPointCells.Count != 0) {
@@ -105,8 +111,11 @@ public class NearMeetingPoint : Belief {
 }
 
 public class TribeIsBeingAttacked : Belief {
-    public Agent lastHabitantAttacked;
-
+    /* Conditions:
+     *  - Habitant is under attack
+     *  - Tribe territory is decreasing
+     *  - 
+     */ 
     public override void UpdateBelief (Agent agent, SensorData sensorData) {
         throw new System.NotImplementedException ();
     }
@@ -140,31 +149,70 @@ public class TribeHasLittleFlags : Belief {
 
 public class AnimalsAreNear : Belief {
     public override void UpdateBelief (Agent agent, SensorData sensorData) {
-        throw new System.NotImplementedException ();
+        if(sensorData.Animals.Count > 0) {
+            RelevantCells = new List<Vector2I>();
+            foreach(Animal a in sensorData.Animals) {
+                RelevantCells.Add(CoordConvertions.AgentPosToTile(a.pos));
+            }
+            EnableBelief();
+        } else {
+
+            DisableBelief();
+        }
     }
 }
 
 public class NearEnemyTribe : Belief {
     public override void UpdateBelief (Agent agent, SensorData sensorData) {
-        throw new System.NotImplementedException ();
+        if(sensorData.EnemyTribeCells.Count > 0) {
+            RelevantCells = sensorData.EnemyTribeCells;
+            EnableBelief();
+        } else {
+            DisableBelief();
+        }
     }   
 }
 
 public class ForestNear : Belief {
     public override void UpdateBelief (Agent agent, SensorData sensorData) {
-        throw new System.NotImplementedException ();
+        if(sensorData.Trees.Count > 0) {
+            RelevantCells = new List<Vector2I>();
+            foreach(Tree t in sensorData.Trees) {
+                RelevantCells.Add(t.Pos);
+            }
+            EnableBelief();
+        } else {
+            DisableBelief();
+        }
     }
 }
 
 public class DroppedFood : Belief {
     public override void UpdateBelief (Agent agent, SensorData sensorData) {
-        throw new System.NotImplementedException ();
+        if(sensorData.Food.Count > 0) {
+            RelevantCells = new List<Vector2I>();
+            foreach(Animal a in sensorData.Food) {
+                RelevantCells.Add(CoordConvertions.AgentPosToTile(a.pos));
+            }
+            EnableBelief();
+        } else {
+            
+            DisableBelief();
+        }
     }
 }
 
 public class DroppedWood : Belief {
     public override void UpdateBelief (Agent agent, SensorData sensorData) {
-        throw new System.NotImplementedException ();
+        if(sensorData.Stumps.Count > 0) {
+            RelevantCells = new List<Vector2I>();
+            foreach(Tree t in sensorData.Stumps) {
+                RelevantCells.Add(t.Pos);
+            }
+            EnableBelief();
+        } else {
+            DisableBelief();
+        }
     }
 }
 
@@ -172,14 +220,23 @@ public class HabitantHasLowEnergy : Belief {
     public Energy habitantEnergy;
 
     public override void UpdateBelief (Agent agent, SensorData sensorData) {
-        throw new System.NotImplementedException ();
+        if(agent.LowEnergy()) {
+            habitantEnergy = agent.energy;
+            EnableBelief();
+        } else {
+            DisableBelief();
+        }
     }
 }
 
 public class UnclaimedTerritoryIsNear : Belief {
-    public IList<Vector2I> unclaimedCells;
 
     public override void UpdateBelief (Agent agent, SensorData sensorData) {
-        throw new System.NotImplementedException ();
+        if(sensorData.UnclaimedCells.Count > 0) {
+            RelevantCells = sensorData.UnclaimedCells;
+            EnableBelief();
+        } else {
+            DisableBelief ();
+        }
     }
 }

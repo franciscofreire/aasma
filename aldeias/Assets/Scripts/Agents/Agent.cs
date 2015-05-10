@@ -98,6 +98,8 @@ public abstract class Agent {
         IList<Animal> _food;
         IList<Vector2I> _far_away_cells;
         IList<Vector2I> _meeting_point_cells;
+        IList<Vector2I> _enemy_tribe_cells;
+        IList<Vector2I> _unclaimed_cells;
 
 		sensorData.Cells = worldInfo.nearbyFreeCells(
             worldInfo.nearbyCells(this, 
@@ -107,7 +109,9 @@ public abstract class Agent {
                               out _enemies,
                               out _animals,
                               out _food,
-                              out _meeting_point_cells));
+                              out _meeting_point_cells,
+                              out _enemy_tribe_cells,
+                              out _unclaimed_cells));
 
         sensorData.Trees = _trees;
         sensorData.Stumps = _stumps;
@@ -116,6 +120,8 @@ public abstract class Agent {
         sensorData.Food = _food;
         sensorData.FarAwayCells = _far_away_cells;
         sensorData.MeetingPointCells = _meeting_point_cells;
+        sensorData.EnemyTribeCells = _enemy_tribe_cells;
+        sensorData.UnclaimedCells = _unclaimed_cells;
         try {
             Habitant h = (Habitant) this;
             sensorData.FoodTribe = new FoodQuantity(h.tribe.FoodStock.Count);
@@ -148,6 +154,8 @@ public abstract class Agent {
 	//*************
 	//** SENSORS **
 	//*************
+
+    public abstract bool LowEnergy();
 
 	public abstract bool EnemyInFront();
 
@@ -215,6 +223,8 @@ public struct SensorData {
     public IList<Vector2I> _far_away_cells;
     public IList<Vector2I> _adjacent_cells;
     public IList<Vector2I> _meeting_point_cells;
+    public IList<Vector2I> _enemy_tribe_cells;
+    public IList<Vector2I> _unclaimed_cells;
     public IList<Tree> _trees;
     public IList<Tree> _stumps;
     public IList<Habitant> _enemies;
@@ -232,6 +242,11 @@ public struct SensorData {
     {
         get { return _meeting_point_cells; }
         set { _meeting_point_cells = value; }
+    }
+    public IList<Vector2I> EnemyTribeCells
+    {
+        get { return _enemy_tribe_cells; }
+        set { _enemy_tribe_cells = value; }
     }
     public IList<Tree> Trees
     {
@@ -290,6 +305,11 @@ public struct SensorData {
         set { _far_away_cells = value; }
     }
 
+    public IList<Vector2I> UnclaimedCells {
+        get { return _unclaimed_cells; }
+        set { _unclaimed_cells = value; }
+    }
+
     public FoodQuantity FoodTribe {
         get { return _food_tribe; }
         set { _food_tribe = value; }
@@ -310,11 +330,13 @@ public struct SensorData {
         _far_away_cells = null;
         _adjacent_cells = null;
         _meeting_point_cells = null;
+        _unclaimed_cells = null;
         _trees = null;
         _stumps = null;
         _enemies = null;
         _animals = null;
         _food = null;
+        _enemy_tribe_cells = null;
         _food_tribe = FoodQuantity.Zero;
         _tribe_flags = 0;
 	}
