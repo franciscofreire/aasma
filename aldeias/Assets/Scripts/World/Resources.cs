@@ -1,4 +1,4 @@
-
+using UnityEngine;
 // A WoodQuantity a non-negative quantity.
 //    Represents wood resource amounts.
 public struct WoodQuantity {
@@ -22,6 +22,9 @@ public struct WoodQuantity {
 	public static WoodQuantity operator +(WoodQuantity w1, WoodQuantity w2) {
 		return new WoodQuantity(w1.Count + w2.Count);
 	}
+    public static WoodQuantity operator /(WoodQuantity w1, WoodQuantity w2) {
+        return new WoodQuantity(Mathf.FloorToInt(w1.Count / w2.Count));
+    }
 	public static bool operator >(WoodQuantity w1, WoodQuantity w2) {
 		return w1.Count > w2.Count;
 	}
@@ -60,6 +63,10 @@ public struct FoodQuantity {
 			return WeightPerUnit.MultiplyByInt(Count);
 		}
 	}
+    public bool IsNull() {
+        return this.Count == -1;
+    }
+
 	public static FoodQuantity operator +(FoodQuantity w1, FoodQuantity w2) {
 		return new FoodQuantity(w1.Count + w2.Count);
 	}

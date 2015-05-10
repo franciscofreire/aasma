@@ -61,13 +61,13 @@ public class HabitantReactive : AgentImplementation {
             Logger.Log("Attacker pos: " + habitant.pos.x + "," + habitant.pos.y, Logger.VERBOSITY.AGENTS);
             return new Attack(habitant, target);
         }
-        else if (habitant.CanCarryResource(Animal.FOOD_WEIGHT) && habitant.FoodInAdjacentPos(out target)) {
+        else if (habitant.CanCarryWeight(Animal.FOOD_WEIGHT) && habitant.FoodInAdjacentPos(out target)) {
             return new PickupFood(habitant, target);
         }
-        else if (habitant.CanCarryResource(Tree.WOOD_WEIGHT) && habitant.CutDownTreeWithWoodInFront()) {
+        else if (habitant.CanCarryWeight(Tree.WOOD_WEIGHT) && habitant.CutDownTreeWithWoodInFront()) {
             return new PickupTree(habitant, habitant.sensorData.FrontCell);
         }
-        else if (habitant.CanCarryResource(Tree.WOOD_WEIGHT) && habitant.AliveTreeInFront()) {
+        else if (habitant.CanCarryWeight(Tree.WOOD_WEIGHT) && habitant.AliveTreeInFront()) {
             return new CutTree(habitant, habitant.sensorData.FrontCell);
         }
         else if (habitant.CarryingFood && habitant.MeetingPointInFront()) {
@@ -82,9 +82,13 @@ public class HabitantReactive : AgentImplementation {
         else if (habitant.EnemyTerritoryInAdjacentPos(out target)) {
             return new PlaceFlag(habitant, target);
         }
+        else if (habitant.LowEnergy() &&
+                 EatCarriedFood.IsEnoughFood(habitant.carriedFood)) {
+            return new EatCarriedFood(habitant);
+        }
         else if(habitant.LowEnergy() && 
                 habitant.IsInTribeTerritory() && 
-                habitant.TribeHasFood() ) {
+                EatInTribe.IsEnoughFood(habitant.tribe.FoodStock)) {
             return new EatInTribe(habitant,CoordConvertions.AgentPosToTile(habitant.pos));
         }
         else if((habitant.AnimalsInFrontPositions() || habitant.FoodInFrontPositions() ||

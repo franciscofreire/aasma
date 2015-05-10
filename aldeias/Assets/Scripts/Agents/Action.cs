@@ -140,18 +140,24 @@ public class DropFood : HabitantAction {
 	public DropFood(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }
 
-public class EatInPlace : HabitantAction {
-	public static readonly FoodQuantity FoodConsumedByHabitant = new FoodQuantity(100);
-	public override void apply () {
+public class EatCarriedFood : HabitantAction {
+	public static readonly FoodQuantity FoodConsumedByHabitant = new FoodQuantity(50);
+    public static bool IsEnoughFood(FoodQuantity food) {
+        return food >= FoodConsumedByHabitant;
+    }
+    public override void apply () {
 		if(habitant.carriedFood >= FoodConsumedByHabitant) {
 			habitant.Eat(habitant.DropFood(FoodConsumedByHabitant));
 		}
     }
-	public EatInPlace(Habitant habitant, Vector2I target) : base(habitant, target) {}
+	public EatCarriedFood(Habitant habitant) : base(habitant, new Vector2I(0,0)) {} /*SHUT UP COMPILER! */
 }
 
 public class EatInTribe : HabitantAction {
 	public static readonly FoodQuantity FoodConsumedByHabitant = new FoodQuantity(50);
+    public static bool IsEnoughFood(FoodQuantity food) {
+        return food >= FoodConsumedByHabitant;
+    }
     public override void apply () {
         Flag? flag = world.worldTiles.WorldTileInfoAtCoord(target).tribeTerritory.Flag;
         if(flag.HasValue && flag.Value.Tribe.Equals(habitant.tribe)) {
