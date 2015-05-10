@@ -2,9 +2,41 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+public class Attitudes {
+    
+    public ExpandTribe ExpandTribe;
+    public ConquerTribe ConquerTribe;
+    public MaintainEnergy MaintainEnergy;
+    public IncreaseFoodStock IncreaseFoodStock;
+    public IncreaseWoodStock IncreaseWoodStock;
+    public HelpAttack HelpAttack;
+    public HelpDefense HelpDefense;
+
+    public Attitudes(Habitant h) {
+        ExpandTribe = new ExpandTribe(h);
+        ConquerTribe = new ConquerTribe(h);
+        MaintainEnergy = new MaintainEnergy(h);
+        IncreaseFoodStock = new IncreaseFoodStock(h);
+        IncreaseWoodStock = new IncreaseWoodStock(h);
+        HelpAttack = new HelpAttack(h);
+        HelpDefense = new HelpDefense(h);
+    }
+    
+    public IEnumerable<Attitude> AllAttitudes {
+        get {
+            yield return ExpandTribe;
+            yield return ConquerTribe;
+            yield return MaintainEnergy;
+            yield return IncreaseFoodStock;
+            yield return IncreaseWoodStock;
+            yield return HelpAttack;
+            yield return HelpDefense;
+        }
+    }
+}
+
 public abstract class Attitude {
-    private Agent agent;
-    private Vector2I target;
+    protected Habitant habitant;
 
     // Used by the Filter method
     // The bigger the value, the bigger the chance of being an Intention
@@ -12,17 +44,13 @@ public abstract class Attitude {
         get; set;
     }
 
-    public Plan plan {
-        get; set;
+    public Attitude(Habitant habitant) {
+        this.habitant = habitant;
     }
 
-    public Attitude(Agent agent, Vector2I target) {
-        this.agent  = agent;
-        this.target = target;
-        plan = createPlan();
-    }
+    public abstract Plan createPlan(Beliefs beliefs);
 
-    public abstract Plan createPlan();
+    public abstract bool activeBeliefs(Beliefs beliefs);
 }
 
 /*
@@ -54,57 +82,91 @@ Lista candidata de Desires/Intentions:
  */
 
 public class ExpandTribe : Attitude {
-    public override Plan createPlan() {
-        return new Plan();
+    public override bool activeBeliefs(Beliefs beliefs) {
+        return beliefs.UnclaimedTerritoryIsNear.IsActive;
     }
 
-    public ExpandTribe(Agent agent, Vector2I target) : base(agent, target) {}
+    public override Plan createPlan(Beliefs beliefs) {
+        Plan plan = new Plan();
+        IList<Vector2I> targets = beliefs.UnclaimedTerritoryIsNear.RelevantCells;
+        foreach (Vector2I target in targets) {
+            plan.addPathFinding(habitant, target);
+            plan.add(new PlaceFlag(habitant, target));
+        }
+        return plan;
+    }
+
+    public ExpandTribe(Habitant habitant) : base(habitant) {}
 }
 
 public class ConquerTribe : Attitude {
-    public override Plan createPlan() {
+    public override bool activeBeliefs(Beliefs beliefs) {
+        return beliefs.NearEnemyTribe.IsActive;
+    }
+
+    public override Plan createPlan(Beliefs beliefs) {
         return new Plan();
     }
-    
-    public ConquerTribe(Agent agent, Vector2I target) : base(agent, target) {}
+
+    public ConquerTribe(Habitant habitant) : base(habitant) {}
 }
 
 public class MaintainEnergy : Attitude {
-    public override Plan createPlan() {
+    public override bool activeBeliefs(Beliefs beliefs) {
+        return beliefs.HabitantHasLowEnergy.IsActive;
+    }
+
+    public override Plan createPlan(Beliefs beliefs) {
         return new Plan();
     }
-    
-    public MaintainEnergy(Agent agent, Vector2I target) : base(agent, target) {}
+
+    public MaintainEnergy(Habitant habitant) : base(habitant) {}
 }
 
 public class IncreaseFoodStock : Attitude {
-    public override Plan createPlan() {
+    public override bool activeBeliefs(Beliefs beliefs) {
+        return beliefs.TribeHasLowFoodLevel.IsActive;
+    }
+
+    public override Plan createPlan(Beliefs beliefs) {
         return new Plan();
     }
-    
-    public IncreaseFoodStock(Agent agent, Vector2I target) : base(agent, target) {}
+
+    public IncreaseFoodStock(Habitant habitant) : base(habitant) {}
 }
 
 public class IncreaseWoodStock : Attitude {
-    public override Plan createPlan() {
+    public override bool activeBeliefs(Beliefs beliefs) {
+        return beliefs.TribeHasLittleFlags.IsActive;
+    }
+
+    public override Plan createPlan(Beliefs beliefs) {
         return new Plan();
     }
-    
-    public IncreaseWoodStock(Agent agent, Vector2I target) : base(agent, target) {}
+
+    public IncreaseWoodStock(Habitant habitant) : base(habitant) {}
 }
 
 public class HelpDefense : Attitude {
-    public override Plan createPlan() {
+    public override bool activeBeliefs(Beliefs beliefs) {
+        return beliefs.TribeIsBeingAttacked.IsActive;
+    }
+
+    public override Plan createPlan(Beliefs beliefs) {
         return new Plan();
     }
-    
-    public HelpDefense(Agent agent, Vector2I target) : base(agent, target) {}
+
+    public HelpDefense(Habitant habitant) : base(habitant) {}
 }
 
 public class HelpAttack : Attitude {
-    public override Plan createPlan() {
+    public override bool activeBeliefs(Beliefs beliefs) {
+        return beliefs.TribeIsBeingAttacked.IsActive; // FIXME: Maybe another belief
+    }
+
+    public override Plan createPlan(Beliefs beliefs) {
         return new Plan();
     }
-    
-    public HelpAttack(Agent agent, Vector2I target) : base(agent, target) {}
+
+    public HelpAttack(Habitant habitant) : base(habitant) {}
 }

@@ -6,9 +6,10 @@ using System.Linq;
 public class HabitantDeliberative : AgentImplementation {
     private Habitant habitant;
 
-    private Beliefs         beliefs    = new Beliefs();
-    private List<Attitude>  desires    = new List<Attitude>();
-    private List<Attitude>  intentions = new List<Attitude>();
+    private Beliefs        beliefs;
+    private Attitudes      attitudes;
+    private List<Attitude> desires;
+    private List<Attitude> intentions;
 
     private Plan plan = new Plan();
 
@@ -17,11 +18,10 @@ public class HabitantDeliberative : AgentImplementation {
     }
 
     public void doOptions() {
-        int count = beliefs.Count();
-        for (int i = 0; i < count; i++) {
-            Belief b = beliefs.Get(i);
-            if (b.IsActive) {
-                // Do shit
+        desires = new List<Attitude>();
+        foreach (Attitude a in attitudes.AllAttitudes) {
+            if (a.activeBeliefs(beliefs)) {
+                desires.Add(a);
             }
         }
     }
@@ -64,7 +64,7 @@ public class HabitantDeliberative : AgentImplementation {
     
     // Choose the plan from the most important intention
     public Plan doPlan() {
-        return intentions.First().plan;
+        return intentions.First().createPlan(beliefs);
     }
 
     public bool succeded() {
@@ -135,5 +135,10 @@ public class HabitantDeliberative : AgentImplementation {
     public HabitantDeliberative (Habitant habitant) {
         this.habitant  = habitant;
         ActionExecuted = false;
+        
+        beliefs    = new Beliefs();
+        attitudes  = new Attitudes(habitant);
+        desires    = new List<Attitude>();
+        intentions = new List<Attitude>();
     }
 }

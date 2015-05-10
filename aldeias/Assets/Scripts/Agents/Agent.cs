@@ -230,6 +230,7 @@ public struct SensorData {
     public IList<Animal> _animals;
     public IList<Animal> _food;
     public FoodQuantity _food_tribe;
+    public WoodQuantity _wood_tribe;
     public int _tribe_flags;
 	
 	public IList<Vector2I> Cells
@@ -337,6 +338,7 @@ public struct SensorData {
         _food = null;
         _enemy_tribe_cells = null;
         _food_tribe = FoodQuantity.Zero;
+        _wood_tribe = WoodQuantity.Zero;
         _tribe_flags = 0;
 	}
 
