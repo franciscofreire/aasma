@@ -50,8 +50,7 @@ public abstract class Belief {
     public abstract void UpdateBelief(Agent agent, SensorData sensorData);
 
     public static void brf(Beliefs beliefs, Agent agent, SensorData sensorData) {
-        for(int i = 0; i < beliefs.Count(); i++) {
-            Belief b = beliefs.Get (i);
+        foreach(var b in beliefs.AllBeliefs) {
             b.UpdateBelief (agent, sensorData);
             // append sensorData to the beginning
             b.AddSensorData(sensorData);
@@ -70,45 +69,34 @@ public abstract class Belief {
 }
 
 public class Beliefs {
-    private IList<Belief> beliefsLst;
 
-    // Returns null when index is out of bound
-    public Belief Get(int index) {
-        if(index >= 0 && index <= (Count()-1)) {
-            return beliefsLst[index];
+    public NearMeetingPoint NearMeetingPoint=new NearMeetingPoint();
+    public TribeIsBeingAttacked TribeIsBeingAttacked=new TribeIsBeingAttacked();
+    public TribeHasLowFoodLevel TribeHasLowFoodLevel=new TribeHasLowFoodLevel();
+    public TribeHasLittleFlags TribeHasLittleFlags=new TribeHasLittleFlags();
+    public AnimalsAreNear AnimalsAreNear=new AnimalsAreNear();
+    public NearEnemyTribe NearEnemyTribe=new NearEnemyTribe();
+    public ForestNear ForestNear=new ForestNear();
+    public DroppedFood DroppedFood=new DroppedFood();
+    public DroppedWood DroppedWood=new DroppedWood();
+    public HabitantHasLowEnergy HabitantHasLowEnergy=new HabitantHasLowEnergy();
+    public UnclaimedTerritoryIsNear UnclaimedTerritoryIsNear=new UnclaimedTerritoryIsNear();
+
+    public IEnumerable<Belief> AllBeliefs {
+        get {
+            yield return NearMeetingPoint;
+            yield return TribeIsBeingAttacked;
+            yield return TribeHasLowFoodLevel;
+            yield return TribeHasLittleFlags;
+            yield return AnimalsAreNear;
+            yield return NearEnemyTribe;
+            yield return ForestNear;
+            yield return DroppedFood;
+            yield return DroppedWood;
+            yield return HabitantHasLowEnergy;
+            yield return UnclaimedTerritoryIsNear;
         }
-        else {
-            return null;
-        }
-    } 
-    public void AddBelief(Belief belief) {
-        beliefsLst.Add(belief);
     }
-    public bool removeBelief(Belief belief) {
-        int count = beliefsLst.Count;
-        beliefsLst.Remove(belief);
-        return Count() < count;
-    }
-
-    public int Count() {
-        return beliefsLst.Count;
-    }
-    public Beliefs() {
-        beliefsLst = new List<Belief>();
-        // Add all the beliefs (disabled)
-        AddBelief (new NearMeetingPoint());
-        AddBelief (new TribeIsBeingAttacked());
-        AddBelief (new TribeHasLowFoodLevel());
-        AddBelief (new TribeHasLittleFlags());
-        AddBelief (new AnimalsAreNear());
-        AddBelief (new NearEnemyTribe());
-        AddBelief (new ForestNear());
-        AddBelief (new DroppedFood());
-        AddBelief (new DroppedWood());
-        AddBelief (new HabitantHasLowEnergy());
-        AddBelief (new UnclaimedTerritoryIsNear());
-    }
-
 }
 
 /* Conditions: 
