@@ -21,10 +21,10 @@ public class HabitantDeliberative : AgentImplementation {
 
     }
     public bool succeded() {
-
+        return false;
     }
     public bool impossible() {
-
+        return false;
     }
 
     public Action doAction() {

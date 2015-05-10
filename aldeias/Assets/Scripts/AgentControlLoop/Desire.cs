@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class Desire {
-        public Desire() {
-        }
+    public Desire() {
     }
 }
-
