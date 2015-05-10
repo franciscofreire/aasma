@@ -48,7 +48,11 @@ public class HabitantReactive : AgentImplementation {
         }
     }
 
-    public Action doAction() {
+    public void doAction() {
+        createAction().apply();
+    }
+
+    public Action createAction() {
         Vector2I target;
         if ((habitant.EnemyInAdjacentPos(out target) || habitant.AnimalInAdjacentPos(out target)) && habitant.LowEnergy()) {
             return RunAwayOrWalkRandomly();
