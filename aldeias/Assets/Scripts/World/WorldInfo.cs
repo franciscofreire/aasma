@@ -306,16 +306,17 @@ public partial class WorldInfo : MonoBehaviour {
 	//// TILE INFORMATION
 	////
 
-    public IList<Vector2I> nearbyCells(Agent agent,
-        out IList<Vector2I> _far_away_cells,
-        out IList<Tree> _trees,
-        out IList<Tree> _stumps,
-        out IList<Habitant> _enemies,
-        out IList<Animal> _animals,
-        out IList<Animal> _food,
-        out IList<Vector2I> _meeting_point_cells,
-        out IList<Vector2I> _enemy_tribe_cells,
-        out IList<Vector2I> _unclaimed_cells) {
+    public IList<Vector2I> nearbyCells(
+            Agent agent,
+            out IList<Vector2I> _far_away_cells,
+            out IList<Tree> _trees,
+            out IList<Tree> _stumps,
+            out IList<Habitant> _enemies,
+            out IList<Animal> _animals,
+            out IList<Animal> _food,
+            out IList<Vector2I> _meeting_point_cells,
+            out IList<Vector2I> _enemy_tribe_cells,
+            out IList<Vector2I> _unclaimed_cells) {
 
         int height = 4;
         int width = 3;

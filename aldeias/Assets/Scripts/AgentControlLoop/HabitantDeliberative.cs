@@ -6,9 +6,10 @@ using System.Linq;
 public class HabitantDeliberative : AgentImplementation {
     private Habitant habitant;
 
-    private Beliefs         beliefs    = new Beliefs();
-    private List<Attitude>  desires    = new List<Attitude>();
-    private List<Attitude>  intentions = new List<Attitude>();
+    private Beliefs        beliefs;
+    private Attitudes      attitudes;
+    private List<Attitude> desires;
+    private List<Attitude> intentions;
 
     private Plan plan = new Plan();
 
@@ -17,7 +18,12 @@ public class HabitantDeliberative : AgentImplementation {
     }
 
     public void doOptions() {
-
+        desires = new List<Attitude>();
+        foreach (Attitude a in attitudes.AllAttitudes) {
+            if (a.activeBeliefs(beliefs)) {
+                desires.Add(a);
+            }
+        }
     }
 
     // Choose the three most important desires, converting them to intentions
@@ -42,9 +48,10 @@ public class HabitantDeliberative : AgentImplementation {
                 candidates.Insert(i, desire);
 
                 // Remove the less important candidate if we have too many candidates
-                if (candidates.Count >= MAX_COUNT) {
+                if (candidates.Count > MAX_COUNT) {
                     candidates.RemoveAt(candidates.Count - 1);
                 }
+
                 return;
             }
         }
@@ -57,7 +64,7 @@ public class HabitantDeliberative : AgentImplementation {
     
     // Choose the plan from the most important intention
     public Plan doPlan() {
-        return intentions.First().plan;
+        return intentions.First().createPlan(beliefs);
     }
 
     public bool succeded() {
@@ -128,5 +135,10 @@ public class HabitantDeliberative : AgentImplementation {
     public HabitantDeliberative (Habitant habitant) {
         this.habitant  = habitant;
         ActionExecuted = false;
+        
+        beliefs    = new Beliefs();
+        attitudes  = new Attitudes(habitant);
+        desires    = new List<Attitude>();
+        intentions = new List<Attitude>();
     }
 }

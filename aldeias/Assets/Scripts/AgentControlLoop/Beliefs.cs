@@ -295,7 +295,7 @@ public class UnclaimedTerritoryIsNear : Belief {
             RelevantCells = sensorData.UnclaimedCells;
             EnableBelief();
         } else {
-            DisableBelief ();
+            DisableBelief();
         }
     }
 }
