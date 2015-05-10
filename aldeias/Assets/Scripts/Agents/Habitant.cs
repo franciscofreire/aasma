@@ -284,9 +284,6 @@ public class Habitant : Agent {
                 CoordConvertions.AgentPosToTile(this.pos)).tribeTerritory.Flag;
         return flag.HasValue && flag.Value.Tribe.Equals(this.tribe);
     }
-    public bool TribeHasFood() {
-        return tribe.FoodStock >= (new FoodQuantity(50));
-    }
 
     public bool CarryingResources() {
         return CarryingFood || CarryingWood;

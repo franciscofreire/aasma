@@ -78,9 +78,13 @@ public class HabitantReactive : AgentImplementation {
         else if (habitant.EnemyTerritoryInAdjacentPos(out target)) {
             return new PlaceFlag(habitant, target);
         }
+        else if (habitant.LowEnergy() &&
+                 EatCarriedFood.IsEnoughFood(habitant.carriedFood)) {
+            return new EatCarriedFood(habitant);
+        }
         else if(habitant.LowEnergy() && 
                 habitant.IsInTribeTerritory() && 
-                habitant.TribeHasFood() ) {
+                EatInTribe.IsEnoughFood(habitant.tribe.FoodStock)) {
             return new EatInTribe(habitant,CoordConvertions.AgentPosToTile(habitant.pos));
         }
         else if((habitant.AnimalsInFrontPositions() || habitant.FoodInFrontPositions() ||
