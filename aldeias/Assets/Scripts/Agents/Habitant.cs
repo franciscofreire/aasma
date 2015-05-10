@@ -70,7 +70,7 @@ public class Habitant : Agent {
     }
 
 	public WoodQuantity PickupWood(WoodQuantity wood) {
-		if((CarriedWeight + wood.Weight) <= MAXIMUM_CARRIED_WEIGHT) {
+		if(CanCarryWeight(wood.Weight)) {
 			carriedWood = carriedWood + wood;
 			return WoodQuantity.Zero;
 		} else {
@@ -89,7 +89,7 @@ public class Habitant : Agent {
 	}
 
 	public FoodQuantity PickupFood(FoodQuantity food) {
-		if((CarriedWeight + food.Weight) <= MAXIMUM_CARRIED_WEIGHT) {
+		if(CanCarryWeight(food.Weight)) {
 			carriedFood = carriedFood + food;
 			return FoodQuantity.Zero;
 		} else {
@@ -284,15 +284,12 @@ public class Habitant : Agent {
                 CoordConvertions.AgentPosToTile(this.pos)).tribeTerritory.Flag;
         return flag.HasValue && flag.Value.Tribe.Equals(this.tribe);
     }
-    public bool TribeHasFood() {
-        return tribe.FoodStock >= (new FoodQuantity(50));
-    }
 
     public bool CarryingResources() {
         return CarryingFood || CarryingWood;
     }
 
-    public bool CanCarryResource(Weight w) {
+    public bool CanCarryWeight(Weight w) {
         return CarriedWeight + w <= MAXIMUM_CARRIED_WEIGHT;
     }
 

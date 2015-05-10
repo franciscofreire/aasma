@@ -1,3 +1,6 @@
+
+using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 public abstract class Belief {
@@ -85,6 +88,7 @@ public class Beliefs {
         AddBelief (new HabitantHasLowEnergy());
         AddBelief (new UnclaimedTerritoryIsNear());
     }
+
 }
 
 // Conditions: 
@@ -143,7 +147,7 @@ public class AnimalsAreNear : Belief {
 public class NearEnemyTribe : Belief {
     public override void UpdateBelief (Agent agent, SensorData sensorData) {
         throw new System.NotImplementedException ();
-    }
+    }   
 }
 
 public class ForestNear : Belief {
