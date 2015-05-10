@@ -71,24 +71,35 @@ public class AnimalBoidImplementation : AgentImplementation {
         this.animal = animal;
     }
 
-    public Action doAction() {
-        Habitant closest = ClosestHabitant;
-        bool habitantVisible = closest != null;
-        if (habitantVisible && LowEnergy) {
-            //Steer away from the habitant.
-            var awayFromHabitant = Pos-closest.pos;
-            var accAwayFromHabitant = awayFromHabitant*10f;
-            return new AnimalAccelerate(animal, accAwayFromHabitant);
-        } else if (habitantVisible && animal.AttackMechanism.AgentInRange(closest)) {
-            return new AnimalAttackHabitant(animal, closest);
-        } else if (habitantVisible) {
-            //Steer toward the habitant.
-            var towardsHabitant = closest.pos-Pos;
-            var accTowardsHabitant = towardsHabitant*10f;
-            return new AnimalAccelerate(animal, accTowardsHabitant);
-        } else {
-            return new AnimalAccelerate(animal, BoidAcceleration());
+    public IEnumerator<Action> doActionGenerator() {
+        while(true) {
+            Habitant closest = ClosestHabitant;
+            bool habitantVisible = closest != null;
+            if (habitantVisible && LowEnergy) {
+                //Steer away from the habitant.
+                var awayFromHabitant = Pos-closest.pos;
+                var accAwayFromHabitant = awayFromHabitant*10f;
+                yield return new AnimalAccelerate(animal, accAwayFromHabitant);
+            } else if (habitantVisible && animal.AttackMechanism.AgentInRange(closest)) {
+                yield return new AnimalAttackHabitant(animal, closest);
+            } else if (habitantVisible) {
+                //Steer toward the habitant.
+                var towardsHabitant = closest.pos-Pos;
+                var accTowardsHabitant = towardsHabitant*10f;
+                yield return new AnimalAccelerate(animal, accTowardsHabitant);
+            } else {
+                yield return new AnimalAccelerate(animal, BoidAcceleration());
+            }
         }
+    }
+
+    IEnumerator<Action> generator;
+    public Action doAction() {
+        if(generator==null){
+            generator = doActionGenerator();
+        }
+        generator.MoveNext();
+        return generator.Current;
     }
 
     private Vector2 BoidAcceleration() {
