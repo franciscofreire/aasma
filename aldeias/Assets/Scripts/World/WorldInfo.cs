@@ -226,8 +226,8 @@ public partial class WorldInfo : MonoBehaviour {
 	}
 
 	private Tribe CreateTribe(string name, int posx, int posz) {
-		int meetingPointx = posx + Mathf.FloorToInt(TRIBE_TERRITORY_SIDE/2);
-		int meetingPointz = posz + Mathf.FloorToInt(TRIBE_TERRITORY_SIDE/2);
+		int meetingPointx = posx + TRIBE_TERRITORY_SIDE/2;
+		int meetingPointz = posz + TRIBE_TERRITORY_SIDE/2;
 		Vector2I meetingPointCenter = new Vector2I(meetingPointx, meetingPointz);
 		MeetingPoint meetingPoint = new MeetingPoint(meetingPointCenter, MEETING_POINT_SIDE);
         Tribe tribe = new Tribe(name, meetingPoint, TRIBE_TERRITORY_SIDE * TRIBE_TERRITORY_SIDE);
