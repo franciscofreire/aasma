@@ -70,7 +70,7 @@ public class Habitant : Agent {
     }
 
 	public WoodQuantity PickupWood(WoodQuantity wood) {
-		if((CarriedWeight + wood.Weight) <= MAXIMUM_CARRIED_WEIGHT) {
+		if(CanCarryWeight(wood.Weight)) {
 			carriedWood = carriedWood + wood;
 			return WoodQuantity.Zero;
 		} else {
@@ -89,7 +89,7 @@ public class Habitant : Agent {
 	}
 
 	public FoodQuantity PickupFood(FoodQuantity food) {
-		if((CarriedWeight + food.Weight) <= MAXIMUM_CARRIED_WEIGHT) {
+		if(CanCarryWeight(food.Weight)) {
 			carriedFood = carriedFood + food;
 			return FoodQuantity.Zero;
 		} else {
@@ -292,7 +292,7 @@ public class Habitant : Agent {
         return CarryingFood || CarryingWood;
     }
 
-    public bool CanCarryResource(Weight w) {
+    public bool CanCarryWeight(Weight w) {
         return CarriedWeight + w <= MAXIMUM_CARRIED_WEIGHT;
     }
 
