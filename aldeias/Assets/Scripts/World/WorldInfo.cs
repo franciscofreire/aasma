@@ -317,7 +317,6 @@ public partial class WorldInfo : MonoBehaviour {
             out IList<Animal> _animals,
             out IList<Animal> _food,
             out IList<Vector2I> _meeting_point_cells,
-            out IList<Vector2I> _enemy_tribe_cells,
             out IList<Vector2I> _unclaimed_cells,
             out IList<KeyValuePair<Vector2I,Tribe>> _territories) {
 
@@ -340,7 +339,6 @@ public partial class WorldInfo : MonoBehaviour {
         _food = new List<Animal>();
         _far_away_cells = new List<Vector2I>();
         _meeting_point_cells = new List<Vector2I>();
-        _enemy_tribe_cells = new List<Vector2I>();
         _unclaimed_cells = new List<Vector2I>();
         _territories = new List<KeyValuePair<Vector2I,Tribe>>();
 
@@ -386,7 +384,6 @@ public partial class WorldInfo : MonoBehaviour {
                         }
                         if(worldTiles.WorldTileInfoAtCoord(cell).tribeTerritory.Flag.HasValue) {
                            if(worldTiles.WorldTileInfoAtCoord(cell).tribeTerritory.Flag.Value.Tribe.Equals(enemyTribe)) {
-                                _enemy_tribe_cells.Add(cell);
                                 _territories.Add (new KeyValuePair<Vector2I,Tribe>(cell,enemyTribe));
                             }
                             else {
