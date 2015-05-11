@@ -308,8 +308,8 @@ public partial class WorldInfo : MonoBehaviour {
 	//// TILE INFORMATION
 	////
 
-    public IList<Vector2I> nearbyCells(
-            Agent agent,
+    public IList<Vector2I> nearbyCellsInfo(
+            Habitant agent,
             out IList<Vector2I> _far_away_cells,
             out IList<Tree> _trees,
             out IList<Tree> _stumps,
@@ -329,8 +329,7 @@ public partial class WorldInfo : MonoBehaviour {
 		Vector2I agentPos = CoordConvertions.AgentPosToTile(agent.pos);
         Vector2I leftCorner;
 
-        Tribe enemyTribe = agent.GetType() == typeof(Habitant) ? 
-            GetEnemyTribe(((Habitant) agent).tribe) : null; 
+        Tribe enemyTribe = GetEnemyTribe(((Habitant) agent).tribe);
 
         _trees = new List<Tree>();
         _stumps = new List<Tree>();
@@ -374,51 +373,49 @@ public partial class WorldInfo : MonoBehaviour {
                 }
                 if(isInsideWorld(cell)) {
                     cells.Add(cell);
-                    if(agent.GetType() == typeof(Habitant)) {
-                        Habitant h = (Habitant) agent;
-                        if(h.tribe.meetingPoint.IsInMeetingPoint(cell)) {
-                            _meeting_point_cells.Add(cell);
-                        }
-                        if(!worldTiles.WorldTileInfoAtCoord(cell).tribeTerritory.IsClaimed) {
-                            _unclaimed_cells.Add(cell);
-                        }
-                        if(worldTiles.WorldTileInfoAtCoord(cell).tribeTerritory.Flag.HasValue) {
-                           if(worldTiles.WorldTileInfoAtCoord(cell).tribeTerritory.Flag.Value.Tribe.Equals(enemyTribe)) {
-                                _territories.Add (new KeyValuePair<Vector2I,Tribe>(cell,enemyTribe));
-                            }
-                            else {
-                                _territories.Add (new KeyValuePair<Vector2I,Tribe>(cell,h.tribe));
-                            }                   
-                        }
-                    }
-                    if(enemyTribe != null) {
-                        foreach(Habitant h in enemyTribe.habitants) {
 
-                            if(h.Alive && CoordConvertions.AgentPosToTile(h.pos) == cell) {
-                                _enemies.Add(h);
-                            }
+                    if(agent.tribe.meetingPoint.IsInMeetingPoint(cell)) {
+                        _meeting_point_cells.Add(cell);
+                    }
+                    if(!worldTiles.WorldTileInfoAtCoord(cell).tribeTerritory.IsClaimed) {
+                        _unclaimed_cells.Add(cell);
+                    }
+                    if(worldTiles.WorldTileInfoAtCoord(cell).tribeTerritory.Flag.HasValue) {
+                       if(worldTiles.WorldTileInfoAtCoord(cell).tribeTerritory.Flag.Value.Tribe.Equals(enemyTribe)) {
+                            _territories.Add (new KeyValuePair<Vector2I,Tribe>(cell,enemyTribe));
                         }
-                        foreach(Habitat hab in habitats) {
-                            foreach(Animal a in hab.animals) {
-                                if(CoordConvertions.AgentPosToTile(a.pos) == cell) {
-                                    if(a.HasFood) {
-                                        _food.Add (a);
-                                    } else {
-                                        _animals.Add(a);
-                                    }
-                                }
-                            }
+                        else {
+                            _territories.Add (new KeyValuePair<Vector2I,Tribe>(cell,agent.tribe));
+                        }                   
+                    }
+                 
+                    foreach(Habitant h in enemyTribe.habitants) {
+
+                        if(h.Alive && CoordConvertions.AgentPosToTile(h.pos) == cell) {
+                            _enemies.Add(h);
                         }
-                        foreach(Tree t in AllTrees) {
-                            if(t.Pos == cell) {
-                                if(t.Alive) {
-                                    _trees.Add(t);
+                    }
+                    foreach(Habitat hab in habitats) {
+                        foreach(Animal a in hab.animals) {
+                            if(CoordConvertions.AgentPosToTile(a.pos) == cell) {
+                                if(a.HasFood) {
+                                    _food.Add (a);
                                 } else {
-                                    _stumps.Add(t);
+                                    _animals.Add(a);
                                 }
                             }
                         }
                     }
+                    foreach(Tree t in AllTrees) {
+                        if(t.Pos == cell) {
+                            if(t.Alive) {
+                                _trees.Add(t);
+                            } else {
+                                _stumps.Add(t);
+                            }
+                        }
+                    }
+
                 }
             }
         }

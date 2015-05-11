@@ -84,83 +84,16 @@ public abstract class Agent {
 	
 	public virtual void OnWorldTick() {
         if(Alive) {
-            updateSensorData();
+            updateSensors();
             doAction();
         }
     }
 
-	public void updateSensorData() {
-        IList<Tree> _trees;
-        IList<Tree> _stumps;
-        IList<Habitant> _enemies;
-        IList<Animal> _animals;
-        IList<Animal> _food;
-        IList<Vector2I> _far_away_cells;
-        IList<Vector2I> _meeting_point_cells;
-        IList<Vector2I> _unclaimed_cells;
-        IList<KeyValuePair<Vector2I,Tribe>> _territories;
-
-		sensorData.Cells = worldInfo.nearbyFreeCells(
-            worldInfo.nearbyCells(this, 
-                              out _far_away_cells, 
-                              out _trees,
-                              out _stumps,
-                              out _enemies,
-                              out _animals,
-                              out _food,
-                              out _meeting_point_cells,
-                              out _unclaimed_cells,
-                              out _territories));
-
-        sensorData.Trees = _trees;
-        sensorData.Stumps = _stumps;
-        sensorData.Enemies = _enemies;
-        sensorData.Animals = _animals;
-        sensorData.Food = _food;
-        sensorData.FarAwayCells = _far_away_cells;
-        sensorData.MeetingPointCells = _meeting_point_cells;
-        sensorData.UnclaimedCells = _unclaimed_cells;
-        sensorData.Territories = _territories;
-
-        try {
-            Habitant h = (Habitant) this;
-            sensorData.FoodTribe = new FoodQuantity(h.tribe.FoodStock.Count);
-            sensorData.TribeFlags = h.tribe.FlagMachine.RemainingFlags;
-            sensorData.TribeCellCount = h.tribe.cell_count;
-
-            WorldTileInfo.TribeTerritory wti = 
-                worldInfo.worldTiles.WorldTileInfoAtCoord(CoordConvertions.AgentPosToTile(this.pos)).tribeTerritory;
-            sensorData.AgentIsInsideTribe = wti.IsClaimed && 
-                wti.Flag.HasValue && (wti.Flag.Value.Tribe.Equals(h.tribe));
-            sensorData.AgentTribe = h.tribe;
-        } catch(InvalidCastException) {
-            ; // do nothing
-        }
-        sensorData.FillAdjacentCells (new Vector2I (pos));
-		
-		Vector2 posInFront = pos + orientation.ToVector2();
-		Vector2I tileCoordInFront = CoordConvertions.AgentPosToTile(posInFront);
-		sensorData.FrontCell = worldInfo.isInsideWorld(tileCoordInFront)
-			? tileCoordInFront
-			: new Vector2I(pos); // VERIFYME: Not sure about this...
-
-        Vector2 posAtLeft = pos + orientation.LeftOrientation().ToVector2();
-        Vector2I tileCoordAtLeft = CoordConvertions.AgentPosToTile(posAtLeft);
-        sensorData.LeftCell = worldInfo.isInsideWorld(tileCoordInFront)
-            ? tileCoordAtLeft
-            : new Vector2I(pos);
-
-        Vector2 posAtRight = pos + orientation.RightOrientation().ToVector2();
-        Vector2I tileCoordAtRight = CoordConvertions.AgentPosToTile(posAtRight);
-        sensorData.RightCell = worldInfo.isInsideWorld(tileCoordInFront)
-            ? tileCoordAtRight
-            : new Vector2I(pos);
-
-	}
-
 	//*************
 	//** SENSORS **
 	//*************
+
+    public abstract void updateSensors();
 
     public abstract bool LowEnergy();
 

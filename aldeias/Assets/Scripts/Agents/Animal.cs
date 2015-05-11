@@ -259,6 +259,11 @@ public class Animal : Agent {
         worldInfo.NotifyAnimalDeletedListeners(this);
     }
 
+    public override void updateSensors() {
+        //FIXME: Sensors must be updated here
+        // and should be static copies of the World
+    }
+
     public FoodQuantity Tear() {
         if (Alive) {
             return FoodQuantity.Zero;
