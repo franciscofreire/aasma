@@ -84,7 +84,7 @@ public class Beliefs {
     public NearMeetingPoint NearMeetingPoint=new NearMeetingPoint();
     public TribeIsBeingAttacked TribeIsBeingAttacked=new TribeIsBeingAttacked();
     public TribeHasLowFoodLevel TribeHasLowFoodLevel=new TribeHasLowFoodLevel();
-    public TribeHasFewFlags TribeHasLittleFlags=new TribeHasFewFlags();
+    public TribeHasFewFlags TribeHasFewFlags=new TribeHasFewFlags();
     public AnimalsAreNear AnimalsAreNear=new AnimalsAreNear();
     public NearEnemyTribe NearEnemyTribe=new NearEnemyTribe();
     public ForestNear ForestNear=new ForestNear();
@@ -98,7 +98,7 @@ public class Beliefs {
             yield return NearMeetingPoint;
             yield return TribeIsBeingAttacked;
             yield return TribeHasLowFoodLevel;
-            yield return TribeHasLittleFlags;
+            yield return TribeHasFewFlags;
             yield return AnimalsAreNear;
             yield return NearEnemyTribe;
             yield return ForestNear;
@@ -142,9 +142,13 @@ public class TribeIsBeingAttacked : Belief {
      *  - 
      */
     private bool ArePreconditionsSatisfied(SensorData sensorData) {
-        return ((PreviousSensorDataCount > 0 &&
-                GetSensorData(1).TribeCellCount > sensorData.TribeCellCount) ||
-                sensorData.Enemies.Count > 0);
+        try {
+            return ((PreviousSensorDataCount > 0 &&
+                    GetSensorData(1).TribeCellCount > sensorData.TribeCellCount) ||
+                    sensorData.Enemies.Count > 0);
+        } catch(SensorDataDoesNotExists) {
+            return false;
+        }
     }
    
     public override void UpdateBelief (Agent agent, SensorData sensorData) {
@@ -200,8 +204,8 @@ public class TribeHasFewFlags : Belief {
     public override void UpdateBelief (Agent agent, SensorData sensorData) {
         if(sensorData.TribeFlags < Tribe.CRITICAL_FLAG_QUANTITY) {
             this.flagsCount = sensorData.TribeFlags;
-            EnableBelief();
-        } else {
+            EnableBelief(2);
+        } else if(IsActive && timesToBeActive-- == 0){
             DisableBelief();
         }
     }
@@ -293,8 +297,8 @@ public class UnclaimedTerritoryIsNear : Belief {
     public override void UpdateBelief (Agent agent, SensorData sensorData) {
         if(sensorData.UnclaimedCells.Count > 0) {
             RelevantCells = sensorData.UnclaimedCells;
-            EnableBelief();
-        } else {
+            EnableBelief(2);
+        } else if(IsActive && timesToBeActive-- == 0){
             DisableBelief();
         }
     }

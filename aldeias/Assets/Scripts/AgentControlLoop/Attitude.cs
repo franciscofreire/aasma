@@ -137,7 +137,7 @@ public class IncreaseFoodStock : Attitude {
 
 public class IncreaseWoodStock : Attitude {
     public override bool activeBeliefs(Beliefs beliefs) {
-        return beliefs.TribeHasLittleFlags.IsActive;
+        return beliefs.TribeHasFewFlags.IsActive;
     }
 
     public override Plan createPlan(Beliefs beliefs) {
