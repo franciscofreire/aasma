@@ -8,6 +8,8 @@ public partial class WorldInfo : MonoBehaviour {
 	private const int UPDATE_FRAME_INTERVAL = 2;
 	public int MilisecondsPerTick = 50;
 
+    public bool Reactive = true;
+
     private const int MAX_ANIMALS = 10;
     private const int ANIMAL_RESPAWN_COOLDOWN = 50;
     private int cooldown = ANIMAL_RESPAWN_COOLDOWN;
