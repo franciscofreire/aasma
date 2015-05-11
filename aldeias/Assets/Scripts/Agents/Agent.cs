@@ -78,7 +78,7 @@ public abstract class Agent {
 		this.pos = newPosition;
 	}
 
-	public void doAction() {
+	public virtual void doAction() {
         agentImplementation.doAction();
     }
 	

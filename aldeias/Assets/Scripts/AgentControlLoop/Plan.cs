@@ -9,7 +9,7 @@ public class Plan {
     }
 
     public bool isEmpty() {
-        return plan.Count > 0;
+        return plan.Count == 0;
     }
 
     public Action head() {
