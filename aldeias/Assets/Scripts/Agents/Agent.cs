@@ -99,6 +99,7 @@ public abstract class Agent {
         IList<Vector2I> _meeting_point_cells;
         IList<Vector2I> _enemy_tribe_cells;
         IList<Vector2I> _unclaimed_cells;
+        IList<KeyValuePair<Vector2I,Tribe>> _territories;
 
 		sensorData.Cells = worldInfo.nearbyFreeCells(
             worldInfo.nearbyCells(this, 
@@ -110,7 +111,8 @@ public abstract class Agent {
                               out _food,
                               out _meeting_point_cells,
                               out _enemy_tribe_cells,
-                              out _unclaimed_cells));
+                              out _unclaimed_cells,
+                              out _territories));
 
         sensorData.Trees = _trees;
         sensorData.Stumps = _stumps;
@@ -121,6 +123,7 @@ public abstract class Agent {
         sensorData.MeetingPointCells = _meeting_point_cells;
         sensorData.EnemyTribeCells = _enemy_tribe_cells;
         sensorData.UnclaimedCells = _unclaimed_cells;
+        sensorData.Territories = _territories;
         try {
             Habitant h = (Habitant) this;
             sensorData.FoodTribe = new FoodQuantity(h.tribe.FoodStock.Count);
@@ -229,6 +232,7 @@ public struct SensorData {
     private IList<Vector2I> _far_away_cells;
     private IList<Vector2I> _adjacent_cells;
     private IList<Vector2I> _meeting_point_cells;
+    private IList<KeyValuePair<Vector2I,Tribe>> _territories; 
     private IList<Vector2I> _enemy_tribe_cells;
     private IList<Vector2I> _unclaimed_cells;
     private IList<Tree> _trees;
@@ -338,6 +342,11 @@ public struct SensorData {
         set { _agent_is_inside_tribe = value; }
     }
 
+    public IList<KeyValuePair<Vector2I,Tribe>> Territories {
+        get { return _territories; }
+        set { _territories = value; }
+    }
+
 	public SensorData(IList<Vector2I> cells, Vector2I front_cell, 
                       Vector2I left_cell, Vector2I right_cell)
 	{
@@ -359,6 +368,7 @@ public struct SensorData {
         _tribe_flags = 0;
         _tribe_cell_count = 0;
         _agent_is_inside_tribe = false;
+        _territories = null;
 	}
 
     public void FillAdjacentCells (Vector2I agentPos) {
