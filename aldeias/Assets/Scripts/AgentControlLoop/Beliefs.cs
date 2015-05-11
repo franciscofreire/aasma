@@ -4,13 +4,24 @@ using System.Collections;
 using System.Collections.Generic;
 
 public abstract class Belief {
-    /*  Belief Revision Function
-     *  brf: Beliefs x Per -> Beliefs
-     */
+
+    private const int MAX_SIZE_SENSOR_DATA = 10;
+
     private bool isActive;
     private IList<Vector2I> relevantCells;
     private List<SensorData> previousSensorData;
-    private const int MAX_SIZE_SENSOR_DATA = 10;
+    protected int timesToBeActive;
+
+    public Belief() {
+        this.relevantCells = new List<Vector2I>();
+        this.previousSensorData = new List<SensorData>(MAX_SIZE_SENSOR_DATA);
+        this.DisableBelief();
+        this.timesToBeActive = 0;
+    }
+
+    public Belief(IList<Vector2I> relevantCells) {
+        this.relevantCells = relevantCells;
+    }
 
     public IList<Vector2I> RelevantCells {
         get { return this.relevantCells; }
@@ -37,14 +48,23 @@ public abstract class Belief {
         }
     }
 
+    public int PreviousSensorDataCount {
+        get { return previousSensorData.Count; }
+    }
 
     public void EnableBelief() {
         this.isActive = true;
+    }
+    public void EnableBelief(int count) {
+        this.isActive = true;
+        this.timesToBeActive = count;
     }
 
     public void DisableBelief() {
         this.isActive = false;
         this.previousSensorData.Clear();
+        this.relevantCells.Clear();
+        this.timesToBeActive = 0;
     }
 
     public abstract void UpdateBelief(Agent agent, SensorData sensorData);
@@ -57,15 +77,6 @@ public abstract class Belief {
         }
     }
 
-    public Belief(IList<Vector2I> relevantCells) {
-        this.relevantCells = relevantCells;
-    }
-
-    public Belief() {
-        this.relevantCells = new List<Vector2I>();
-        this.previousSensorData = new List<SensorData>(MAX_SIZE_SENSOR_DATA);
-        this.DisableBelief();
-    }
 }
 
 public class Beliefs {
@@ -73,7 +84,7 @@ public class Beliefs {
     public NearMeetingPoint NearMeetingPoint=new NearMeetingPoint();
     public TribeIsBeingAttacked TribeIsBeingAttacked=new TribeIsBeingAttacked();
     public TribeHasLowFoodLevel TribeHasLowFoodLevel=new TribeHasLowFoodLevel();
-    public TribeHasLittleFlags TribeHasLittleFlags=new TribeHasLittleFlags();
+    public TribeHasFewFlags TribeHasLittleFlags=new TribeHasFewFlags();
     public AnimalsAreNear AnimalsAreNear=new AnimalsAreNear();
     public NearEnemyTribe NearEnemyTribe=new NearEnemyTribe();
     public ForestNear ForestNear=new ForestNear();
@@ -103,6 +114,8 @@ public class Beliefs {
  *  - MeetingPoint is on Agents' vision
  */  
 public class NearMeetingPoint : Belief {
+    // Belief remains active if the last but one sensor
+    // satisfies the condition (Agent saw meeting point cells
     public override void UpdateBelief (Agent agent, SensorData sensorData) {
         if(sensorData.MeetingPointCells.Count != 0) {
             RelevantCells = sensorData.MeetingPointCells;
@@ -124,29 +137,64 @@ public class NearMeetingPoint : Belief {
 
 public class TribeIsBeingAttacked : Belief {
     /* Conditions:
-     *  - Habitant is under attack
+     *  - Habitant is near enemy and it is insideTribe
      *  - Tribe territory is decreasing
      *  - 
-     */ 
+     */
+    private bool ArePreconditionsSatisfied(SensorData sensorData) {
+        return ((PreviousSensorDataCount > 0 &&
+                GetSensorData(1).TribeCellCount > sensorData.TribeCellCount) ||
+                sensorData.Enemies.Count > 0);
+    }
+   
     public override void UpdateBelief (Agent agent, SensorData sensorData) {
-        throw new System.NotImplementedException ();
+        if(!IsActive && ArePreconditionsSatisfied(sensorData)) {
+            foreach (Habitant h in sensorData.Enemies) {
+                RelevantCells.Add (CoordConvertions.AgentPosToTile(h.pos));
+            }
+            EnableBelief();
+        } else if(IsActive) {
+            // Here we only disable if statistics show us that things are getting better,
+            // i.e. in previous sensorData, tribe cells number did not decrease
+            // and we didn't see enemies
+            int initialCellCount = 0;
+            int finalCellCount = 0;
+            int rangeMax = Mathf.CeilToInt(PreviousSensorDataCount/2f);
+            int enemiesCount = 0;
+            for(int i = 0; i < rangeMax; i++) {
+                SensorData sd = GetSensorData(i);
+                if(i == 0) {
+                    initialCellCount = sd.TribeCellCount;
+                } else if(i == rangeMax-1) {
+                    finalCellCount = sd.TribeCellCount;
+                }
+                enemiesCount = (sd.Enemies.Count > 0) ? enemiesCount + 1 : enemiesCount;
+            }
+            if(enemiesCount == 0 && (finalCellCount >= initialCellCount)) {
+                DisableBelief();
+            }
+        }
     }
 }
 
 public class TribeHasLowFoodLevel : Belief {
     public FoodQuantity foodQuantity;
 
+    // Here we let Food Low level be active for 3 updates, even 
+    // when perceptions conditions are not satisfied
     public override void UpdateBelief (Agent agent, SensorData sensorData) {
         if(sensorData.FoodTribe < new FoodQuantity(Tribe.CRITICAL_FOOD_LEVEL)) {
             this.foodQuantity = sensorData.FoodTribe;
-            EnableBelief();
+            EnableBelief(2);
+        } else if(timesToBeActive > 0) {
+            timesToBeActive--;
         } else {
             DisableBelief();
         }
     }
 }
 
-public class TribeHasLittleFlags : Belief {
+public class TribeHasFewFlags : Belief {
     public int flagsCount;
 
     public override void UpdateBelief (Agent agent, SensorData sensorData) {
@@ -168,7 +216,6 @@ public class AnimalsAreNear : Belief {
             }
             EnableBelief();
         } else {
-
             DisableBelief();
         }
     }

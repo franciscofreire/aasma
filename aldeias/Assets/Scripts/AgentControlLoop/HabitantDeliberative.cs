@@ -20,7 +20,7 @@ public class HabitantDeliberative : AgentImplementation {
     public void doOptions() {
         desires = new List<Attitude>();
         foreach (Attitude a in attitudes.AllAttitudes) {
-            if (a.activeBeliefs(beliefs)) {
+            if (a.isDesirable(beliefs)) {
                 desires.Add(a);
             }
         }
@@ -103,10 +103,12 @@ public class HabitantDeliberative : AgentImplementation {
     //
     // Note that the next perception is already available when doAction() is called.
     public void doAction() {
-        if (plan.isEmpty()) {
+        if (plan.isEmpty() && habitant.sensorData.AdjacentCells.Count > 0) {
             Belief.brf(beliefs, habitant, habitant.sensorData);
             doOptions();
             doFilter();
+            if (intentions.Count == 0)
+                return; // Should this happen, even with updated sensorData?
             plan = doPlan();
         }
         if(!ActionExecuted && actionsPending()) {

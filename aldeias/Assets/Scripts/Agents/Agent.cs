@@ -125,6 +125,13 @@ public abstract class Agent {
             Habitant h = (Habitant) this;
             sensorData.FoodTribe = new FoodQuantity(h.tribe.FoodStock.Count);
             sensorData.TribeFlags = h.tribe.FlagMachine.RemainingFlags;
+            sensorData.TribeCellCount = h.tribe.cell_count;
+
+            WorldTileInfo.TribeTerritory wti = 
+                worldInfo.worldTiles.WorldTileInfoAtCoord(CoordConvertions.AgentPosToTile(this.pos)).tribeTerritory;
+            sensorData.AgentIsInsideTribe = wti.IsClaimed && 
+                wti.Flag.HasValue && (wti.Flag.Value.Tribe.Equals(h.tribe));
+
         } catch(InvalidCastException) {
             ; // do nothing
         }
@@ -138,13 +145,13 @@ public abstract class Agent {
 
         Vector2 posAtLeft = pos + orientation.LeftOrientation().ToVector2();
         Vector2I tileCoordAtLeft = CoordConvertions.AgentPosToTile(posAtLeft);
-        sensorData._left_cell = worldInfo.isInsideWorld(tileCoordInFront)
+        sensorData.LeftCell = worldInfo.isInsideWorld(tileCoordInFront)
             ? tileCoordAtLeft
             : new Vector2I(pos);
 
         Vector2 posAtRight = pos + orientation.RightOrientation().ToVector2();
         Vector2I tileCoordAtRight = CoordConvertions.AgentPosToTile(posAtRight);
-        sensorData._right_cell = worldInfo.isInsideWorld(tileCoordInFront)
+        sensorData.RightCell = worldInfo.isInsideWorld(tileCoordInFront)
             ? tileCoordAtRight
             : new Vector2I(pos);
 
@@ -215,23 +222,24 @@ public struct Energy {
 }
 
 public struct SensorData {
-	public IList<Vector2I> _cells;
-    public Vector2I _front_cell;
-    public Vector2I _left_cell;
-    public Vector2I _right_cell;
-    public IList<Vector2I> _far_away_cells;
-    public IList<Vector2I> _adjacent_cells;
-    public IList<Vector2I> _meeting_point_cells;
-    public IList<Vector2I> _enemy_tribe_cells;
-    public IList<Vector2I> _unclaimed_cells;
-    public IList<Tree> _trees;
-    public IList<Tree> _stumps;
-    public IList<Habitant> _enemies;
-    public IList<Animal> _animals;
-    public IList<Animal> _food;
-    public FoodQuantity _food_tribe;
-    public WoodQuantity _wood_tribe;
-    public int _tribe_flags;
+	private IList<Vector2I> _cells;
+    private Vector2I _front_cell;
+    private Vector2I _left_cell;
+    private Vector2I _right_cell;
+    private IList<Vector2I> _far_away_cells;
+    private IList<Vector2I> _adjacent_cells;
+    private IList<Vector2I> _meeting_point_cells;
+    private IList<Vector2I> _enemy_tribe_cells;
+    private IList<Vector2I> _unclaimed_cells;
+    private IList<Tree> _trees;
+    private IList<Tree> _stumps;
+    private IList<Habitant> _enemies;
+    private IList<Animal> _animals;
+    private IList<Animal> _food;
+    private FoodQuantity _food_tribe;
+    private int _tribe_cell_count;
+    private int _tribe_flags;
+    private bool _agent_is_inside_tribe;
 	
 	public IList<Vector2I> Cells
 	{
@@ -320,6 +328,16 @@ public struct SensorData {
         set { _tribe_flags = value; }
     }
 
+    public int TribeCellCount {
+        get { return _tribe_cell_count; }
+        set { _tribe_cell_count = value; }
+    }
+
+    public bool AgentIsInsideTribe {
+        get { return _agent_is_inside_tribe; }
+        set { _agent_is_inside_tribe = value; }
+    }
+
 	public SensorData(IList<Vector2I> cells, Vector2I front_cell, 
                       Vector2I left_cell, Vector2I right_cell)
 	{
@@ -338,8 +356,9 @@ public struct SensorData {
         _food = null;
         _enemy_tribe_cells = null;
         _food_tribe = FoodQuantity.Zero;
-        _wood_tribe = WoodQuantity.Zero;
         _tribe_flags = 0;
+        _tribe_cell_count = 0;
+        _agent_is_inside_tribe = false;
 	}
 
     public void FillAdjacentCells (Vector2I agentPos) {

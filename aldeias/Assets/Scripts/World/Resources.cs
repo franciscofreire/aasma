@@ -23,7 +23,7 @@ public struct WoodQuantity {
 		return new WoodQuantity(w1.Count + w2.Count);
 	}
     public static WoodQuantity operator /(WoodQuantity w1, WoodQuantity w2) {
-        return new WoodQuantity(Mathf.FloorToInt(w1.Count / w2.Count));
+        return new WoodQuantity(w1.Count / w2.Count);
     }
 	public static bool operator >(WoodQuantity w1, WoodQuantity w2) {
 		return w1.Count > w2.Count;
