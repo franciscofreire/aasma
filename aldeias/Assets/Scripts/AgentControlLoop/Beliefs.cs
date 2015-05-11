@@ -76,7 +76,6 @@ public abstract class Belief {
             b.AddSensorData(sensorData);
         }
     }
-
 }
 
 public class Beliefs {

@@ -107,8 +107,8 @@ public class HabitantDeliberative : AgentImplementation {
             Belief.brf(beliefs, habitant, habitant.sensorData);
             doOptions();
             doFilter();
-            if (intentions.Count == 0)
-                return; // Should this happen, even with updated sensorData?
+            if (intentions.Count == 0) // Should this happen?
+                return; 
             plan = doPlan();
         }
         if(!ActionExecuted && actionsPending()) {
@@ -116,7 +116,7 @@ public class HabitantDeliberative : AgentImplementation {
             //ActionExecuted = true;
             return; // Let other agents run their doAction()
         }
-        if (!actionsPending()) { // Plan finished (through completion or premature end)
+        if (!actionsPending() && intentions.Count > 0) { // Plan finished (through completion or premature end)
             intentions.RemoveAt(0);
         }
         // Uncomment when the rest works...
