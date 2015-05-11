@@ -304,6 +304,25 @@ public class UnclaimedTerritoryIsNear : Belief {
     }
 }
 
+public class KnownObststacles : Belief {
+    public obstacleMapEntry[,] obstacleMap;
+    
+
+    public enum obstacleMapEntry { Obstacle, Free, Unknown };
+    public override void UpdateBelief (Agent agent, SensorData sensorData) {
+        foreach(Tree t in sensorData.Trees) {
+            RelevantCells.Add (t.Pos);
+        }
+        foreach(Tree t in sensorData.Stumps) {
+            RelevantCells.Add (t.Pos);
+        }
+    }
+    public KnownObststacles() {
+        EnableBelief();
+        //obstacleMap = new obstacleMapEntry[,]
+    }
+}
+
 public class SensorDataDoesNotExists : SystemException {
 
 }
