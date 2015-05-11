@@ -138,7 +138,7 @@ public class HabitantDeliberative : AgentImplementation {
         this.habitant  = habitant;
         ActionExecuted = false;
         
-        beliefs    = new Beliefs();
+        beliefs    = new Beliefs(habitant);
         attitudes  = new Attitudes(habitant);
         desires    = new List<Attitude>();
         intentions = new List<Attitude>();

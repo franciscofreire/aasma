@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public abstract class Belief {
 
@@ -80,17 +81,18 @@ public abstract class Belief {
 
 public class Beliefs {
 
-    public NearMeetingPoint NearMeetingPoint=new NearMeetingPoint();
-    public TribeIsBeingAttacked TribeIsBeingAttacked=new TribeIsBeingAttacked();
-    public TribeHasLowFoodLevel TribeHasLowFoodLevel=new TribeHasLowFoodLevel();
-    public TribeHasFewFlags TribeHasFewFlags=new TribeHasFewFlags();
-    public AnimalsAreNear AnimalsAreNear=new AnimalsAreNear();
-    public NearEnemyTribe NearEnemyTribe=new NearEnemyTribe();
-    public ForestNear ForestNear=new ForestNear();
-    public DroppedFood DroppedFood=new DroppedFood();
-    public DroppedWood DroppedWood=new DroppedWood();
-    public HabitantHasLowEnergy HabitantHasLowEnergy=new HabitantHasLowEnergy();
-    public UnclaimedTerritoryIsNear UnclaimedTerritoryIsNear=new UnclaimedTerritoryIsNear();
+    public NearMeetingPoint NearMeetingPoint;
+    public TribeIsBeingAttacked TribeIsBeingAttacked;
+    public TribeHasLowFoodLevel TribeHasLowFoodLevel;
+    public TribeHasFewFlags TribeHasFewFlags;
+    public AnimalsAreNear AnimalsAreNear;
+    public NearEnemyTribe NearEnemyTribe;
+    public ForestNear ForestNear;
+    public DroppedFood DroppedFood;
+    public DroppedWood DroppedWood;
+    public HabitantHasLowEnergy HabitantHasLowEnergy;
+    public UnclaimedTerritoryIsNear UnclaimedTerritoryIsNear;
+    public KnownObstacles KnownObstacles;
 
     public IEnumerable<Belief> AllBeliefs {
         get {
@@ -105,7 +107,23 @@ public class Beliefs {
             yield return DroppedWood;
             yield return HabitantHasLowEnergy;
             yield return UnclaimedTerritoryIsNear;
+            yield return KnownObstacles;
         }
+    }
+
+    public Beliefs(Habitant h) {
+        NearMeetingPoint=new NearMeetingPoint();
+        TribeIsBeingAttacked=new TribeIsBeingAttacked();
+        TribeHasLowFoodLevel=new TribeHasLowFoodLevel();
+        TribeHasFewFlags=new TribeHasFewFlags();
+        AnimalsAreNear=new AnimalsAreNear();
+        NearEnemyTribe=new NearEnemyTribe();
+        ForestNear=new ForestNear();
+        DroppedFood=new DroppedFood();
+        DroppedWood=new DroppedWood();
+        HabitantHasLowEnergy=new HabitantHasLowEnergy();
+        UnclaimedTerritoryIsNear=new UnclaimedTerritoryIsNear();
+        KnownObstacles=new KnownObstacles(h);
     }
 }
 
@@ -303,22 +321,35 @@ public class UnclaimedTerritoryIsNear : Belief {
     }
 }
 
-public class KnownObststacles : Belief {
-    public obstacleMapEntry[,] obstacleMap;
-    
+public class KnownObstacles : Belief {
+    public ObstacleMapEntry[,] ObstacleMap;
 
-    public enum obstacleMapEntry { Obstacle, Free, Unknown };
+    public enum ObstacleMapEntry { Obstacle, Free, Unknown };
     public override void UpdateBelief (Agent agent, SensorData sensorData) {
-        foreach(Tree t in sensorData.Trees) {
-            RelevantCells.Add (t.Pos);
+        //Update obstacle positions.
+        foreach(var obsCoord in SensorDataObstacles(sensorData)) {
+            ObstacleMap[obsCoord.x, obsCoord.y] = ObstacleMapEntry.Obstacle;
         }
-        foreach(Tree t in sensorData.Stumps) {
-            RelevantCells.Add (t.Pos);
+        //Update free positions.
+        foreach(var freeCoord in sensorData.Cells.Except(SensorDataObstacles(sensorData))) {
+            ObstacleMap[freeCoord.x, freeCoord.y] = ObstacleMapEntry.Free;
         }
     }
-    public KnownObststacles() {
+    public KnownObstacles(Habitant h) {
         EnableBelief();
-        //obstacleMap = new obstacleMapEntry[,]
+        CreateObstacleMapForHabitant(h);
+    }
+    private void CreateObstacleMapForHabitant(Habitant h) {
+        var mapSize = h.worldInfo.Size;
+        ObstacleMap = new ObstacleMapEntry[mapSize.x,mapSize.y];
+        foreach(var x in Enumerable.Range(0,mapSize.x)) {
+            foreach(var y in Enumerable.Range(0,mapSize.y)) {
+                ObstacleMap[x,y] = ObstacleMapEntry.Obstacle;
+            }
+        }
+    }
+    private IEnumerable<Vector2I> SensorDataObstacles(SensorData sensorData) {
+        return sensorData.Trees.Concat(sensorData.Stumps).Select(t=>t.Pos);
     }
 }
 
