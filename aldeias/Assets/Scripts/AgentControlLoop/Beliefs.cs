@@ -353,6 +353,26 @@ public class KnownObstacles : Belief {
     }
 }
 
+public class TribeTerritories : Belief {
+    public Tribe[,] Territories;
+
+    public override void UpdateBelief (Agent agent, SensorData sensorData) {
+        foreach(var coordTribe in sensorData.Territories) {
+            Vector2I c = coordTribe.Key;
+            Territories[c.x,c.y] = coordTribe.Value;
+        }
+        foreach(var c in sensorData.UnclaimedCells) {
+            Territories[c.x,c.y] = null;
+        }
+    }
+
+    public TribeTerritories(Habitant h) {
+        EnableBelief();
+        var size = h.worldInfo.Size;
+        Territories = new Tribe[size.x,size.y];
+    }
+}
+
 public class SensorDataDoesNotExists : SystemException {
 
 }
