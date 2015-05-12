@@ -20,6 +20,23 @@ public abstract class Action {
 			return performer.worldInfo;
 		}
 	}
+
+    public static Action WalkRandomly(Habitant habitant) {
+        int index = WorldRandom.Next(habitant.sensorData.AdjacentCells.Count);
+        Vector2I target;
+        try {
+            target = habitant.sensorData.AdjacentCells[index];
+        }
+        catch (System.Exception) {
+            // We don't have nearby free cells, so we do nothing
+            // and stay at the same position
+            target = new Vector2I(habitant.pos);
+        }
+        return new Walk(habitant, target);
+    }
+    public static Action WalkFront(Habitant habitant) {
+        return new Walk(habitant, habitant.sensorData.FrontCell);
+    }
 }
 
 // AnyAgentActions are actions that can be performed by any type of Agent.
@@ -61,7 +78,7 @@ public class Walk : AnyAgentAction {
 }
 
 public class Attack : AnyAgentAction {
-	public static readonly Energy ENERGY_TO_REMOVE = new Energy(20);
+    public static readonly Energy ENERGY_TO_REMOVE = new Energy(20);
 	public override void apply () {
 		if(world.worldTiles.WorldTileInfoAtCoord(target).HasAgent) {
             Agent enemy = world.worldTiles.WorldTileInfoAtCoord(target).Agent;

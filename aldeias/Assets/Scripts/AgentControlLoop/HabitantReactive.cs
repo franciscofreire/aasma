@@ -3,24 +3,6 @@ using UnityEngine;
 public class HabitantReactive : AgentImplementation {
     private Habitant habitant;
 
-    private Action WalkRandomly() {
-        int index = WorldRandom.Next(habitant.sensorData.AdjacentCells.Count);
-        Vector2I target;
-        try {
-            target = habitant.sensorData.AdjacentCells[index];
-        }
-        catch (System.Exception) {
-            // We don't have nearby free cells, so we do nothing
-            // and stay at the same position
-            target = new Vector2I(habitant.pos);
-        }
-        return new Walk(habitant, target);
-    }
-
-    private Action WalkFront() {
-        return new Walk(habitant, habitant.sensorData.FrontCell);
-    }
-
     private Action RunAwayOrWalkRandomly() {
 
         Vector2 oppositePos = habitant.pos + 
@@ -29,11 +11,11 @@ public class HabitantReactive : AgentImplementation {
         if(habitant.worldInfo.isInsideWorld(tileCoordOppositePos)) {
             return new Walk(habitant, tileCoordOppositePos);
         } else {
-            return WalkRandomly();
+            return Action.WalkRandomly(habitant);
         }
     }
 
-    private Action RunAwayOrwalkRandomlyOrEat() {
+    private Action RunAwayOrWalkRandomlyOrEat() {
         Vector2 oppositePos = habitant.pos + 
             habitant.orientation.LeftOrientation().LeftOrientation().ToVector2();
         Vector2I tileCoordOppositePos = CoordConvertions.AgentPosToTile(oppositePos);
@@ -44,7 +26,7 @@ public class HabitantReactive : AgentImplementation {
         if(habitant.worldInfo.isInsideWorld(tileCoordOppositePos)) {
             return new Walk(habitant, tileCoordOppositePos);
         } else {
-            return WalkRandomly();
+            return Action.WalkRandomly(habitant);
         }
     }
 
@@ -94,9 +76,9 @@ public class HabitantReactive : AgentImplementation {
         else if((habitant.AnimalsInFrontPositions() || habitant.FoodInFrontPositions() ||
                 habitant.EnemiesInFrontPositions() || habitant.TreesInFrontPositions()) &&
                 (!habitant.AliveTreeInFront() && !habitant.DeadTreeInFront())){
-            return WalkFront();
+            return Action.WalkFront(habitant);
         }
-        return WalkRandomly();
+        return Action.WalkRandomly(habitant);
     }
     
     public HabitantReactive(Habitant habitant) {

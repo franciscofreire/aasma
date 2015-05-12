@@ -4,12 +4,24 @@ using System.Collections.Generic;
 
 public class Plan {
     private Queue<Action> plan = new Queue<Action>();
+    public Action LastAction { get; set; }
 
-    public Plan() {
+    private Attitude intention;
+
+    public Plan(Attitude intention) {
+        this.intention = intention;
+    }
+
+    public bool isSound(Beliefs beliefs) {
+        return intention.isSound(beliefs);
     }
 
     public bool isEmpty() {
         return plan.Count == 0;
+    }
+    
+    public void clear() {
+        plan.Clear();
     }
 
     public Action head() {
@@ -19,16 +31,25 @@ public class Plan {
     public void add(Action a) {
         plan.Enqueue(a);
     }
+    
+    public void addLastAction(Action a) {
+        add(a);
+        LastAction = a;
+    }
 
     // Amazing pathfinding: 2 straight paths ignoring collisions
     public void addPathFinding(Agent agent, Vector2I target) {
         Vector2I pos = CoordConvertions.AgentPosToTile(agent.pos);
-        int x_steps = (int) System.Math.Abs(pos.x - target.x);
-        int y_steps = (int) System.Math.Abs(pos.y - target.y);
-        for (int i = 0; i < x_steps; i++) {
-            for (int j = 0; j < y_steps; j++) {
-                add(new Walk(agent, new Vector2I(pos.x + i, pos.y + j)));
+        Vector2I step = target - pos;
+            step.x = (int) Mathf.Sign(step.x);
+            step.y = (int) Mathf.Sign(step.y);
+        if (pos.x != target.x)
+            for (int i = pos.x + step.x; i != target.x; i += step.x) {
+                add(new Walk(agent, new Vector2I(i, pos.y)));
             }
-        }
+        if (pos.y != target.y)
+            for (int i = pos.y + step.y; i != target.y; i += step.y) {
+                add(new Walk(agent, new Vector2I(target.x, i)));
+            }
     }
 }

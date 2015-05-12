@@ -11,13 +11,13 @@ public class HabitantDeliberative : AgentImplementation {
     private List<Attitude> desires;
     private List<Attitude> intentions;
 
-    private Plan plan = new Plan();
+    private Plan plan;
 
     private bool ActionExecuted {
         get; set;
     }
 
-    public void doOptions() {
+    public void updateOptions() {
         desires = new List<Attitude>();
         foreach (Attitude a in attitudes.AllAttitudes) {
             if (a.isDesirable(beliefs)) {
@@ -28,7 +28,7 @@ public class HabitantDeliberative : AgentImplementation {
 
     // Choose the three most important desires, converting them to intentions
     // The list is ordered by importance in decrescent order
-    public void doFilter() {
+    public void updateFilter() {
         List<Attitude> candidates = new List<Attitude>();
 
         foreach (Attitude desire in desires) {
@@ -44,7 +44,7 @@ public class HabitantDeliberative : AgentImplementation {
             Attitude candidate = candidates.ElementAt(i);
 
             // If the desire is more important than some candidate, we add it
-            if (candidate.importance < desire.importance) {
+            if (candidate.Importance < desire.Importance) {
                 candidates.Insert(i, desire);
 
                 // Remove the less important candidate if we have too many candidates
@@ -63,8 +63,8 @@ public class HabitantDeliberative : AgentImplementation {
     }
     
     // Choose the plan from the most important intention
-    public Plan doPlan() {
-        return intentions.First().createPlan(beliefs);
+    public Plan updatePlan() {
+        return intentions.First().updatePlan(beliefs);
     }
 
     public bool succeded() {
@@ -80,15 +80,11 @@ public class HabitantDeliberative : AgentImplementation {
     }
 
     public bool sound() {
-        return true;
+        return plan.isSound(beliefs);
     }
 
     private bool actionsPending() {
         return !plan.isEmpty() || succeded() || impossible();
-    }
-    
-    private Action WalkFront() {
-        return new Walk(habitant, habitant.sensorData.FrontCell);
     }
 
     public Action createAction() {
@@ -103,35 +99,50 @@ public class HabitantDeliberative : AgentImplementation {
     //
     // Note that the next perception is already available when doAction() is called.
     public void doAction() {
+        // If we have nothing planned, do we have valid SensorData do update beliefs?
         if (plan.isEmpty() && habitant.sensorData.AdjacentCells.Count > 0) {
             Belief.brf(beliefs, CurrentPercept);
-            doOptions();
-            doFilter();
-            if (intentions.Count == 0) // Should this happen?
+            updateOptions();
+            updateFilter();
+
+            // We couldn't generate intentions, tough luck
+            if (intentions.Count == 0)
                 return; 
-            plan = doPlan();
+
+            plan = updatePlan();
         }
+
+        // We have a plan, so do an action
         if(!ActionExecuted && actionsPending()) {
-            createAction().apply();
-            //ActionExecuted = true;
-            return; // Let other agents run their doAction()
+            Action a = createAction();
+            a.apply();
+            ActionExecuted = true;
+
+            // Let other agents run their doAction()
+            return;
         }
-        if (!actionsPending() && intentions.Count > 0) { // Plan finished (through completion or premature end)
+
+        // Plan finished (through completion or premature end), intention satisfied
+        if (!actionsPending() && intentions.Count > 0) {
             intentions.RemoveAt(0);
         }
-        // Uncomment when the rest works...
-        /*
-        if(ActionExecuted) {
-            Belief.brf(beliefs, habitant, habitant.sensorData);
+
+        // After executing an action, we reconsider our way in life
+        if(ActionExecuted && actionsPending()) {
+            Belief.brf(beliefs, CurrentPercept);
+            /*
             if (reconsider()) {
                 doOptions();
                 doFilter();
             }
+            */
             if (!sound()) {
-                plan = doPlan();
+                plan = updatePlan();
             }
-        }
-        */
+
+            // Done reconsidering, let's continue the plan
+            ActionExecuted = false;
+         }
     }
 
     public Percept CurrentPercept {
@@ -148,6 +159,7 @@ public class HabitantDeliberative : AgentImplementation {
         attitudes  = new Attitudes(habitant);
         desires    = new List<Attitude>();
         intentions = new List<Attitude>();
+        plan       = new Plan(new Explore(habitant));
     }
 }
 
