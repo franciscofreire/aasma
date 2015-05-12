@@ -38,36 +38,21 @@ public class Plan {
         LastAction = a;
     }
 
-    // Amazing pathfinding: 2 straight paths ignoring collisions
-    public void addPathFinding(Agent agent, Vector2I target) {
-        Vector2I pos = CoordConvertions.AgentPosToTile(agent.pos);
-        Vector2I step = target - pos;
-            step.x = (int) Mathf.Sign(step.x);
-            step.y = (int) Mathf.Sign(step.y);
-        if (pos.x != target.x)
-            for (int i = pos.x + step.x; i != target.x; i += step.x) {
-                add(new Walk(agent, new Vector2I(i, pos.y)));
-            }
-        if (pos.y != target.y)
-            for (int i = pos.y + step.y; i != target.y; i += step.y) {
-                add(new Walk(agent, new Vector2I(target.x, i)));
-            }
-        // Diagonal case: none of the previous adds where made, so force one of them
-        // Of course it doesn't work, plz replace with A*
-        //if ((int) Mathf.Abs(step.x) == 1 && (int) Mathf.Abs(step.y) == 1) {
-        //    add(new Walk(agent, new Vector2I(target.x, pos.y + step.y)));
-        //}
+    public void addFollowPath(Habitant h, Path path) {
+        for(int i=1; i<path.PathPoints.Count; i++) {
+            add(new Walk(h, path.PathPoints[i]));
+        }
     }
 }
 
 public class Path {
-    List<Vector2I> PathPoints;
+    public List<Vector2I> PathPoints;
     public Path(List<Vector2I> pts) {
         PathPoints = pts;
     }
 }
 
-public class PathFinder {
+public class Pathfinder {
 
     class State {
         public Vector2I Target;
@@ -125,7 +110,7 @@ public class PathFinder {
         }
         public int RemainingCostEstimate {
             get {   
-                return Path[Path.Count].DistanceTo(Target);
+                return Path[Path.Count-1].DistanceTo(Target);
             }
         }
         public static State FirstState(Vector2I from, KnownObstacles.ObstacleMapEntry[,] map, Vector2I to) {
@@ -139,21 +124,61 @@ public class PathFinder {
 
     public static Path PathInMapFromTo(KnownObstacles.ObstacleMapEntry[,] map, Vector2I from, Vector2I to) {
         State initialState = State.FirstState(from, map, to);
-        IPriorityQueue<PQueueNode> openStates = new HeapPriorityQueue<PQueueNode>(map.GetLength(0)*map.GetLength(1));
+        IPriorityQueue<PQueueNode> openStates = new HeapPriorityQueue<PQueueNode>(map.GetLength(0)*map.GetLength(1)*2);
         PQueueNode init = new PQueueNode(initialState);
         openStates.Enqueue(init, initialState.Cost+initialState.RemainingCostEstimate);
+        HashSet<Vector2I> closed = new HashSet<Vector2I>();
         while(openStates.Count != 0) {
             State currentState = openStates.Dequeue().S;
             if(currentState.IsFinal()) {
                 return new Path(currentState.Path);
             }
+            closed.Add(currentState.Path[currentState.Path.Count-1]);
             List<State> neighbors = currentState.Neighbors();
             foreach(var neighbor in neighbors) {
+                Vector2I nPos = neighbor.Path[neighbor.Path.Count-1];
+                if(closed.Contains(nPos)) {
+                    continue;//If the neigbour's last coord was already visited the neighbour is not good enough.
+                }
                 PQueueNode nei = new PQueueNode(neighbor);
+                try {
                 openStates.Enqueue(nei, neighbor.Cost + neighbor.RemainingCostEstimate);
+                } catch (System.IndexOutOfRangeException) {
+                    Debug.Log("array out of bounds");
+                    throw;
+                }
             }
             //FIXME: This assumes that the search domain is a tree. But our search domain is a cyclic graph.
         }
         return null;
+    }
+}
+
+public class AmazingPathfinder {
+    public static Path PathInMapFromTo(KnownObstacles.ObstacleMapEntry[,] map, Vector2I from, Vector2I to) {
+        return OrthogonalPathFromTo(from, to);
+    }
+    // Amazing pathfinding: 2 straight paths ignoring collisions
+    public static Path OrthogonalPathFromTo(Vector2I from, Vector2I target) {
+        Vector2I pos = from;
+        Vector2I step = target - pos;
+        step.x = (int) Mathf.Sign(step.x);
+        step.y = (int) Mathf.Sign(step.y);
+        List<Vector2I> points = new List<Vector2I>();
+        points.Add(pos);
+        if (pos.x != target.x)
+        for (int i = pos.x + step.x; i != target.x; i += step.x) {
+            points.Add(new Vector2I(i, pos.y));
+        }
+        if (pos.y != target.y)
+        for (int i = pos.y + step.y; i != target.y; i += step.y) {
+            points.Add(new Vector2I(target.x, i));
+        }
+            // Diagonal case: none of the previous adds where made, so force one of them
+            // Of course it doesn't work, plz replace with A*
+            //if ((int) Mathf.Abs(step.x) == 1 && (int) Mathf.Abs(step.y) == 1) {
+            //    add(new Walk(agent, new Vector2I(target.x, pos.y + step.y)));
+            //}
+        return new Path(points);
     }
 }

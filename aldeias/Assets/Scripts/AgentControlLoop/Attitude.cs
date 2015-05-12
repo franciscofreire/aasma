@@ -129,10 +129,19 @@ public class ExpandTribe : Attitude {
     }
 
     public override Plan createPlan(Beliefs beliefs) {
-        IList<Vector2I> targets = beliefs.UnclaimedTerritoryIsNear.RelevantCells;
-        Vector2I target = habitant.closestCell(targets);
-        plan.addPathFinding(habitant, target);
+        IEnumerable<Vector2I> targets = beliefs
+            .UnclaimedTerritoryIsNear.RelevantCells
+            .Concat(beliefs.TribeTerritories.UnclaimedTerritories);
+        //Vector2I target = habitant.closestCell(targets);
+        Vector2I target = targets.First();//FIXME: what if there is no cell left?
+        //FIXME: select a free or unknown cell adjacent to target as the cell we want to go to.
+
+        Path pathToTarget = Pathfinder.PathInMapFromTo(beliefs.KnownObstacles.ObstacleMap, 
+                                                              CoordConvertions.AgentPosToTile(habitant.pos), 
+                                                              target);
+        plan.addFollowPath(habitant, pathToTarget);
         plan.addLastAction(new PlaceFlag(habitant, target));
+
         return plan;
     }
 

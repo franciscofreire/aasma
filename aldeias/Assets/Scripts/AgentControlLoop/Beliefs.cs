@@ -95,6 +95,7 @@ public class Beliefs {
     public HabitantHasLowEnergy HabitantHasLowEnergy;
     public UnclaimedTerritoryIsNear UnclaimedTerritoryIsNear;
     public KnownObstacles KnownObstacles;
+    public TribeTerritories TribeTerritories;
 
     public IEnumerable<Belief> AllBeliefs {
         get {
@@ -110,6 +111,7 @@ public class Beliefs {
             yield return HabitantHasLowEnergy;
             yield return UnclaimedTerritoryIsNear;
             yield return KnownObstacles;
+            yield return TribeTerritories;
         }
     }
 
@@ -128,6 +130,7 @@ public class Beliefs {
         HabitantHasLowEnergy=new HabitantHasLowEnergy();
         UnclaimedTerritoryIsNear=new UnclaimedTerritoryIsNear();
         KnownObstacles=new KnownObstacles(h);
+        TribeTerritories=new TribeTerritories(h);
     }
 }
 
@@ -370,23 +373,29 @@ public class KnownObstacles : Belief {
 }
 
 public class TribeTerritories : Belief {
-    public Tribe[,] Territories;
+    public Matrix<Tribe> Territories;
+    public IEnumerable<Vector2I> UnclaimedTerritories {
+        get {
+            return Territories.AllCoords.Where(c=>Territories[c]==null);
+        }
+    }
+
 
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
         foreach(var coordTribe in p.SensorData.Territories) {
             Vector2I c = coordTribe.Key;
-            Territories[c.x,c.y] = coordTribe.Value;
+            Territories[c] = coordTribe.Value;
         }
         foreach(var c in p.SensorData.UnclaimedCells) {
-            Territories[c.x,c.y] = null;
+            Territories[c] = null;
         }
     }
 
     public TribeTerritories(Habitant h) {
         EnableBelief();
         var size = h.worldInfo.Size;
-        Territories = new Tribe[size.x,size.y];
+        Territories = new Matrix<Tribe>(size);
     }
 }
 
