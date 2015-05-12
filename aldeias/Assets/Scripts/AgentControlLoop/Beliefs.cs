@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 public abstract class Belief {
-
     private const int MAX_SIZE_SENSOR_DATA = 10;
 
     private bool isActive;
@@ -82,6 +81,7 @@ public abstract class Belief {
 }
 
 public class Beliefs {
+    public WorldInfo WorldInfo { get; set; }
 
     public NearMeetingPoint NearMeetingPoint;
     public TribeIsBeingAttacked TribeIsBeingAttacked;
@@ -114,6 +114,8 @@ public class Beliefs {
     }
 
     public Beliefs(Habitant h) {
+        WorldInfo = h.worldInfo;
+
         NearMeetingPoint=new NearMeetingPoint();
         TribeIsBeingAttacked=new TribeIsBeingAttacked();
         TribeHasLowFoodLevel=new TribeHasLowFoodLevel();

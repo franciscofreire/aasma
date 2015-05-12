@@ -306,7 +306,7 @@ public class Animal : Agent {
 		get {
 			var all = worldInfo.AllAnimals;
 			var others = all.Except(Myself);
-            var closeEnough = others.Where(a=>(a.pos-this.pos).sqrMagnitude < BoidParams.MaxVisDist*BoidParams.MaxVisDist);
+            var closeEnough = others.Where(a=>a.Alive && (a.pos-this.pos).sqrMagnitude < BoidParams.MaxVisDist*BoidParams.MaxVisDist);
 			var inFront = closeEnough.Where(a=>{ 
 				Degrees forwardToNeighbor = new Degrees(Vector2.Angle(this.orientation.ToVector2(), (a.pos-this.pos).normalized));
                 return forwardToNeighbor.value < BoidParams.HalfFieldOfViewAngle.value;
@@ -318,7 +318,7 @@ public class Animal : Agent {
     public IEnumerable<Habitant> VisibleHabitants {
         get {
             var all = worldInfo.AllHabitants;
-            var closeEnough = all.Where(h=>(h.pos-this.pos).sqrMagnitude < BoidParams.MaxVisDist*BoidParams.MaxVisDist);
+            var closeEnough = all.Where(h=>h.Alive && (h.pos-this.pos).sqrMagnitude < BoidParams.MaxVisDist*BoidParams.MaxVisDist);
             var insideFieldOfView = closeEnough.Where(h=>{
                 Degrees forwardToHabitant = new Degrees(Vector2.Angle(this.orientation.ToVector2(), (h.pos-this.pos).normalized));
                 return forwardToHabitant.value < BoidParams.HalfFieldOfViewAngle.value;

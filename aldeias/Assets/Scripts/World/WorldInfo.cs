@@ -4,18 +4,19 @@ using System.Collections.Generic;
 using System.Linq;
 
 public partial class WorldInfo : MonoBehaviour {
-
+    // Agent Properties
 	private const int UPDATE_FRAME_INTERVAL = 2;
 	public int MilisecondsPerTick = 50;
 
-    public bool Reactive = true;
-
+    // Animal Properties
     private const int MAX_ANIMALS = 10;
     private const int ANIMAL_RESPAWN_COOLDOWN = 50;
     private int cooldown = ANIMAL_RESPAWN_COOLDOWN;
     public AnimalBoidParameters BoidParams = new AnimalBoidParameters();
-    
+
+    // Habitant Properties
     private const int MAX_HABITANTS = 20;
+    public bool Reactive = true;
 
 	// The size of the world in rows and columns.
 	public int xSize = 50;
@@ -41,8 +42,12 @@ public partial class WorldInfo : MonoBehaviour {
 				.ConvertAll(t=>t.habitants.AsEnumerable()) // Lists of Habitants
 				.Aggregate((hs1,hs2)=>hs1.Concat(hs2));    // List  of Habitants
 		}
-	}
-
+    }
+    public IEnumerable<Habitant> AliveHabitants {
+        get {
+            return AllHabitants.Where((h)=>h.Alive);
+        }
+    }
     public Tribe GetEnemyTribe(Tribe tribe) {
         foreach(Tribe t in tribes) {
             if(t != tribe) {
@@ -51,6 +56,7 @@ public partial class WorldInfo : MonoBehaviour {
         }
         return null;
     }
+
 	public IEnumerable<Animal> AllAnimals {
 		get {
 			return habitats                              // List  of Habitats
@@ -58,7 +64,6 @@ public partial class WorldInfo : MonoBehaviour {
 				.Aggregate((as1,as2)=>as1.Concat(as2));  // List  of Animals
 		}
 	}
-
     public IEnumerable<Animal> AliveAnimals {
         get {
             return AllAnimals.Where((a)=>a.Alive);

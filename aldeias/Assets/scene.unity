@@ -890,7 +890,7 @@ MonoBehaviour:
   tileSize: 1
   terrainTiles: {fileID: 2800000, guid: bdeb690dd4faf914b91920e6f1be705b, type: 3}
   tileResolution: 128
-  floorMesh: {fileID: 985142464}
+  floorMesh: {fileID: 1007584491}
 --- !u!23 &336828149
 Renderer:
   m_ObjectHideFlags: 0
@@ -919,7 +919,7 @@ MeshFilter:
     type: 2}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 336828147}
-  m_Mesh: {fileID: 985142464}
+  m_Mesh: {fileID: 1007584491}
 --- !u!4 &336828151
 Transform:
   m_ObjectHideFlags: 0
@@ -957,7 +957,7 @@ MeshCollider:
   serializedVersion: 2
   m_SmoothSphereCollisions: 0
   m_Convex: 0
-  m_Mesh: {fileID: 985142464}
+  m_Mesh: {fileID: 1007584491}
 --- !u!1 &418956602
 GameObject:
   m_ObjectHideFlags: 0
@@ -2211,7 +2211,38 @@ MeshFilter:
   m_PrefabInternal: {fileID: 846868991}
   m_GameObject: {fileID: 958372305}
   m_Mesh: {fileID: 4300000, guid: 819faf55fc7930e41aa17721aadd8f06, type: 3}
---- !u!43 &985142464
+--- !u!1 &986201337
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 986201338}
+  m_Layer: 0
+  m_Name: Sides
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &986201338
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 986201337}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 1336797919}
+  - {fileID: 1182749826}
+  - {fileID: 918458613}
+  - {fileID: 523401478}
+  m_Father: {fileID: 1618952367}
+  m_RootOrder: 0
+--- !u!43 &1007584491
 Mesh:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
@@ -2354,37 +2385,6 @@ Mesh:
     m_Extent: {x: 25, y: 0, z: 25}
   m_MeshUsageFlags: 0
   m_MeshOptimized: 0
---- !u!1 &986201337
-GameObject:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  serializedVersion: 4
-  m_Component:
-  - 4: {fileID: 986201338}
-  m_Layer: 0
-  m_Name: Sides
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &986201338
-Transform:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 986201337}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children:
-  - {fileID: 1336797919}
-  - {fileID: 1182749826}
-  - {fileID: 918458613}
-  - {fileID: 523401478}
-  m_Father: {fileID: 1618952367}
-  m_RootOrder: 0
 --- !u!1 &1063882540
 GameObject:
   m_ObjectHideFlags: 0
@@ -3140,6 +3140,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MilisecondsPerTick: 50
+  Reactive: 0
   BoidParams:
     MaximumSpeed: .75
     MaximumSpeedDelta: .0500000007
