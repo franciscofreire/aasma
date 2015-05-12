@@ -13,6 +13,7 @@ public partial class WorldInfo : MonoBehaviour {
     private const int ANIMAL_RESPAWN_COOLDOWN = 50;
     private int cooldown = ANIMAL_RESPAWN_COOLDOWN;
     public AnimalBoidParameters BoidParams = new AnimalBoidParameters();
+    public bool AnimalMovement = true;
 
     // Habitant Properties
     private const int MAX_HABITANTS = 20;

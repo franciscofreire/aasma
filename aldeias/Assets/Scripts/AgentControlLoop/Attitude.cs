@@ -131,7 +131,8 @@ public class ExpandTribe : Attitude {
     public override Plan createPlan(Beliefs beliefs) {
         IEnumerable<Vector2I> targets = beliefs
             .UnclaimedTerritoryIsNear.RelevantCells
-            .Concat(beliefs.TribeTerritories.UnclaimedTerritories);
+            .Concat(beliefs.TribeTerritories.UnclaimedTerritories)
+            .Where(t=>beliefs.KnownObstacles.ObstacleMap[t.x,t.y]!=KnownObstacles.ObstacleMapEntry.Obstacle);
         //Vector2I target = habitant.closestCell(targets);
         Vector2I target = targets.First();//FIXME: what if there is no cell left?
         //FIXME: select a free or unknown cell adjacent to target as the cell we want to go to.

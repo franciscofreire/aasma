@@ -363,7 +363,7 @@ public class KnownObstacles : Belief {
         ObstacleMap = new ObstacleMapEntry[mapSize.x,mapSize.y];
         foreach(var x in Enumerable.Range(0,mapSize.x)) {
             foreach(var y in Enumerable.Range(0,mapSize.y)) {
-                ObstacleMap[x,y] = ObstacleMapEntry.Obstacle;
+                ObstacleMap[x,y] = ObstacleMapEntry.Unknown;
             }
         }
     }

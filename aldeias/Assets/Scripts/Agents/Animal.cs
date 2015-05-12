@@ -352,6 +352,8 @@ public class Animal : Agent {
     }
 
     public override void OnWorldTick () {
+        if(!worldInfo.AnimalMovement)
+            return;
         base.OnWorldTick ();
         if (Alive)
             MoveLikeAVehicle();

@@ -127,7 +127,8 @@ public class Pathfinder {
         IPriorityQueue<PQueueNode> openStates = new HeapPriorityQueue<PQueueNode>(map.GetLength(0)*map.GetLength(1)*2);
         PQueueNode init = new PQueueNode(initialState);
         openStates.Enqueue(init, initialState.Cost+initialState.RemainingCostEstimate);
-        HashSet<Vector2I> closed = new HashSet<Vector2I>();
+        HashSet<Vector2I> closed = new HashSet<Vector2I>(); 
+        HashSet<Vector2I> generated = new HashSet<Vector2I>();
         while(openStates.Count != 0) {
             State currentState = openStates.Dequeue().S;
             if(currentState.IsFinal()) {
@@ -137,9 +138,10 @@ public class Pathfinder {
             List<State> neighbors = currentState.Neighbors();
             foreach(var neighbor in neighbors) {
                 Vector2I nPos = neighbor.Path[neighbor.Path.Count-1];
-                if(closed.Contains(nPos)) {
+                if(closed.Contains(nPos)||generated.Contains(nPos)) {
                     continue;//If the neigbour's last coord was already visited the neighbour is not good enough.
                 }
+                generated.Add(nPos);
                 PQueueNode nei = new PQueueNode(neighbor);
                 try {
                 openStates.Enqueue(nei, neighbor.Cost + neighbor.RemainingCostEstimate);

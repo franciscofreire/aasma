@@ -1,7 +1,7 @@
 using UnityEngine;
 using System;
 
-public struct Vector2I {
+public struct Vector2I : IEquatable<Vector2I> {
 	public int x;
 	public int y;
 	
@@ -26,7 +26,9 @@ public struct Vector2I {
         return new Vector2I(v1.x-v2.x,v1.y-v2.y);
     }
 
-
+    public bool Equals(Vector2I v) {
+        return this == v;
+    }
 	public static bool operator ==(Vector2I v1, Vector2I v2) {
 		return v1.x == v2.x && v1.y == v2.y;
 	}
@@ -51,6 +53,11 @@ public struct Vector2I {
         int dx = Math.Abs(otherVec.x - this.x);
         int dy = Math.Abs(otherVec.y - this.y);
         return dx + dy;
+    }
+
+    public override string ToString ()
+    {
+        return string.Format ("[{0}, {1}]", x, y);
     }
 }
 
