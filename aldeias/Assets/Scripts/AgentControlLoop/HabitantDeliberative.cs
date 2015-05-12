@@ -104,7 +104,7 @@ public class HabitantDeliberative : AgentImplementation {
     // Note that the next perception is already available when doAction() is called.
     public void doAction() {
         if (plan.isEmpty() && habitant.sensorData.AdjacentCells.Count > 0) {
-            Belief.brf(beliefs, habitant, habitant.sensorData);
+            Belief.brf(beliefs, CurrentPercept);
             doOptions();
             doFilter();
             if (intentions.Count == 0) // Should this happen?
@@ -134,6 +134,12 @@ public class HabitantDeliberative : AgentImplementation {
         */
     }
 
+    public Percept CurrentPercept {
+        get {
+            return new Percept(habitant, habitant.sensorData);
+        }
+    }
+
     public HabitantDeliberative (Habitant habitant) {
         this.habitant  = habitant;
         ActionExecuted = false;
@@ -142,5 +148,14 @@ public class HabitantDeliberative : AgentImplementation {
         attitudes  = new Attitudes(habitant);
         desires    = new List<Attitude>();
         intentions = new List<Attitude>();
+    }
+}
+
+public class Percept {
+    public readonly Habitant Habitant;
+    public readonly SensorData SensorData;
+    public Percept(Habitant h, SensorData s) {
+        Habitant = h;
+        SensorData = s;
     }
 }

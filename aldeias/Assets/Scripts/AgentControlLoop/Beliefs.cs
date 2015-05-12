@@ -68,13 +68,15 @@ public abstract class Belief {
         this.timesToBeActive = 0;
     }
 
-    public abstract void UpdateBelief(Agent agent, SensorData sensorData);
+    public virtual void UpdateBelief(Percept p) {
+        //FIXME: I don't know the purpose of saving SensorDatas in the base class.
+        // append sensorData to the beginning
+        AddSensorData(p.SensorData);
+    }
 
-    public static void brf(Beliefs beliefs, Agent agent, SensorData sensorData) {
+    public static void brf(Beliefs beliefs, Percept p) {
         foreach(var b in beliefs.AllBeliefs) {
-            b.UpdateBelief (agent, sensorData);
-            // append sensorData to the beginning
-            b.AddSensorData(sensorData);
+            b.UpdateBelief (p);
         }
     }
 }
@@ -133,9 +135,10 @@ public class Beliefs {
 public class NearMeetingPoint : Belief {
     // Belief remains active if the last but one sensor
     // satisfies the condition (Agent saw meeting point cells
-    public override void UpdateBelief (Agent agent, SensorData sensorData) {
-        if(sensorData.MeetingPointCells.Count != 0) {
-            RelevantCells = sensorData.MeetingPointCells;
+    public override void UpdateBelief (Percept p) {
+        base.UpdateBelief(p);
+        if(p.SensorData.MeetingPointCells.Count != 0) {
+            RelevantCells = p.SensorData.MeetingPointCells;
             EnableBelief();
         } else {
             if(IsActive) {
@@ -168,9 +171,10 @@ public class TribeIsBeingAttacked : Belief {
         }
     }
    
-    public override void UpdateBelief (Agent agent, SensorData sensorData) {
-        if(!IsActive && ArePreconditionsSatisfied(sensorData)) {
-            foreach (Habitant h in sensorData.Enemies) {
+    public override void UpdateBelief (Percept p) {
+        base.UpdateBelief(p);
+        if(!IsActive && ArePreconditionsSatisfied(p.SensorData)) {
+            foreach (Habitant h in p.SensorData.Enemies) {
                 RelevantCells.Add (CoordConvertions.AgentPosToTile(h.pos));
             }
             EnableBelief();
@@ -203,9 +207,10 @@ public class TribeHasLowFoodLevel : Belief {
 
     // Here we let Food Low level be active for 3 updates, even 
     // when perceptions conditions are not satisfied
-    public override void UpdateBelief (Agent agent, SensorData sensorData) {
-        if(sensorData.FoodTribe < new FoodQuantity(Tribe.CRITICAL_FOOD_LEVEL)) {
-            this.foodQuantity = sensorData.FoodTribe;
+    public override void UpdateBelief (Percept p) {
+        base.UpdateBelief(p);
+        if(p.SensorData.FoodTribe < new FoodQuantity(Tribe.CRITICAL_FOOD_LEVEL)) {
+            this.foodQuantity = p.SensorData.FoodTribe;
             EnableBelief(2);
         } else if(timesToBeActive > 0) {
             timesToBeActive--;
@@ -218,9 +223,10 @@ public class TribeHasLowFoodLevel : Belief {
 public class TribeHasFewFlags : Belief {
     public int flagsCount;
 
-    public override void UpdateBelief (Agent agent, SensorData sensorData) {
-        if(sensorData.TribeFlags < Tribe.CRITICAL_FLAG_QUANTITY) {
-            this.flagsCount = sensorData.TribeFlags;
+    public override void UpdateBelief (Percept p) {
+        base.UpdateBelief(p);
+        if(p.SensorData.TribeFlags < Tribe.CRITICAL_FLAG_QUANTITY) {
+            this.flagsCount = p.SensorData.TribeFlags;
             EnableBelief(2);
         } else if(IsActive && timesToBeActive-- == 0){
             DisableBelief();
@@ -229,10 +235,11 @@ public class TribeHasFewFlags : Belief {
 }
 
 public class AnimalsAreNear : Belief {
-    public override void UpdateBelief (Agent agent, SensorData sensorData) {
-        if(sensorData.Animals.Count > 0) {
+    public override void UpdateBelief (Percept p) {
+        base.UpdateBelief(p);
+        if(p.SensorData.Animals.Count > 0) {
             RelevantCells = new List<Vector2I>();
-            foreach(Animal a in sensorData.Animals) {
+            foreach(Animal a in p.SensorData.Animals) {
                 RelevantCells.Add(CoordConvertions.AgentPosToTile(a.pos));
             }
             EnableBelief();
@@ -243,9 +250,10 @@ public class AnimalsAreNear : Belief {
 }
 
 public class NearEnemyTribe : Belief {
-    public override void UpdateBelief (Agent agent, SensorData sensorData) {
-        if(sensorData.EnemyTribeCells.Count > 0) {
-            RelevantCells = sensorData.EnemyTribeCells;
+    public override void UpdateBelief (Percept p) {
+        base.UpdateBelief(p);
+        if(p.SensorData.EnemyTribeCells.Count > 0) {
+            RelevantCells = p.SensorData.EnemyTribeCells;
             EnableBelief();
         } else {
             DisableBelief();
@@ -254,10 +262,11 @@ public class NearEnemyTribe : Belief {
 }
 
 public class ForestNear : Belief {
-    public override void UpdateBelief (Agent agent, SensorData sensorData) {
-        if(sensorData.Trees.Count > 0) {
+    public override void UpdateBelief (Percept p) {
+        base.UpdateBelief(p);
+        if(p.SensorData.Trees.Count > 0) {
             RelevantCells = new List<Vector2I>();
-            foreach(Tree t in sensorData.Trees) {
+            foreach(Tree t in p.SensorData.Trees) {
                 RelevantCells.Add(t.Pos);
             }
             EnableBelief();
@@ -268,10 +277,11 @@ public class ForestNear : Belief {
 }
 
 public class DroppedFood : Belief {
-    public override void UpdateBelief (Agent agent, SensorData sensorData) {
-        if(sensorData.Food.Count > 0) {
+    public override void UpdateBelief (Percept p) {
+        base.UpdateBelief(p);
+        if(p.SensorData.Food.Count > 0) {
             RelevantCells = new List<Vector2I>();
-            foreach(Animal a in sensorData.Food) {
+            foreach(Animal a in p.SensorData.Food) {
                 RelevantCells.Add(CoordConvertions.AgentPosToTile(a.pos));
             }
             EnableBelief();
@@ -283,10 +293,11 @@ public class DroppedFood : Belief {
 }
 
 public class DroppedWood : Belief {
-    public override void UpdateBelief (Agent agent, SensorData sensorData) {
-        if(sensorData.Stumps.Count > 0) {
+    public override void UpdateBelief (Percept p) {
+        base.UpdateBelief(p);
+        if(p.SensorData.Stumps.Count > 0) {
             RelevantCells = new List<Vector2I>();
-            foreach(Tree t in sensorData.Stumps) {
+            foreach(Tree t in p.SensorData.Stumps) {
                 RelevantCells.Add(t.Pos);
             }
             EnableBelief();
@@ -299,9 +310,10 @@ public class DroppedWood : Belief {
 public class HabitantHasLowEnergy : Belief {
     public Energy habitantEnergy;
 
-    public override void UpdateBelief (Agent agent, SensorData sensorData) {
-        if(agent.LowEnergy()) {
-            habitantEnergy = agent.energy;
+    public override void UpdateBelief (Percept p) {
+        base.UpdateBelief(p);
+        if(p.Habitant.LowEnergy()) {
+            habitantEnergy = p.Habitant.energy;
             EnableBelief();
         } else {
             DisableBelief();
@@ -311,9 +323,10 @@ public class HabitantHasLowEnergy : Belief {
 
 public class UnclaimedTerritoryIsNear : Belief {
 
-    public override void UpdateBelief (Agent agent, SensorData sensorData) {
-        if(sensorData.UnclaimedCells.Count > 0) {
-            RelevantCells = sensorData.UnclaimedCells;
+    public override void UpdateBelief (Percept p) {
+        base.UpdateBelief(p);
+        if(p.SensorData.UnclaimedCells.Count > 0) {
+            RelevantCells = p.SensorData.UnclaimedCells;
             EnableBelief(2);
         } else if(IsActive && timesToBeActive-- == 0){
             DisableBelief();
@@ -325,13 +338,14 @@ public class KnownObstacles : Belief {
     public ObstacleMapEntry[,] ObstacleMap;
 
     public enum ObstacleMapEntry { Obstacle, Free, Unknown };
-    public override void UpdateBelief (Agent agent, SensorData sensorData) {
+    public override void UpdateBelief (Percept p) {
+        base.UpdateBelief(p);
         //Update obstacle positions.
-        foreach(var obsCoord in SensorDataObstacles(sensorData)) {
+        foreach(var obsCoord in SensorDataObstacles(p.SensorData)) {
             ObstacleMap[obsCoord.x, obsCoord.y] = ObstacleMapEntry.Obstacle;
         }
         //Update free positions.
-        foreach(var freeCoord in sensorData.Cells.Except(SensorDataObstacles(sensorData))) {
+        foreach(var freeCoord in p.SensorData.Cells.Except(SensorDataObstacles(p.SensorData))) {
             ObstacleMap[freeCoord.x, freeCoord.y] = ObstacleMapEntry.Free;
         }
     }
@@ -356,12 +370,13 @@ public class KnownObstacles : Belief {
 public class TribeTerritories : Belief {
     public Tribe[,] Territories;
 
-    public override void UpdateBelief (Agent agent, SensorData sensorData) {
-        foreach(var coordTribe in sensorData.Territories) {
+    public override void UpdateBelief (Percept p) {
+        base.UpdateBelief(p);
+        foreach(var coordTribe in p.SensorData.Territories) {
             Vector2I c = coordTribe.Key;
             Territories[c.x,c.y] = coordTribe.Value;
         }
-        foreach(var c in sensorData.UnclaimedCells) {
+        foreach(var c in p.SensorData.UnclaimedCells) {
             Territories[c.x,c.y] = null;
         }
     }
