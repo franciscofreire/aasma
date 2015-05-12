@@ -22,10 +22,10 @@ public struct Vector2I {
 	public static Vector2I operator +(Vector2I v1, Vector2I v2) {
 		return new Vector2I(v1.x+v2.x,v1.y+v2.y);
 	}
-    
     public static Vector2I operator -(Vector2I v1, Vector2I v2) {
         return new Vector2I(v1.x-v2.x,v1.y-v2.y);
     }
+
 
 	public static bool operator ==(Vector2I v1, Vector2I v2) {
 		return v1.x == v2.x && v1.y == v2.y;
