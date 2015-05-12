@@ -8,8 +8,8 @@ public class HabitantDeliberative : AgentImplementation {
 
     private Beliefs        beliefs;
     private Attitudes      attitudes;
-    private List<Attitude> desires;
-    private List<Attitude> intentions;
+    private Desires        desires;
+    private Intentions     intentions;
 
     private Plan plan = new Plan();
 
@@ -17,25 +17,19 @@ public class HabitantDeliberative : AgentImplementation {
         get; set;
     }
 
-    public void doOptions() {
-        desires = new List<Attitude>();
-        foreach (Attitude a in attitudes.AllAttitudes) {
-            if (a.isDesirable(beliefs)) {
-                desires.Add(a);
-            }
-        }
+    public Desires Options(Beliefs beliefs, Intentions intentions) {//FIXME: Doesn't take current intentions into account.
+        return attitudes.AllAttitudes.
+            Where(a=>a.IsDesirableAccordingTo(beliefs));
     }
 
     // Choose the three most important desires, converting them to intentions
     // The list is ordered by importance in decrescent order
-    public void doFilter() {
-        List<Attitude> candidates = new List<Attitude>();
-
-        foreach (Attitude desire in desires) {
-            filterDesire(candidates, desire);
-        }
-
-        intentions = candidates;
+    public Intentions Filter(Beliefs beliefs, Desires ddesires) {
+        return Intentions.From(
+            desires
+            .Select(d=>new KeyValuePair<float,Desire>(d.RelevanceAccordingTo(beliefs),d))
+            .Aggregate ((best,curr)=>curr.Key > best.Key ? curr : best)
+            .Value);
     }
 
     private void filterDesire(List<Attitude> candidates, Attitude desire) {
@@ -105,7 +99,7 @@ public class HabitantDeliberative : AgentImplementation {
     public void doAction() {
         if (plan.isEmpty() && habitant.sensorData.AdjacentCells.Count > 0) {
             Belief.brf(beliefs, CurrentPercept);
-            doOptions();
+            doOptions(beliefs);
             doFilter();
             if (intentions.Count == 0) // Should this happen?
                 return; 
@@ -133,6 +127,31 @@ public class HabitantDeliberative : AgentImplementation {
         }
         */
     }
+    /*public IEnumerable<Action> PraticalAgentLoop() {
+        var beliefs = new Beliefs(this);
+        var intentions = new Intentions(this);
+        while(true) {
+            var percept = getPercept();
+            beliefs = beliefRevisionFunction(beliefs, percept);
+            var desires = options(beliefs, intentions);
+            intentions = filter(beliefs, desires, intentions);
+            var plan = plan(beliefs, intentions);
+            while(!(plan.isEmpty || succeeded(intentions, beliefs) || impossible(intentions, beliefs))) {
+                var action = plan.Head;
+                yield return action;
+                plan = plan.tail;
+                percept = getPercept();
+                beliefs = beliefRevisionFunction(beliefs, percept);
+                if(reconsider(intentions, beliefs)) {
+                    desires = options(beliefs, intentions);
+                    intentions = filter(beliefs, desires, intentions);
+                }
+                if(!sound(plan, intentions, beliefs)) {
+                    plan = plan(beliefs, intentions);
+                }
+            }
+        }
+    }*/
 
     public Percept CurrentPercept {
         get {

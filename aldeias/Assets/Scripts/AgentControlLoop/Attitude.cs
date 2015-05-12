@@ -50,7 +50,7 @@ public abstract class Attitude {
 
     public abstract Plan createPlan(Beliefs beliefs);
 
-    public abstract bool isDesirable(Beliefs beliefs);
+    public abstract bool IsDesirableAccordingTo(Beliefs beliefs);
 }
 
 /*
@@ -82,7 +82,7 @@ Lista candidata de Desires/Intentions:
  */
 
 public class ExpandTribe : Attitude {
-    public override bool isDesirable(Beliefs beliefs) {
+    public override bool IsDesirableAccordingTo(Beliefs beliefs) {
         return beliefs.UnclaimedTerritoryIsNear.IsActive;
     }
 
@@ -100,7 +100,7 @@ public class ExpandTribe : Attitude {
 }
 
 public class ConquerTribe : Attitude {
-    public override bool isDesirable(Beliefs beliefs) {
+    public override bool IsDesirableAccordingTo(Beliefs beliefs) {
         return beliefs.NearEnemyTribe.IsActive;
     }
 
@@ -112,7 +112,7 @@ public class ConquerTribe : Attitude {
 }
 
 public class MaintainEnergy : Attitude {
-    public override bool isDesirable(Beliefs beliefs) {
+    public override bool IsDesirableAccordingTo(Beliefs beliefs) {
         return beliefs.HabitantHasLowEnergy.IsActive;
     }
 
@@ -124,7 +124,7 @@ public class MaintainEnergy : Attitude {
 }
 
 public class IncreaseFoodStock : Attitude {
-    public override bool isDesirable(Beliefs beliefs) {
+    public override bool IsDesirableAccordingTo(Beliefs beliefs) {
         return beliefs.TribeHasLowFoodLevel.IsActive;
     }
 
@@ -136,7 +136,7 @@ public class IncreaseFoodStock : Attitude {
 }
 
 public class IncreaseWoodStock : Attitude {
-    public override bool isDesirable(Beliefs beliefs) {
+    public override bool IsDesirableAccordingTo(Beliefs beliefs) {
         return beliefs.TribeHasFewFlags.IsActive;
     }
 
@@ -148,7 +148,7 @@ public class IncreaseWoodStock : Attitude {
 }
 
 public class HelpDefense : Attitude {
-    public override bool isDesirable(Beliefs beliefs) {
+    public override bool IsDesirableAccordingTo(Beliefs beliefs) {
         return beliefs.TribeIsBeingAttacked.IsActive;
     }
 
@@ -160,7 +160,7 @@ public class HelpDefense : Attitude {
 }
 
 public class HelpAttack : Attitude {
-    public override bool isDesirable(Beliefs beliefs) {
+    public override bool IsDesirableAccordingTo(Beliefs beliefs) {
         return beliefs.TribeIsBeingAttacked.IsActive; // FIXME: Maybe another belief
     }
 
