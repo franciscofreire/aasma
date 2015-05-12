@@ -23,14 +23,29 @@ public abstract class Belief {
     public Belief(IList<Vector2I> relevantCells) {
         this.relevantCells = relevantCells;
     }
-
+    
     public IList<Vector2I> RelevantCells {
         get { return this.relevantCells; }
         set { this.relevantCells = value; }
     }
 
+    // It only adds if it does not exists
+    public void addRelevantCell(Vector2I cell) {
+        bool isPresent = false;
+        foreach(var pos in RelevantCells) {
+            if(pos == cell) {
+                isPresent = true;
+                break;
+            }
+        }
+        if(!isPresent) {
+            RelevantCells.Add (cell);
+        }
+    }
+
     public bool IsActive {
         get { return this.isActive; }
+        set { this.isActive = value; }
     }
 
     public void AddSensorData(SensorData sensorData) {
@@ -60,11 +75,17 @@ public abstract class Belief {
         this.isActive = true;
         this.timesToBeActive = count;
     }
-
+    // default disable
     public void DisableBelief() {
         this.isActive = false;
         this.previousSensorData.Clear();
         this.relevantCells.Clear();
+        this.timesToBeActive = 0;
+    }
+
+    public void DisableBeliefKeepingRelevantCells() {
+        this.isActive = false;
+        this.previousSensorData.Clear();
         this.timesToBeActive = 0;
     }
 
@@ -133,25 +154,29 @@ public class Beliefs {
  *  - MeetingPoint is on Agents' vision
  */  
 public class NearMeetingPoint : Belief {
-    // Belief remains active if the last but one sensor
-    // satisfies the condition (Agent saw meeting point cells
+    // Belief remains active if the last sensor
+    // satisfies the condition (Agent saw meeting point cells)
+    // Found meeting point cells are saved in Relevant Cells
+    // even when belief is inactive
+   
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
-        if(p.SensorData.MeetingPointCells.Count != 0) {
-            RelevantCells = p.SensorData.MeetingPointCells;
-            EnableBelief();
-        } else {
-            if(IsActive) {
-                try {
-                    SensorData prevSensorData = GetSensorData(2);
-                    if(prevSensorData.MeetingPointCells.Count != 0) {
-                        DisableBelief();
-                    }
-                } catch (SensorDataDoesNotExists) {
-                    ; // do nothing
-                }
-            }
+        foreach(var cell in p.SensorData.MeetingPointCells) {
+            addRelevantCell(cell);
         }
+
+        if(p.SensorData.MeetingPointCells.Count != 0 ) {
+            EnableBelief();
+        } else if(IsActive) {
+            try {
+                SensorData prevSensorData = GetSensorData(1);
+                if(prevSensorData.MeetingPointCells.Count == 0) {
+                   DisableBeliefKeepingRelevantCells();
+                }
+            } catch (SensorDataDoesNotExists) {
+                ; // do nothing
+            }
+        }     
     }
 }
 
@@ -159,7 +184,6 @@ public class TribeIsBeingAttacked : Belief {
     /* Conditions:
      *  - Habitant is near enemy and it is insideTribe
      *  - Tribe territory is decreasing
-     *  - 
      */
     private bool ArePreconditionsSatisfied(SensorData sensorData) {
         try {
