@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Attitudes {
     public Explore Explore;
@@ -129,10 +130,9 @@ public class ExpandTribe : Attitude {
 
     public override Plan createPlan(Beliefs beliefs) {
         IList<Vector2I> targets = beliefs.UnclaimedTerritoryIsNear.RelevantCells;
-        foreach (Vector2I target in targets) {
-            plan.addPathFinding(habitant, target);
-            plan.addLastAction(new PlaceFlag(habitant, target));
-        }
+        Vector2I target = habitant.closestCell(targets);
+        plan.addPathFinding(habitant, target);
+        plan.addLastAction(new PlaceFlag(habitant, target));
         return plan;
     }
 

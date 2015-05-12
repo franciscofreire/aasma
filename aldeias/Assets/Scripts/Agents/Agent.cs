@@ -89,6 +89,20 @@ public abstract class Agent {
         }
     }
 
+    public Vector2I closestCell(IList<Vector2I> cells) {
+        Vector2I source = CoordConvertions.AgentPosToTile(pos);
+        Vector2I target = new Vector2I(1000,1000);
+        foreach (Vector2I cell in cells) {
+            int diff_cell_x   = (int) Mathf.Abs(cell.x   - source.x);
+            int diff_cell_y   = (int) Mathf.Abs(cell.y   - source.y);
+            int diff_target_x = (int) Mathf.Abs(target.x - source.x);
+            int diff_target_y = (int) Mathf.Abs(target.y - source.y);
+            if (diff_cell_x + diff_cell_y <= diff_target_x + diff_target_y)
+                target = cell;
+        }
+        return target;
+    }
+
 	//*************
 	//** SENSORS **
 	//*************

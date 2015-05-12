@@ -51,5 +51,10 @@ public class Plan {
             for (int i = pos.y + step.y; i != target.y; i += step.y) {
                 add(new Walk(agent, new Vector2I(target.x, i)));
             }
+        // Diagonal case: none of the previous adds where made, so force one of them
+        // Of course it doesn't work, plz replace with A*
+        //if ((int) Mathf.Abs(step.x) == 1 && (int) Mathf.Abs(step.y) == 1) {
+        //    add(new Walk(agent, new Vector2I(target.x, pos.y + step.y)));
+        //}
     }
 }
