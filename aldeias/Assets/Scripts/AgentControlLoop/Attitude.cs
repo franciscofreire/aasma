@@ -62,8 +62,8 @@ public abstract class Attitude {
     public abstract bool isSound(Beliefs beliefs);
     public Plan updatePlan(Beliefs beliefs) {
         this.plan.clear();
-        createPlan(beliefs);
-        return plan;
+        this.plan = createPlan(beliefs);
+        return this.plan;
     }
     public abstract Plan createPlan(Beliefs beliefs);
 }
@@ -111,15 +111,14 @@ public class Explore : Attitude {
         //TODO: - Prefer to go to places that are least known.
         //TODO: --- Go to a place we haven't visited for a long time.
         //TODO: - Try not to travel nor too little nor too much.
-        
-        CellCoords habitantCoords = CellCoords.ForHabitant(habitant);
 
         /*
         //Select the closest cell that is not an obstacle and that has the minimum
-        IEnumerable<Vector2I> freeCellsByCloseness = habitantCoords.CloserFirst
+        HabitantCellCoords habitantCoords = CellCoords.ForHabitant(habitant);
+        IEnumerable<Vector2I> nearbycellsNotObstacles = habitantCoords.CoordUntilDistance(5)
             .Where(c=>beliefs.KnownObstacles.ObstacleMap[c.x,c.y]!=KnownObstacles.ObstacleMapEntry.Obstacle);
         
-        Vector2I target = freeCellsByCloseness.Take(1)//FIXME: The number of cells to consider here is hardcoded.
+        Vector2I target = nearbycellsNotObstacles//.Take(1)//FIXME: The number of cells to consider here is hardcoded.
             .OrderBy(c=>beliefs.CellSeenOrders.LastSeenOrders[c])
                 .First();
         
