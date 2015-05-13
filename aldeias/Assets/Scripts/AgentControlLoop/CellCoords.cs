@@ -1,28 +1,16 @@
 using System.Collections.Generic;
 using System.Linq;
 
-public abstract class CellCoords {
-    public static HabitantCellCoords ForHabitant(Habitant h) {
-        return new HabitantCellCoords(h);
+public class CellCoordsAround {
+    Vector2I center;
+    WorldInfo world;
+    public CellCoordsAround (Vector2I center, WorldInfo world) {
+        this.center = center;
+        this.world = world;
     }
-
-    public abstract IEnumerable<Vector2I> CloserFirst { 
-        get; 
-    }
-
-    public abstract Vector2I Center {
-        get;
-    }
-}
-
-public class HabitantCellCoords : CellCoords {
-    Habitant habitant;
-    public HabitantCellCoords (Habitant h) {
-        habitant = h;
-    }
-    public override Vector2I Center {
+    public Vector2I Center {
         get {
-            return CoordConvertions.AgentPosToTile(habitant.pos);
+            return center;
         }
     }
     public IEnumerable<Vector2I> CoordsAtDistance(int mannhatanDist) {
@@ -34,7 +22,7 @@ public class HabitantCellCoords : CellCoords {
              * 4 3 2 3 4
              */
         
-        Vector2I center = CoordConvertions.AgentPosToTile(habitant.pos);
+        Vector2I center = Center;
         
         Vector2I[][] diagonalTemplates = new Vector2I[][]{
             /* [ startingPointStep, diagStep ] */
@@ -53,7 +41,7 @@ public class HabitantCellCoords : CellCoords {
             .Select(d=>Enumerable.Range(0,diagonalSize)
                     .Select(n=>d.NthPoint(n)))
                 .Aggregate((acc,diagPts)=>acc.Concat(diagPts));
-        return diagonalPoints.Where(pt=>habitant.worldInfo.isInsideWorld(pt));
+        return diagonalPoints.Where(pt=>world.isInsideWorld(pt));
         
     }
     
@@ -65,7 +53,7 @@ public class HabitantCellCoords : CellCoords {
                 .Aggregate((e1,e2)=>e1.Concat(e2));
     }
     
-    public override IEnumerable<Vector2I> CloserFirst {
+    public IEnumerable<Vector2I> CloserFirst {
         get {
             for(int radius = 1; true; radius++) {
                 if(CoordsAtDistance(radius).Count() == 0)
