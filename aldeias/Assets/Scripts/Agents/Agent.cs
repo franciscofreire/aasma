@@ -182,6 +182,8 @@ public struct SensorData {
     private int _tribe_flags;
     private bool _agent_is_inside_tribe;
     private Tribe _agent_tribe;
+
+    public IList<Vector2I> NearbyCells { get; set; }
 	
     public Tribe AgentTribe {
         get { return this._agent_tribe; }

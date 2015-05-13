@@ -10,6 +10,8 @@ public class Attitudes {
     public MaintainEnergy MaintainEnergy;
     public IncreaseFoodStock IncreaseFoodStock;
     public IncreaseWoodStock IncreaseWoodStock;
+    public StartAttack StartAttack;
+    // TODO: StartDefense
     public HelpAttack HelpAttack;
     public HelpDefense HelpDefense;
 
@@ -20,6 +22,7 @@ public class Attitudes {
         MaintainEnergy = new MaintainEnergy(h);
         IncreaseFoodStock = new IncreaseFoodStock(h);
         IncreaseWoodStock = new IncreaseWoodStock(h);
+        StartAttack = new StartAttack(h);
         HelpAttack = new HelpAttack(h);
         HelpDefense = new HelpDefense(h);
     }
@@ -32,6 +35,7 @@ public class Attitudes {
             yield return MaintainEnergy;
             yield return IncreaseFoodStock;
             yield return IncreaseWoodStock;
+            yield return StartAttack;
             yield return HelpAttack;
             yield return HelpDefense;
         }
@@ -128,6 +132,7 @@ public class ExpandTribe : Attitude {
     }
 
     public override Plan createPlan(Beliefs beliefs) {
+        // TODO: First part of concat not needed
         IEnumerable<Vector2I> targets = beliefs
             .UnclaimedTerritoryIsNear.RelevantCells
             .Concat(beliefs.TribeTerritories.UnclaimedTerritories)
@@ -197,18 +202,57 @@ public class IncreaseFoodStock : Attitude {
 
 public class IncreaseWoodStock : Attitude {
     public override bool isDesirable(Beliefs beliefs) {
-        return beliefs.TribeHasFewFlags.IsActive;
+        //return beliefs.TribeHasFewFlags.IsActive;
+        return false;
+    }
+    
+    public override bool isSound(Beliefs beliefs) {
+        return beliefs.WorldInfo.worldTiles.WorldTileInfoAtCoord(plan.LastAction.target)
+               .HasTree;
+    }
+    
+    public override Plan createPlan(Beliefs beliefs) {
+        IEnumerable<Vector2I> targets = beliefs.ForestNear.AvailableTrees
+            ;
+            //.Where(t=>beliefs.KnownObstacles.ObstacleMap[t.x,t.y]!=KnownObstacles.ObstacleMapEntry.Obstacle);
+
+        // Do we know about any trees?
+        if (targets.Count() > 0) {
+            Vector2I target = habitant.closestCell(targets);
+            
+            ///// TODO: path to adjacent position, then chop close tree
+            plan.addFollowPath(habitant, beliefs, target);
+            if (beliefs.WorldInfo.worldTiles.WorldTileInfoAtCoord(target).Tree.Alive)
+                plan.addLastAction(new ChopTree(habitant, target));
+            else
+                plan.addLastAction(new CutTree(habitant, target));
+        }
+        // Search for trees
+        else {
+
+        }
+        return plan;
+    }
+
+    public IncreaseWoodStock(Habitant habitant) : base(habitant) {
+        Importance = 20;
+    }
+}
+
+public class StartAttack : Attitude {
+    public override bool isDesirable(Beliefs beliefs) {
+        return beliefs.EnemiesAreNear.IsActive; // FIXME: Maybe another belief
     }
     
     public override bool isSound(Beliefs beliefs) {
         return true;
     }
-
+    
     public override Plan createPlan(Beliefs beliefs) {
         return plan;
     }
-
-    public IncreaseWoodStock(Habitant habitant) : base(habitant) {}
+    
+    public StartAttack(Habitant habitant) : base(habitant) {}
 }
 
 public class HelpDefense : Attitude {

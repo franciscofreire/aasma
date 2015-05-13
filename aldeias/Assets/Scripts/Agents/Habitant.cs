@@ -73,19 +73,20 @@ public class Habitant : Agent {
         IList<Vector2I> _meeting_point_cells;
         IList<Vector2I> _unclaimed_cells;
         IList<KeyValuePair<Vector2I,Tribe>> _territories;
-        
-        sensorData.Cells = worldInfo.nearbyFreeCells(
-            worldInfo.nearbyCellsInfo(this, 
-                                  out _far_away_cells, 
-                                  out _trees,
-                                  out _stumps,
-                                  out _enemies,
-                                  out _animals,
-                                  out _food,
-                                  out _meeting_point_cells,
-                                  out _unclaimed_cells,
-                                  out _territories));
-        
+
+        sensorData.NearbyCells = worldInfo.nearbyCellsInfo(
+                this, 
+                out _far_away_cells, 
+                out _trees,
+                out _stumps,
+                out _enemies,
+                out _animals,
+                out _food,
+                out _meeting_point_cells,
+                out _unclaimed_cells,
+                out _territories
+        );
+        sensorData.Cells = worldInfo.nearbyFreeCells(sensorData.NearbyCells);
         sensorData.Trees = _trees;
         sensorData.Stumps = _stumps;
         sensorData.Enemies = _enemies;

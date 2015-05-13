@@ -88,10 +88,11 @@ public class Beliefs {
     public TribeHasLowFoodLevel TribeHasLowFoodLevel;
     public TribeHasFewFlags TribeHasFewFlags;
     public AnimalsAreNear AnimalsAreNear;
+    public EnemiesAreNear EnemiesAreNear;
     public NearEnemyTribe NearEnemyTribe;
     public ForestNear ForestNear;
-    public DroppedFood DroppedFood;
-    public DroppedWood DroppedWood;
+    public PickableFood DroppedFood;
+    public PickableWood DroppedWood;
     public HabitantHasLowEnergy HabitantHasLowEnergy;
     public UnclaimedTerritoryIsNear UnclaimedTerritoryIsNear;
     public KnownObstacles KnownObstacles;
@@ -103,6 +104,7 @@ public class Beliefs {
             yield return TribeIsBeingAttacked;
             yield return TribeHasLowFoodLevel;
             yield return TribeHasFewFlags;
+            yield return EnemiesAreNear;
             yield return AnimalsAreNear;
             yield return NearEnemyTribe;
             yield return ForestNear;
@@ -123,10 +125,11 @@ public class Beliefs {
         TribeHasLowFoodLevel=new TribeHasLowFoodLevel();
         TribeHasFewFlags=new TribeHasFewFlags();
         AnimalsAreNear=new AnimalsAreNear();
+        EnemiesAreNear=new EnemiesAreNear();
         NearEnemyTribe=new NearEnemyTribe();
-        ForestNear=new ForestNear();
-        DroppedFood=new DroppedFood();
-        DroppedWood=new DroppedWood();
+        ForestNear=new ForestNear(h);
+        DroppedFood=new PickableFood();
+        DroppedWood=new PickableWood();
         HabitantHasLowEnergy=new HabitantHasLowEnergy();
         UnclaimedTerritoryIsNear=new UnclaimedTerritoryIsNear();
         KnownObstacles=new KnownObstacles(h);
@@ -139,7 +142,7 @@ public class Beliefs {
  */  
 public class NearMeetingPoint : Belief {
     // Belief remains active if the last but one sensor
-    // satisfies the condition (Agent saw meeting point cells
+    // satisfies the condition (Agent saw meeting point cells)
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
         if(p.SensorData.MeetingPointCells.Count != 0) {
@@ -254,6 +257,21 @@ public class AnimalsAreNear : Belief {
     }
 }
 
+public class EnemiesAreNear : Belief {
+    public override void UpdateBelief (Percept p) {
+        base.UpdateBelief(p);
+        if(p.SensorData.Enemies.Count > 0) {
+            RelevantCells = new List<Vector2I>();
+            foreach(Habitant h in p.SensorData.Enemies) {
+                RelevantCells.Add(CoordConvertions.AgentPosToTile(h.pos));
+            }
+            EnableBelief();
+        } else {
+            DisableBelief();
+        }
+    }
+}
+
 public class NearEnemyTribe : Belief {
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
@@ -267,21 +285,40 @@ public class NearEnemyTribe : Belief {
 }
 
 public class ForestNear : Belief {
+    public Matrix<Tree> Forest;
+    public IEnumerable<Vector2I> AvailableTrees {
+        get {
+            return Forest.AllCoords.Where(c=>Forest[c]!=null);
+        }
+    }
+
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
         if(p.SensorData.Trees.Count > 0) {
             RelevantCells = new List<Vector2I>();
             foreach(Tree t in p.SensorData.Trees) {
+                Vector2I c = t.Pos;
+                Forest[c] = t;
                 RelevantCells.Add(t.Pos);
             }
             EnableBelief();
         } else {
             DisableBelief();
         }
+        
+        // Update with depleted trees
+        foreach(var c in p.SensorData.NearbyCells) {
+            if (!p.Habitant.worldInfo.worldTiles.WorldTileInfoAtCoord(c).HasTree)
+                Forest[c] = null;
+        }
+    }
+    
+    public ForestNear(Habitant h) {
+        Forest = new Matrix<Tree>(h.worldInfo.Size);
     }
 }
 
-public class DroppedFood : Belief {
+public class PickableFood : Belief {
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
         if(p.SensorData.Food.Count > 0) {
@@ -297,7 +334,7 @@ public class DroppedFood : Belief {
     }
 }
 
-public class DroppedWood : Belief {
+public class PickableWood : Belief {
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
         if(p.SensorData.Stumps.Count > 0) {
