@@ -232,7 +232,7 @@ public class IncreaseFoodStock : Attitude {
 public class IncreaseWoodStock : Attitude {
     public override bool isDesirable(Beliefs beliefs) {
         return beliefs.TribeHasFewFlags.IsActive
-            && habitant.CanCarryWeight(Tree.WOOD_WEIGHT);
+            && habitant.CanCarryWeight(Tree.WoodChopQuantity.Weight);
         //return false;
     }
     
@@ -276,7 +276,7 @@ public class IncreaseWoodStock : Attitude {
 
 public class DropResources : Attitude {
     public override bool isDesirable(Beliefs beliefs) {
-        return !habitant.CanCarryWeight(Tree.WOOD_WEIGHT)
+        return !habitant.CanCarryWeight(Tree.WoodChopQuantity.Weight)
             && !habitant.CanCarryWeight(Animal.FOOD_WEIGHT);
     }
     

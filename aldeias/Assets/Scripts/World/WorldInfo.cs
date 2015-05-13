@@ -215,8 +215,7 @@ public partial class WorldInfo : MonoBehaviour {
 							if (num_trees-- > 0) {
 								AddTree(new Tree(
                                     this,
-                                    new Vector2I(x_start + x2, z_start + z2),
-                                    new WoodQuantity(100)));
+                                    new Vector2I(x_start + x2, z_start + z2)));
 							} else {
 								break;
 							}
@@ -303,8 +302,7 @@ public partial class WorldInfo : MonoBehaviour {
 				if(Mathf.PerlinNoise(x*0.1f,z*0.1f) > 0.5) {
 					AddTree(new Tree(
                         this,
-                        new Vector2I(x,z),
-                        new WoodQuantity(100)));
+                        new Vector2I(x,z)));
 				}
 			}
 		}
