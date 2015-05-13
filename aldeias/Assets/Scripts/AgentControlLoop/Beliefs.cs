@@ -97,6 +97,7 @@ public class Beliefs {
     public UnclaimedTerritoryIsNear UnclaimedTerritoryIsNear;
     public KnownObstacles KnownObstacles;
     public TribeTerritories TribeTerritories;
+    public CellSeenOrders CellSeenOrders;
 
     public IEnumerable<Belief> AllBeliefs {
         get {
@@ -114,6 +115,7 @@ public class Beliefs {
             yield return UnclaimedTerritoryIsNear;
             yield return KnownObstacles;
             yield return TribeTerritories;
+            yield return CellSeenOrders;
         }
     }
 
@@ -134,6 +136,7 @@ public class Beliefs {
         UnclaimedTerritoryIsNear=new UnclaimedTerritoryIsNear();
         KnownObstacles=new KnownObstacles(h);
         TribeTerritories=new TribeTerritories(h);
+        CellSeenOrders=new CellSeenOrders(h);
     }
 }
 
@@ -433,6 +436,27 @@ public class TribeTerritories : Belief {
         EnableBelief();
         var size = h.worldInfo.Size;
         Territories = new Matrix<Tribe>(size);
+    }
+}
+
+public class CellSeenOrders : Belief {
+    public Matrix<int> LastSeenOrders;
+    public int CurrentOrder {
+        get; 
+        private set;
+    }
+    private readonly int NotSeenBeforeOrder = int.MinValue;
+    public CellSeenOrders(Habitant h) {
+        CurrentOrder = 0;
+        LastSeenOrders = new Matrix<int>(h.worldInfo.Size, NotSeenBeforeOrder);
+    }
+    public override void UpdateBelief (Percept p) {
+        base.UpdateBelief(p);
+        CurrentOrder += 1;
+        //Mark each seen cell with CurrentOrder.
+        foreach(var seenCoord in p.SensorData.Cells) {//FIXME: Make sure these are all the seen cells.
+            LastSeenOrders[seenCoord] = CurrentOrder;
+        }
     }
 }
 

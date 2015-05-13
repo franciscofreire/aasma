@@ -107,8 +107,30 @@ public class Explore : Attitude {
     }
 
     public override Plan createPlan(Beliefs beliefs) {
+        //TODO: - Go somewhere we haven't been before.
+        //TODO: - Prefer to go to places that are least known.
+        //TODO: --- Go to a place we haven't visited for a long time.
+        //TODO: - Try not to travel nor too little nor too much.
+        
+        CellCoords habitantCoords = CellCoords.ForHabitant(habitant);
+
+        /*
+        //Select the closest cell that is not an obstacle and that has the minimum
+        IEnumerable<Vector2I> freeCellsByCloseness = habitantCoords.CloserFirst
+            .Where(c=>beliefs.KnownObstacles.ObstacleMap[c.x,c.y]!=KnownObstacles.ObstacleMapEntry.Obstacle);
+        
+        Vector2I target = freeCellsByCloseness.Take(1)//FIXME: The number of cells to consider here is hardcoded.
+            .OrderBy(c=>beliefs.CellSeenOrders.LastSeenOrders[c])
+                .First();
+        
+        Plan p = new Plan(this);
+        p.addFollowPath(habitant, Pathfinder.PathInMapFromTo(beliefs.KnownObstacles.ObstacleMap, habitantCoords.Center, target));
+        
+        return p;*/
+        /**/
         plan.add(Action.WalkRandomly(habitant));
         return plan;
+        /**/
     }
     
     public Explore(Habitant habitant) : base(habitant) {
