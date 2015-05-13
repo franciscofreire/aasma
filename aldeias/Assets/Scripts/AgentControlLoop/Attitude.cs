@@ -114,7 +114,7 @@ public class Explore : Attitude {
 
         /*
         //Select the closest cell that is not an obstacle and that has the minimum
-        HabitantCellCoords habitantCoords = CellCoords.ForHabitant(habitant);
+        HabitantCellCoords habitantCoords = new CellCoordsAround(habitant.pos, habitant.worldInfo);
         IEnumerable<Vector2I> nearbycellsNotObstacles = habitantCoords.CoordUntilDistance(5)
             .Where(c=>beliefs.KnownObstacles.ObstacleMap[c.x,c.y]!=KnownObstacles.ObstacleMapEntry.Obstacle);
         
