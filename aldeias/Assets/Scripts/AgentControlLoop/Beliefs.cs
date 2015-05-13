@@ -399,19 +399,19 @@ public class UnclaimedTerritoryIsNear : Belief {
 
 public class KnownObstacles : Belief {
     public enum ObstacleMapEntry { Obstacle, Free, Unknown };
-    public ObstacleMapEntry[,] ObstacleMap;
+    public Matrix<ObstacleMapEntry> ObstacleMap;
     public bool CoordIsFree(Vector2I coord) {
-        return ObstacleMap[coord.x,coord.y]!=ObstacleMapEntry.Obstacle;
+        return ObstacleMap[coord]!=ObstacleMapEntry.Obstacle;
     }
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
         //Update obstacle positions.
         foreach(var obsCoord in SensorDataObstacles(p.SensorData)) {
-            ObstacleMap[obsCoord.x, obsCoord.y] = ObstacleMapEntry.Obstacle;
+            ObstacleMap[obsCoord] = ObstacleMapEntry.Obstacle;
         }
         //Update free positions.
         foreach(var freeCoord in p.SensorData.Cells.Except(SensorDataObstacles(p.SensorData))) {
-            ObstacleMap[freeCoord.x, freeCoord.y] = ObstacleMapEntry.Free;
+            ObstacleMap[freeCoord] = ObstacleMapEntry.Free;
         }
     }
     public KnownObstacles(Habitant h) {
@@ -420,12 +420,7 @@ public class KnownObstacles : Belief {
     }
     private void CreateObstacleMapForHabitant(Habitant h) {
         var mapSize = h.worldInfo.Size;
-        ObstacleMap = new ObstacleMapEntry[mapSize.x,mapSize.y];
-        foreach(var x in Enumerable.Range(0,mapSize.x)) {
-            foreach(var y in Enumerable.Range(0,mapSize.y)) {
-                ObstacleMap[x,y] = ObstacleMapEntry.Unknown;
-            }
-        }
+        ObstacleMap = new Matrix<ObstacleMapEntry>(mapSize,ObstacleMapEntry.Unknown);
     }
     private IEnumerable<Vector2I> SensorDataObstacles(SensorData sensorData) {
         return sensorData.Trees.Concat(sensorData.Stumps)

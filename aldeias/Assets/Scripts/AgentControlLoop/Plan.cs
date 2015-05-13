@@ -46,14 +46,14 @@ public class Plan {
         Path path = Pathfinder.PathInMapFromTo(beliefs.KnownObstacles.ObstacleMap, 
                                                CoordConvertions.AgentPosToTile(h.pos), 
                                                target);
-        //try {
+        try {
             for(int i=1; i<path.PathPoints.Count; i++) {
                 add(new Walk(h, path.PathPoints[i]));
             }
-        //}
-        //catch (System.Exception) {
-        //    Debug.Log("AAAAAAAAAAAa");
-        //}
+        }
+        catch (System.Exception) {
+            Debug.Log("AAAAAAAAAAAa");
+        }
 }
 
 // Society rule: When you encounter a friendly agent,
@@ -93,19 +93,19 @@ public class Pathfinder {
     class State {
         public Vector2I Target;
         public List<Vector2I> Path;
-        public KnownObstacles.ObstacleMapEntry[,] Map;
+        public Matrix<KnownObstacles.ObstacleMapEntry> Map;
         public Vector2I MapSize { 
             get {
-                return new Vector2I(Map.GetLength(0),Map.GetLength(1));
+                return Map.Size;
             }
         }
-        public State(Vector2I from, KnownObstacles.ObstacleMapEntry[,] map, Vector2I target) {
+        public State(Vector2I from, Matrix<KnownObstacles.ObstacleMapEntry> map, Vector2I target) {
             Target=target;
             Path=new List<Vector2I>();
             Path.Add(from);
             Map=map;
         }
-        public State(List<Vector2I> path, KnownObstacles.ObstacleMapEntry[,] map, Vector2I nextPos, Vector2I target) {
+        public State(List<Vector2I> path, Matrix<KnownObstacles.ObstacleMapEntry> map, Vector2I nextPos, Vector2I target) {
             Target=target;
             Path=new List<Vector2I>(path);
             Path.Add(nextPos);
@@ -133,7 +133,7 @@ public class Pathfinder {
                 coord.y >= 0 && coord.y < MapSize.y;
         }
         private bool coordIsFree(Vector2I coord) {
-            return Map[coord.x,coord.y] != KnownObstacles.ObstacleMapEntry.Obstacle;
+            return Map[coord] != KnownObstacles.ObstacleMapEntry.Obstacle;
         }
         public bool IsFinal() {
             return Path[Path.Count-1] == Target;
@@ -149,7 +149,7 @@ public class Pathfinder {
                 return Path[Path.Count-1].DistanceTo(Target);
             }
         }
-        public static State FirstState(Vector2I from, KnownObstacles.ObstacleMapEntry[,] map, Vector2I to) {
+        public static State FirstState(Vector2I from, Matrix<KnownObstacles.ObstacleMapEntry> map, Vector2I to) {
             return new State(from, map, to);
         }
     }
@@ -158,9 +158,9 @@ public class Pathfinder {
         public PQueueNode(State s) { S = s; }
     }
 
-    public static Path PathInMapFromTo(KnownObstacles.ObstacleMapEntry[,] map, Vector2I from, Vector2I to) {
+    public static Path PathInMapFromTo(Matrix<KnownObstacles.ObstacleMapEntry> map, Vector2I from, Vector2I to) {
         State initialState = State.FirstState(from, map, to);
-        IPriorityQueue<PQueueNode> openStates = new HeapPriorityQueue<PQueueNode>(map.GetLength(0)*map.GetLength(1)*2);
+        IPriorityQueue<PQueueNode> openStates = new HeapPriorityQueue<PQueueNode>(map.Size.x*map.Size.y*2);
         PQueueNode init = new PQueueNode(initialState);
         openStates.Enqueue(init, initialState.Cost+initialState.RemainingCostEstimate);
         HashSet<Vector2I> closed = new HashSet<Vector2I>(); 

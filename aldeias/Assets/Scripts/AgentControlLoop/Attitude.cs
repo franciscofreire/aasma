@@ -167,7 +167,7 @@ public class ExpandTribe : Attitude {
 
     public override Plan createPlan(Beliefs beliefs) {
         IEnumerable<Vector2I> targets = beliefs.TribeTerritories.UnclaimedTerritories
-            .Where(t=>beliefs.KnownObstacles.ObstacleMap[t.x,t.y]!=KnownObstacles.ObstacleMapEntry.Obstacle);
+            .Where(t=>beliefs.KnownObstacles.ObstacleMap[t]!=KnownObstacles.ObstacleMapEntry.Obstacle);
         Vector2I target = habitant.closestCell(targets);
 
         plan.addFollowPath(habitant, beliefs, target);
