@@ -129,10 +129,16 @@ public class DropTree : HabitantAction {
 
 public class PlaceFlag : HabitantAction {
 	public override void apply () {
+        if (world.worldTiles.WorldTileInfoAtCoord(target).tribeTerritory.IsClaimed)
+            return;
+
         Flag? flag = habitant.tribe.FlagMachine.MakeFlag();
-		world.worldTiles.WorldTileInfoAtCoord(target).tribeTerritory.Flag = flag;
-        //TODO: Dec cellcount of enemy
-        habitant.tribe.cell_count++;
+        if (flag != null) {
+            world.worldTiles.WorldTileInfoAtCoord(target).tribeTerritory.Flag = flag;
+
+            //TODO: Dec cellcount of enemy
+            habitant.tribe.cell_count++;
+        }
 	}
 	public PlaceFlag(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }

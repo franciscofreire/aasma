@@ -119,13 +119,12 @@ public class ExpandTribe : Attitude {
     }
     
     public override bool isSound(Beliefs beliefs) {
-        IList<Vector2I> targets = beliefs.UnclaimedTerritoryIsNear.RelevantCells;
-        foreach (Vector2I target in targets) {
-            if (target == plan.LastAction.target
-                && !beliefs.WorldInfo.worldTiles.WorldTileInfoAtCoord(target).tribeTerritory.IsClaimed)
-                return true;
-        }
-        return false;
+        // If the target was claimed in the meantime, you're screwed
+        Vector2I target = plan.LastAction.target;
+        return !beliefs.WorldInfo.worldTiles.WorldTileInfoAtCoord(plan.LastAction.target)
+                       .tribeTerritory.IsClaimed
+               ;
+               //&& plan.ensureFreeCell(habitant, beliefs, plan.peek().target);
     }
 
     public override Plan createPlan(Beliefs beliefs) {
@@ -134,13 +133,10 @@ public class ExpandTribe : Attitude {
             .Concat(beliefs.TribeTerritories.UnclaimedTerritories)
             .Where(t=>beliefs.KnownObstacles.ObstacleMap[t.x,t.y]!=KnownObstacles.ObstacleMapEntry.Obstacle);
         Vector2I target = habitant.closestCell(targets);
-        //Vector2I target = targets.First();//FIXME: what if there is no cell left?
-        //FIXME: select a free or unknown cell adjacent to target as the cell we want to go to.
 
-        Path pathToTarget = Pathfinder.PathInMapFromTo(beliefs.KnownObstacles.ObstacleMap, 
-                                                              CoordConvertions.AgentPosToTile(habitant.pos), 
-                                                              target);
-        plan.addFollowPath(habitant, pathToTarget);
+        // FIXME: what if there is no cell left?
+
+        plan.addFollowPath(habitant, beliefs, target);
         plan.addLastAction(new PlaceFlag(habitant, target));
 
         return plan;

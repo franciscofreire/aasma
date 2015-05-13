@@ -25,6 +25,10 @@ public class Plan {
         plan.Clear();
     }
 
+    public Action peek() {
+        return plan.Peek();
+    }
+
     public Action head() {
         return plan.Dequeue();
     }
@@ -38,10 +42,37 @@ public class Plan {
         LastAction = a;
     }
 
-    public void addFollowPath(Habitant h, Path path) {
+    public void addFollowPath(Habitant h, Beliefs beliefs, Vector2I target) {
+        Path path = Pathfinder.PathInMapFromTo(beliefs.KnownObstacles.ObstacleMap, 
+                                               CoordConvertions.AgentPosToTile(h.pos), 
+                                               target);
         for(int i=1; i<path.PathPoints.Count; i++) {
             add(new Walk(h, path.PathPoints[i]));
         }
+    }
+    
+    // Society rule: When you encounter a friendly agent,
+    // move to a cell near you and recalculate pathfinding
+    public bool ensureFreeCell(Habitant habitant, Beliefs beliefs, Vector2I nextMove) {
+        if (beliefs.WorldInfo.worldTiles.WorldTileInfoAtCoord(nextMove).HasAgent) {
+            // Find a free near cell that isn't nextMove
+            bool candidateAvailable = false;
+            IList<Vector2I> candidates = habitant.sensorData.AdjacentCells;
+            foreach (Vector2I candidate in candidates) {
+                if (candidate != nextMove) {
+                    head(); // Trash the invalid move
+                    addFollowPath(habitant, beliefs, nextMove);
+                    add(new Walk(habitant, candidate));
+                    
+                    candidateAvailable = true;
+                    break;
+                }
+            }
+            if (!candidateAvailable)
+                return false; // Couldn't apply society rule
+        }
+
+        return true;
     }
 }
 
@@ -150,7 +181,6 @@ public class Pathfinder {
                     throw;
                 }
             }
-            //FIXME: This assumes that the search domain is a tree. But our search domain is a cyclic graph.
         }
         return null;
     }
