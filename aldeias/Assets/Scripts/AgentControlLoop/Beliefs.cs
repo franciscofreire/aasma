@@ -111,7 +111,7 @@ public class Beliefs {
     public AnimalsAreNear AnimalsAreNear;
     public EnemiesAreNear EnemiesAreNear;
     public NearEnemyTribe NearEnemyTribe;
-    public ForestNear ForestNear;
+    public KnownWood KnownWood;
     public PickableFood DroppedFood;
     public PickableWood DroppedWood;
     public HabitantHasLowEnergy HabitantHasLowEnergy;
@@ -129,7 +129,7 @@ public class Beliefs {
             yield return EnemiesAreNear;
             yield return AnimalsAreNear;
             yield return NearEnemyTribe;
-            yield return ForestNear;
+            yield return KnownWood;
             yield return DroppedFood;
             yield return DroppedWood;
             yield return HabitantHasLowEnergy;
@@ -150,7 +150,7 @@ public class Beliefs {
         AnimalsAreNear=new AnimalsAreNear();
         EnemiesAreNear=new EnemiesAreNear();
         NearEnemyTribe=new NearEnemyTribe();
-        ForestNear=new ForestNear(h);
+        KnownWood=new KnownWood(h);
         DroppedFood=new PickableFood();
         DroppedWood=new PickableWood();
         HabitantHasLowEnergy=new HabitantHasLowEnergy();
@@ -310,37 +310,32 @@ public class NearEnemyTribe : Belief {
     }   
 }
 
-public class ForestNear : Belief {
-    public Matrix<Tree> Forest;
-    public IEnumerable<Vector2I> AvailableTrees {
+public class KnownWood : Belief {
+    public struct KnownWoodEntry {
+        WoodQuantity Wood;
+        bool Alive;
+        public KnownWoodEntry(WoodQuantity wood, bool alive) {
+            this.Wood = wood;
+            this.Alive = alive;
+        }
+    }
+    public Matrix<KnownWoodEntry?> Map;
+    public IEnumerable<Vector2I> CoordsWithWood {
         get {
-            return Forest.AllCoords.Where(c=>Forest[c]!=null);
+            return Map.AllCoords.Where(c=>Map[c]!=null);
         }
     }
 
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
-        if(p.SensorData.Trees.Count > 0) {
-            RelevantCells = new List<Vector2I>();
-            foreach(Tree t in p.SensorData.Trees) {
-                Vector2I c = t.Pos;
-                Forest[c] = t;
-                RelevantCells.Add(t.Pos);
-            }
-            EnableBelief();
-        } else {
-            DisableBelief();
-        }
-        
-        // Update with depleted trees
-        foreach(var c in p.SensorData.NearbyCells) {
-            if (!p.Habitant.worldInfo.worldTiles.WorldTileInfoAtCoord(c).HasTree)
-                Forest[c] = null;
+
+        foreach(Tree t in p.SensorData.Trees.Concat(p.SensorData.Stumps)) {
+            Map[t.Pos] = t.HasWood ? new KnownWoodEntry(t.Wood, t.Alive) : (KnownWoodEntry?)null;
         }
     }
     
-    public ForestNear(Habitant h) {
-        Forest = new Matrix<Tree>(h.worldInfo.Size);
+    public KnownWood(Habitant h) {
+        Map = new Matrix<KnownWoodEntry?>(h.worldInfo.Size);
     }
 }
 
@@ -403,9 +398,11 @@ public class UnclaimedTerritoryIsNear : Belief {
 }
 
 public class KnownObstacles : Belief {
-    public ObstacleMapEntry[,] ObstacleMap;
-
     public enum ObstacleMapEntry { Obstacle, Free, Unknown };
+    public ObstacleMapEntry[,] ObstacleMap;
+    public bool CoordIsFree(Vector2I coord) {
+        return ObstacleMap[coord.x,coord.y]!=ObstacleMapEntry.Obstacle;
+    }
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
         //Update obstacle positions.
@@ -431,7 +428,9 @@ public class KnownObstacles : Belief {
         }
     }
     private IEnumerable<Vector2I> SensorDataObstacles(SensorData sensorData) {
-        return sensorData.Trees.Concat(sensorData.Stumps).Select(t=>t.Pos);
+        return sensorData.Trees.Concat(sensorData.Stumps)
+            .Where(t=>t.HasWood)
+                .Select(t=>t.Pos);
     }
 }
 

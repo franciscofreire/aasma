@@ -242,36 +242,18 @@ public class IncreaseWoodStock : Attitude {
     }
     
     public override Plan createPlan(Beliefs beliefs) {
-        IEnumerable<Vector2I> targets = beliefs.ForestNear.AvailableTrees
-            ;
-            //.Where(t=>beliefs.KnownObstacles.ObstacleMap[t.x,t.y]!=KnownObstacles.ObstacleMapEntry.Obstacle);
+        IEnumerable<Vector2I> targets = beliefs.KnownWood.CoordsWithWood
+            .Where (wc=>new CellCoordsAround(wc,habitant.worldInfo).CoordsAtDistance(1).Any(adj=>beliefs.KnownObstacles.CoordIsFree(adj)));
 
         // Do we know about any trees?
-        if (targets.Count() > 0) {
-            Vector2I target = Vector2I.INVALID;
-            foreach(Vector2I t in targets) {
-                if (!habitant.DepletedTree(t)) {
-                    target = t;
-                    break;
-                }
-            }
-            //Vector2I target = habitant.closestCell(targets);
+        Vector2I target = targets.DefaultIfEmpty(Vector2I.INVALID).First();
+
+        if(target!=Vector2I.INVALID) {
             CellCoordsAround cca = new CellCoordsAround(target, habitant.worldInfo);
-            Vector2I neighbor = Vector2I.INVALID;
-            try {
-                neighbor = cca.CoordsAtDistance(1).Where(
-                    c => {
-                        return beliefs.KnownObstacles.ObstacleMap[c.x, c.y] != KnownObstacles.ObstacleMapEntry.Obstacle;
-                    }
-                ).First();
-            
-            }
-            catch (System.Exception) {
-                Debug.Log("bBBBBBBBBBBBBB");
-                return plan;
-            }
+            var freeNeighbors = cca.CoordsAtDistance(1).Where(adj=>beliefs.KnownObstacles.CoordIsFree(adj));
+            Vector2I neighbor = freeNeighbors.First();
         
-        plan.addFollowPath(habitant, beliefs, neighbor);
+            plan.addFollowPath(habitant, beliefs, neighbor);
 
             if (habitant.AliveTree(target))
                 plan.add(new CutTree(habitant, target));

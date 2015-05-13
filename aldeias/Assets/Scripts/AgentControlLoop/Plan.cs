@@ -46,14 +46,14 @@ public class Plan {
         Path path = Pathfinder.PathInMapFromTo(beliefs.KnownObstacles.ObstacleMap, 
                                                CoordConvertions.AgentPosToTile(h.pos), 
                                                target);
-        try {
+        //try {
             for(int i=1; i<path.PathPoints.Count; i++) {
                 add(new Walk(h, path.PathPoints[i]));
             }
-        }
-        catch (System.Exception) {
-            Debug.Log("AAAAAAAAAAAa");
-        }
+        //}
+        //catch (System.Exception) {
+        //    Debug.Log("AAAAAAAAAAAa");
+        //}
 }
 
 // Society rule: When you encounter a friendly agent,
