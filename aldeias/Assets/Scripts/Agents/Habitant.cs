@@ -8,8 +8,8 @@ using System.Collections.Generic;
 //    He can pickup Food if he wants to.
 //    He can also pickup Wood.
 public class Habitant : Agent {
-    private AgentImplementation agentImplReactive;
-    private AgentImplementation agentImplDeliberative;
+    public readonly HabitantReactive agentImplReactive;
+    public readonly HabitantDeliberative agentImplDeliberative;
 
 	public Tribe tribe;
 
@@ -57,8 +57,8 @@ public class Habitant : Agent {
 		this.affinity = affinity;
 		this.isLeader = false;
         this.tribe = tribe;
-        agentImplReactive = new HabitantReactive(this);
-        agentImplDeliberative = new HabitantDeliberative(this);
+        this.agentImplReactive = new HabitantReactive(this);
+        this.agentImplDeliberative = new HabitantDeliberative(this);
 
         worldInfo.AddHabitantDeletedListener(removeFromWorldInfo);
 	}

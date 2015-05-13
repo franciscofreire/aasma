@@ -12,11 +12,11 @@ public class HabitantQuantitiesRepresentation : MonoBehaviour {
     public int WoodCount;
     public int EnergyCount;
 
-    public void SetHabitantWithMaterial(Habitant h) {
+    public void SetHabitant(Habitant h) {
         Habitant = h;
     }
 
-    public void UpdateModels() {
+    public void UpdateRepresentation() {
         FoodCount = Habitant.carriedFood.Count;
         var relativeFood = Habitant.carriedFood.Count / 100f;
         FoodBarModel.transform.localScale = new Vector3(1,relativeFood,1);
