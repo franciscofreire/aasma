@@ -6,13 +6,13 @@ public class AgentSpawner : Layer {
 	public GameObject habitantModel, warriorModel, tombstoneModel,
                       animalModel, foodModel;
 
-    public HabitantQuantitiesRepresentation HabitantPrefab;
+    public HabitantRepresentation HabitantPrefab;
     public Material HabitantMaterialPrefab;
 
 	public IDictionary<Habitant, GameObject> list_habitants = 
 		new Dictionary<Habitant, GameObject>();
-    public IDictionary<Habitant, HabitantQuantitiesRepresentation> habResReps = 
-        new Dictionary<Habitant, HabitantQuantitiesRepresentation>();
+    public IDictionary<Habitant, HabitantRepresentation> habReps = 
+        new Dictionary<Habitant, HabitantRepresentation>();
 	public IDictionary<Animal, GameObject> list_animals = 
 		new Dictionary<Animal, GameObject>();
 
@@ -44,37 +44,44 @@ public class AgentSpawner : Layer {
         list_agent_materials.Add("Red",  mat_tribe_B);
 
 		foreach (Habitant h in worldInfo.AllHabitants) {
-            GameObject agentModel = (GameObject) Instantiate(
-				habitantModel,
-				AgentPosToVec3(h.pos),
-				Quaternion.identity);
-			agentModel.transform.parent = this.transform;
-			agentModel.SetActive(true);
-
-            // Assign materials to habitants
-            agentModel.transform.Find("Body").renderer.sharedMaterial =
-                list_agent_materials[h.tribe.id];
-            agentModel.transform.Find("Orientation").renderer.sharedMaterial =
-                list_agent_materials[h.tribe.id];
-
-            Transform wood = agentModel.transform.Find("Wood");
-            wood.GetComponent<Renderer>().enabled = false;
-
-            HabitantQuantitiesRepresentation habGameObj = ((GameObject)Instantiate(
-                HabitantPrefab.gameObject,
-                AgentPosToVec3(h.pos),
-                Quaternion.identity)).GetComponent<HabitantQuantitiesRepresentation>();
-            habGameObj.transform.parent = agentModel.transform;
-            habGameObj.SetHabitantWithMaterial(h);
-            habResReps.Add(h, habGameObj);
-            
-			list_habitants.Add(h, agentModel);
+            CreateHabitantRepr(h);
 		}
 
 		foreach (Animal a in worldInfo.AllAnimals) {
             CreateAnimalRepr(a);
 		}
 	}
+
+    private void CreateHabitantRepr(Habitant h) {
+        //Instantiate the whole agent model.
+        GameObject agentModel = (GameObject) Instantiate(
+            habitantModel,
+            AgentPosToVec3(h.pos),
+            Quaternion.identity);
+        agentModel.transform.parent = this.transform;
+        agentModel.SetActive(true);
+        
+        // Assign materials to habitants.
+        agentModel.transform.Find("Body").renderer.sharedMaterial =
+            list_agent_materials[h.tribe.id];
+        agentModel.transform.Find("Orientation").renderer.sharedMaterial =
+            list_agent_materials[h.tribe.id];
+
+        //Hide the carried wood representation.
+        Transform wood = agentModel.transform.Find("Wood");
+        wood.GetComponent<Renderer>().enabled = false;
+
+        //Instantiate, initialize and attach the habitant representation to the agent model.
+        HabitantRepresentation habGameObj = ((GameObject)Instantiate(
+            HabitantPrefab.gameObject,
+            AgentPosToVec3(h.pos),
+            Quaternion.identity)).GetComponent<HabitantRepresentation>();
+        habGameObj.transform.parent = agentModel.transform;
+        habGameObj.SetHabitant(h);
+        habReps.Add(h, habGameObj);
+        
+        list_habitants.Add(h, agentModel);
+    }
 
     private void CreateAnimalRepr(Animal a) {
         GameObject agentModel = (GameObject) Instantiate(
@@ -114,7 +121,7 @@ public class AgentSpawner : Layer {
 			g.transform.localPosition = AgentPosToVec3(h.pos);
 			g.transform.localRotation = h.orientation.ToQuaternion();
             if(h.Alive) {
-                habResReps[h].UpdateModels();
+                habReps[h].UpdateRepresentation();
             }
             else if(h.OldTombstone) { // Remove old tombstone
                 Destroy(list_habitants[h]);
@@ -155,7 +162,7 @@ public class AgentSpawner : Layer {
     }
 
     public void RemoveHabitantResRep(Habitant h) {
-        Destroy(habResReps[h].gameObject);
-        habResReps.Remove(h);
+        Destroy(habReps[h].gameObject);
+        habReps.Remove(h);
     }
 }
