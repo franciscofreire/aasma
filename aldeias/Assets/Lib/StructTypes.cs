@@ -39,6 +39,10 @@ public struct Vector2I : IEquatable<Vector2I> {
 		return !(v1 == v2);
 	}
 
+    public Vector2I TimesScalar(int scalar) {
+        return new Vector2I(x*scalar, y*scalar);
+    }
+
     public bool isAdjacent(Vector2I v) {
         //sqrt((x0-x1)^2 + (y0-y1)^2)
         int dx = Math.Abs(this.x - v.x);

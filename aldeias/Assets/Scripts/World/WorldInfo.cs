@@ -427,26 +427,7 @@ public partial class WorldInfo : MonoBehaviour {
         }
 
 		return cells;
-	}
-
-    public Vector2I neighborCell(Vector2I cell) {
-        Vector2I candidate = Vector2I.INVALID;
-
-        candidate = new Vector2I(cell.x + 1, cell.y);
-        if (isInsideWorld(candidate) && worldTiles.WorldTileInfoAtCoord(candidate).IsEmpty)
-            return candidate;
-        candidate = new Vector2I(cell.x - 1, cell.y);
-        if (isInsideWorld(candidate) && worldTiles.WorldTileInfoAtCoord(candidate).IsEmpty)
-            return candidate;
-        candidate = new Vector2I(cell.x, cell.y + 1);
-        if (isInsideWorld(candidate) && worldTiles.WorldTileInfoAtCoord(candidate).IsEmpty)
-            return candidate;
-        candidate = new Vector2I(cell.x, cell.y - 1);
-        if (isInsideWorld(candidate) && worldTiles.WorldTileInfoAtCoord(candidate).IsEmpty)
-            return candidate;
-
-        return candidate;
-    }
+	}   
 
 	public IList<Vector2I> nearbyFreeCells(IList<Vector2I> cells) {
 		IList<Vector2I> freeCells = new List<Vector2I>();

@@ -10,6 +10,7 @@ public class Attitudes {
     public MaintainEnergy MaintainEnergy;
     public IncreaseFoodStock IncreaseFoodStock;
     public IncreaseWoodStock IncreaseWoodStock;
+    public DropResources DropResources;
     public StartAttack StartAttack;
     // TODO: StartDefense
     public HelpAttack HelpAttack;
@@ -22,6 +23,7 @@ public class Attitudes {
         MaintainEnergy = new MaintainEnergy(h);
         IncreaseFoodStock = new IncreaseFoodStock(h);
         IncreaseWoodStock = new IncreaseWoodStock(h);
+        DropResources = new DropResources(h);
         StartAttack = new StartAttack(h);
         HelpAttack = new HelpAttack(h);
         HelpDefense = new HelpDefense(h);
@@ -35,6 +37,7 @@ public class Attitudes {
             yield return MaintainEnergy;
             yield return IncreaseFoodStock;
             yield return IncreaseWoodStock;
+            yield return DropResources;
             yield return StartAttack;
             yield return HelpAttack;
             yield return HelpDefense;
@@ -62,8 +65,8 @@ public abstract class Attitude {
     public abstract bool isSound(Beliefs beliefs);
     public Plan updatePlan(Beliefs beliefs) {
         this.plan.clear();
-        createPlan(beliefs);
-        return plan;
+        this.plan = createPlan(beliefs);
+        return this.plan;
     }
     public abstract Plan createPlan(Beliefs beliefs);
 }
@@ -117,8 +120,28 @@ public class Explore : Attitude {
             plan.addFollowPath(habitant, beliefs, target);
         } else
         */
-            plan.add(Action.WalkRandomly(habitant));
 
+        //TODO: - Go somewhere we haven't been before.
+        //TODO: - Prefer to go to places that are least known.
+        //TODO: --- Go to a place we haven't visited for a long time.
+        //TODO: - Try not to travel nor too little nor too much.
+
+        /*
+        //Select the closest cell that is not an obstacle and that has the minimum
+        HabitantCellCoords habitantCoords = CellCoords.ForHabitant(habitant);
+        IEnumerable<Vector2I> nearbycellsNotObstacles = habitantCoords.CoordUntilDistance(5)
+            .Where(c=>beliefs.KnownObstacles.ObstacleMap[c.x,c.y]!=KnownObstacles.ObstacleMapEntry.Obstacle);
+        
+        Vector2I target = nearbycellsNotObstacles//.Take(1)//FIXME: The number of cells to consider here is hardcoded.
+            .OrderBy(c=>beliefs.CellSeenOrders.LastSeenOrders[c])
+                .First();
+        
+        Plan p = new Plan(this);
+        p.addFollowPath(habitant, Pathfinder.PathInMapFromTo(beliefs.KnownObstacles.ObstacleMap, habitantCoords.Center, target));
+        
+        return p;*/
+
+        plan.add(Action.WalkRandomly(habitant));
         return plan;
     }
     
@@ -226,7 +249,7 @@ public class IncreaseWoodStock : Attitude {
         // Do we know about any trees?
         if (targets.Count() > 0) {
             Vector2I target = habitant.closestCell(targets);
-            Vector2I neighbor = beliefs.WorldInfo.neighborCell(target);
+            Vector2I neighbor = ;
 
             if (neighbor == Vector2I.INVALID) {
                 return plan; // The mythical tree of unreachability
@@ -249,6 +272,42 @@ public class IncreaseWoodStock : Attitude {
     public IncreaseWoodStock(Habitant habitant) : base(habitant) {
         Importance = 20;
     }
+}
+
+public class DropResources : Attitude {
+    public override bool isDesirable(Beliefs beliefs) {
+        return !habitant.CanCarryWeight(Tree.WOOD_WEIGHT)
+            && !habitant.CanCarryWeight(Animal.FOOD_WEIGHT);
+    }
+    
+    public override bool isSound(Beliefs beliefs) {
+        return true;
+    }
+    
+    public override Plan createPlan(Beliefs beliefs) {
+        /*
+        IEnumerable<Vector2I> targets = beliefs.
+
+        if (targets.Count() > 0) {
+            Vector2I target = habitant.closestCell(targets);
+            Vector2I neighbor = ;
+            
+            if (neighbor == Vector2I.INVALID) {
+                return plan; // The mythical tree of unreachability
+            }
+            
+            plan.addFollowPath(habitant, beliefs, neighbor);
+            
+            if (habitant.AliveTree(target))
+                plan.addLastAction(new CutTree(habitant, target));
+            
+            plan.addLastAction(new ChopTree(habitant, target));
+        }
+        */
+        return plan;
+    }
+    
+    public DropResources(Habitant habitant) : base(habitant) {}
 }
 
 public class StartAttack : Attitude {

@@ -6,6 +6,11 @@ public class Matrix<T> {
     public Matrix(Vector2I size) {
         elems = new T[size.x,size.y];
     }
+    public Matrix(Vector2I size, T initialElem) : this(size) {
+        foreach(var coord in AllCoords) {
+            this[coord] = initialElem;
+        }
+    }
     public Vector2I Size {
         get {
             return new Vector2I(elems.GetLength(0), elems.GetLength(1));
