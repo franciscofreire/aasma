@@ -46,10 +46,10 @@ public class HabitantReactive : AgentImplementation {
         else if (habitant.CanCarryWeight(Animal.FOOD_WEIGHT) && habitant.FoodInAdjacentPos(out target)) {
             return new PickupFood(habitant, target);
         }
-        else if (habitant.CanCarryWeight(Tree.WOOD_WEIGHT) && habitant.CutDownTreeWithWoodInFront()) {
-            return new PickupTree(habitant, habitant.sensorData.FrontCell);
+        else if (habitant.CanCarryWeight(Tree.WoodChopQuantity.Weight) && habitant.CutDownTreeWithWoodInFront()) {
+            return new ChopTree(habitant, habitant.sensorData.FrontCell);
         }
-        else if (habitant.CanCarryWeight(Tree.WOOD_WEIGHT) && habitant.AliveTreeInFront()) {
+        else if (habitant.CanCarryWeight(Tree.WoodChopQuantity.Weight) && habitant.AliveTreeInFront()) {
             return new CutTree(habitant, habitant.sensorData.FrontCell);
         }
         else if (habitant.CarryingFood && habitant.MeetingPointInFront()) {

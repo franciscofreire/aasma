@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 // A Tree starts alive with a certain WoodQuantity.
@@ -13,14 +14,14 @@ public class Tree {
 	private bool isAlive;
 	private WoodQuantity wood;
     
-    public static int    WOOD_CHOP_QUANTITY = 50;
-    public static Weight WOOD_WEIGHT        = new Weight(WOOD_CHOP_QUANTITY);
+    public readonly static WoodQuantity    WoodChopQuantity = new WoodQuantity(50);
+    public readonly static WoodQuantity    InitialWoodQuantity = new WoodQuantity(100);
 
-    public Tree (WorldInfo worldInfo, Vector2I pos, WoodQuantity woodQuantity) {
+    public Tree (WorldInfo worldInfo, Vector2I pos) {
         this.worldInfo = worldInfo;
 		this.pos = pos;
         this.isAlive = true;
-		this.wood = woodQuantity;
+        this.wood = InitialWoodQuantity;
 	}
 
 	public Vector2I Pos { 
@@ -41,8 +42,8 @@ public class Tree {
 			return WoodQuantity.Zero;
         } else {
             //FIXME: These are testing values!
-            wood.Count -= WOOD_CHOP_QUANTITY;
-			WoodQuantity removed = wood; 
+            WoodQuantity removed = new WoodQuantity(Math.Min(wood.Count, WoodChopQuantity.Count));
+            wood = wood - removed;
 			return removed;
 		}
 		//Implementation detail: This method could be an Iterator method (use the yield statement).

@@ -11,6 +11,13 @@ public class HabitantDeliberative : AgentImplementation {
     private List<Attitude> desires;
     private List<Attitude> intentions;
 
+    public Attitude CurrentIntention {
+        get {
+            //NOTE: Does an habitant always have an intention?
+            return intentions.FirstOrDefault();
+        }
+    }
+
     private Plan plan;
 
     private bool ActionExecuted {

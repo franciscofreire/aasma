@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 // An Agent starts on a position in a world with a given Energy with an orientation.
 //    When he is attacked, a certain amount of his Energy is removed (RemoveEnergy).
@@ -89,6 +90,12 @@ public abstract class Agent {
         }
     }
 
+    public Vector2I closestCell(IEnumerable<Vector2I> cells) {
+        Vector2I source = CoordConvertions.AgentPosToTile(pos);
+        return cells
+            .Aggregate((c1,c2)=>c2.DistanceTo(source)<c1.DistanceTo(source) ? c2 : c1);
+    }
+
 	//*************
 	//** SENSORS **
 	//*************
@@ -103,15 +110,35 @@ public abstract class Agent {
 		WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(sensorData.FrontCell);
 		return t.HasTree && t.Tree.Alive;
     }
+    
+    public bool AliveTree(Vector2I cell) {
+        WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(cell);
+        return t.HasTree && t.Tree.Alive;
+    }
 
     public bool DeadTreeInFront() {
         WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(sensorData.FrontCell);
         return t.HasTree && !t.Tree.Alive;
     }
     
+    public bool DeadTree(Vector2I cell) {
+        WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(cell);
+        return t.HasTree && !t.Tree.Alive;
+    }
+
     public bool CutDownTreeWithWoodInFront() {
 		WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(sensorData.FrontCell);
 		return t.HasTree && !t.Tree.Alive && t.Tree.HasWood;
+    }
+    
+    public bool CutDownTreeWithWood(Vector2I cell) {
+        WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(cell);
+        return t.HasTree && !t.Tree.Alive && t.Tree.HasWood;
+    }
+    
+    public bool DepletedTree(Vector2I cell) {
+        WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(cell);
+        return t.HasTree && !t.Tree.Alive && !t.Tree.HasWood;
     }
 
 	// FIXME: I don't know where to put this function as it is not part of the Agent.
@@ -175,6 +202,8 @@ public struct SensorData {
     private int _tribe_flags;
     private bool _agent_is_inside_tribe;
     private Tribe _agent_tribe;
+
+    public IList<Vector2I> NearbyCells { get; set; }
 	
     public Tribe AgentTribe {
         get { return this._agent_tribe; }

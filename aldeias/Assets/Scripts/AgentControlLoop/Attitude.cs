@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Attitudes {
     public Explore Explore;
@@ -9,6 +10,9 @@ public class Attitudes {
     public MaintainEnergy MaintainEnergy;
     public IncreaseFoodStock IncreaseFoodStock;
     public IncreaseWoodStock IncreaseWoodStock;
+    public DropResources DropResources;
+    public StartAttack StartAttack;
+    // TODO: StartDefense
     public HelpAttack HelpAttack;
     public HelpDefense HelpDefense;
 
@@ -19,6 +23,8 @@ public class Attitudes {
         MaintainEnergy = new MaintainEnergy(h);
         IncreaseFoodStock = new IncreaseFoodStock(h);
         IncreaseWoodStock = new IncreaseWoodStock(h);
+        DropResources = new DropResources(h);
+        StartAttack = new StartAttack(h);
         HelpAttack = new HelpAttack(h);
         HelpDefense = new HelpDefense(h);
     }
@@ -31,6 +37,8 @@ public class Attitudes {
             yield return MaintainEnergy;
             yield return IncreaseFoodStock;
             yield return IncreaseWoodStock;
+            yield return DropResources;
+            yield return StartAttack;
             yield return HelpAttack;
             yield return HelpDefense;
         }
@@ -57,8 +65,8 @@ public abstract class Attitude {
     public abstract bool isSound(Beliefs beliefs);
     public Plan updatePlan(Beliefs beliefs) {
         this.plan.clear();
-        createPlan(beliefs);
-        return plan;
+        this.plan = createPlan(beliefs);
+        return this.plan;
     }
     public abstract Plan createPlan(Beliefs beliefs);
 }
@@ -102,6 +110,37 @@ public class Explore : Attitude {
     }
 
     public override Plan createPlan(Beliefs beliefs) {
+        // Try to move away from one's tribe territory
+        /*
+        if (habitant.closeToTribe()) {
+            IEnumerable<Vector2I> targets = beliefs.TribeTerritories.UnclaimedTerritories
+                .Where(t=>beliefs.KnownObstacles.ObstacleMap[t.x,t.y]!=KnownObstacles.ObstacleMapEntry.Obstacle);
+            Vector2I target = habitant.closestCell(targets);
+            
+            plan.addFollowPath(habitant, beliefs, target);
+        } else
+        */
+
+        //TODO: - Go somewhere we haven't been before.
+        //TODO: - Prefer to go to places that are least known.
+        //TODO: --- Go to a place we haven't visited for a long time.
+        //TODO: - Try not to travel nor too little nor too much.
+
+        /*
+        //Select the closest cell that is not an obstacle and that has the minimum
+        HabitantCellCoords habitantCoords = new CellCoordsAround(habitant.pos, habitant.worldInfo);
+        IEnumerable<Vector2I> nearbycellsNotObstacles = habitantCoords.CoordUntilDistance(5)
+            .Where(c=>beliefs.KnownObstacles.ObstacleMap[c.x,c.y]!=KnownObstacles.ObstacleMapEntry.Obstacle);
+        
+        Vector2I target = nearbycellsNotObstacles//.Take(1)//FIXME: The number of cells to consider here is hardcoded.
+            .OrderBy(c=>beliefs.CellSeenOrders.LastSeenOrders[c])
+                .First();
+        
+        Plan p = new Plan(this);
+        p.addFollowPath(habitant, Pathfinder.PathInMapFromTo(beliefs.KnownObstacles.ObstacleMap, habitantCoords.Center, target));
+        
+        return p;*/
+
         plan.add(Action.WalkRandomly(habitant));
         return plan;
     }
@@ -118,21 +157,22 @@ public class ExpandTribe : Attitude {
     }
     
     public override bool isSound(Beliefs beliefs) {
-        IList<Vector2I> targets = beliefs.UnclaimedTerritoryIsNear.RelevantCells;
-        foreach (Vector2I target in targets) {
-            if (target == plan.LastAction.target
-                && !beliefs.WorldInfo.worldTiles.WorldTileInfoAtCoord(target).tribeTerritory.IsClaimed)
-                return true;
-        }
-        return false;
+        // If the target was claimed in the meantime, you're screwed
+        Vector2I target = plan.LastAction.target;
+        return !beliefs.WorldInfo.worldTiles.WorldTileInfoAtCoord(plan.LastAction.target)
+                       .tribeTerritory.IsClaimed
+               ;
+               //&& plan.ensureFreeCell(habitant, beliefs, plan.peek().target);
     }
 
     public override Plan createPlan(Beliefs beliefs) {
-        IList<Vector2I> targets = beliefs.UnclaimedTerritoryIsNear.RelevantCells;
-        foreach (Vector2I target in targets) {
-            plan.addPathFinding(habitant, target);
-            plan.addLastAction(new PlaceFlag(habitant, target));
-        }
+        IEnumerable<Vector2I> targets = beliefs.TribeTerritories.UnclaimedTerritories
+            .Where(t=>beliefs.KnownObstacles.ObstacleMap[t.x,t.y]!=KnownObstacles.ObstacleMapEntry.Obstacle);
+        Vector2I target = habitant.closestCell(targets);
+
+        plan.addFollowPath(habitant, beliefs, target);
+        plan.addLastAction(new PlaceFlag(habitant, target));
+
         return plan;
     }
 
@@ -191,18 +231,107 @@ public class IncreaseFoodStock : Attitude {
 
 public class IncreaseWoodStock : Attitude {
     public override bool isDesirable(Beliefs beliefs) {
-        return beliefs.TribeHasFewFlags.IsActive;
+        bool condition = beliefs.TribeHasFewFlags.IsActive
+            && habitant.CanCarryWeight(Tree.WoodChopQuantity.Weight);
+        return condition;
+        //return false;
+    }
+    
+    public override bool isSound(Beliefs beliefs) {
+        return habitant.DepletedTree(plan.LastAction.target);
+    }
+    
+    public override Plan createPlan(Beliefs beliefs) {
+        IEnumerable<Vector2I> targets = beliefs.ForestNear.AvailableTrees
+            ;
+            //.Where(t=>beliefs.KnownObstacles.ObstacleMap[t.x,t.y]!=KnownObstacles.ObstacleMapEntry.Obstacle);
+
+        // Do we know about any trees?
+        if (targets.Count() > 0) {
+            Vector2I target = Vector2I.INVALID;
+            foreach(Vector2I t in targets) {
+                if (!habitant.DepletedTree(t)) {
+                    target = t;
+                    break;
+                }
+            }
+            //Vector2I target = habitant.closestCell(targets);
+            CellCoordsAround cca = new CellCoordsAround(target, habitant.worldInfo);
+            Vector2I neighbor = Vector2I.INVALID;
+            try {
+                neighbor = cca.CoordsAtDistance(1).Where(
+                    c => {
+                        return beliefs.KnownObstacles.ObstacleMap[c.x, c.y] != KnownObstacles.ObstacleMapEntry.Obstacle;
+                    }
+                ).First();
+            
+            }
+            catch (System.Exception) {
+                Debug.Log("bBBBBBBBBBBBBB");
+                return plan;
+            }
+        
+        plan.addFollowPath(habitant, beliefs, neighbor);
+
+            if (habitant.AliveTree(target))
+                plan.add(new CutTree(habitant, target));
+
+            plan.addLastAction(new ChopTree(habitant, target));
+        }
+        // Search for trees
+        else {
+
+        }
+        return plan;
+    }
+
+    public IncreaseWoodStock(Habitant habitant) : base(habitant) {
+        Importance = 20;
+    }
+}
+
+public class DropResources : Attitude {
+    public override bool isDesirable(Beliefs beliefs) {
+        return !habitant.CanCarryWeight(Tree.WoodChopQuantity.Weight)
+            && !habitant.CanCarryWeight(Animal.FOOD_WEIGHT);
+    }
+    
+    public override bool isSound(Beliefs beliefs) {
+        // TODO: ensureFreeCell check
+        return true;
+    }
+    
+    public override Plan createPlan(Beliefs beliefs) {
+        Vector2I target = habitant.tribe.meetingPoint.center;
+        plan.addFollowPath(habitant, beliefs, target);
+
+        if (habitant.CarryingFood)
+            plan.add(new DropFood(habitant, target));
+        if (habitant.CarryingWood)
+            plan.add(new DropTree(habitant, target));
+
+        return plan;
+    }
+    
+    public DropResources(Habitant habitant) : base(habitant) {
+        Importance = 50;
+    }
+}
+
+public class StartAttack : Attitude {
+    public override bool isDesirable(Beliefs beliefs) {
+        return beliefs.EnemiesAreNear.IsActive; // FIXME: Maybe another belief
     }
     
     public override bool isSound(Beliefs beliefs) {
         return true;
     }
-
+    
     public override Plan createPlan(Beliefs beliefs) {
         return plan;
     }
-
-    public IncreaseWoodStock(Habitant habitant) : base(habitant) {}
+    
+    public StartAttack(Habitant habitant) : base(habitant) {}
 }
 
 public class HelpDefense : Attitude {

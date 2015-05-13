@@ -8,8 +8,8 @@ using System.Collections.Generic;
 //    He can pickup Food if he wants to.
 //    He can also pickup Wood.
 public class Habitant : Agent {
-    private AgentImplementation agentImplReactive;
-    private AgentImplementation agentImplDeliberative;
+    public readonly HabitantReactive agentImplReactive;
+    public readonly HabitantDeliberative agentImplDeliberative;
 
 	public Tribe tribe;
 
@@ -57,8 +57,8 @@ public class Habitant : Agent {
 		this.affinity = affinity;
 		this.isLeader = false;
         this.tribe = tribe;
-        agentImplReactive = new HabitantReactive(this);
-        agentImplDeliberative = new HabitantDeliberative(this);
+        this.agentImplReactive = new HabitantReactive(this);
+        this.agentImplDeliberative = new HabitantDeliberative(this);
 
         worldInfo.AddHabitantDeletedListener(removeFromWorldInfo);
 	}
@@ -73,19 +73,20 @@ public class Habitant : Agent {
         IList<Vector2I> _meeting_point_cells;
         IList<Vector2I> _unclaimed_cells;
         IList<KeyValuePair<Vector2I,Tribe>> _territories;
-        
-        sensorData.Cells = worldInfo.nearbyFreeCells(
-            worldInfo.nearbyCellsInfo(this, 
-                                  out _far_away_cells, 
-                                  out _trees,
-                                  out _stumps,
-                                  out _enemies,
-                                  out _animals,
-                                  out _food,
-                                  out _meeting_point_cells,
-                                  out _unclaimed_cells,
-                                  out _territories));
-        
+
+        sensorData.NearbyCells = worldInfo.nearbyCellsInfo(
+                this, 
+                out _far_away_cells, 
+                out _trees,
+                out _stumps,
+                out _enemies,
+                out _animals,
+                out _food,
+                out _meeting_point_cells,
+                out _unclaimed_cells,
+                out _territories
+        );
+        sensorData.Cells = worldInfo.nearbyFreeCells(sensorData.NearbyCells);
         sensorData.Trees = _trees;
         sensorData.Stumps = _stumps;
         sensorData.Enemies = _enemies;
@@ -392,4 +393,15 @@ public class Habitant : Agent {
     public bool MeetingPointInFront() {
 		return tribe.meetingPoint.IsInMeetingPoint(sensorData.FrontCell);
 	}
+
+    public bool closeToTribe() {
+        IList<Vector2I> result = new List<Vector2I>();
+        IList<Vector2I> cellsInRadius = worldInfo.nearbyFreeCellsInRadius(CoordConvertions.AgentPosToTile(pos), 3);
+        foreach (Vector2I candidate in cellsInRadius) {
+            if (worldInfo.worldTiles.WorldTileInfoAtCoord(candidate)
+                          .tribeTerritory.Flag.Value.Tribe.id.Equals(this.tribe.id))
+                return true;
+        }
+        return false;
+    }
 }

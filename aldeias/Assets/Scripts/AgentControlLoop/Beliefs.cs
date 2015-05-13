@@ -109,13 +109,16 @@ public class Beliefs {
     public TribeHasLowFoodLevel TribeHasLowFoodLevel;
     public TribeHasFewFlags TribeHasFewFlags;
     public AnimalsAreNear AnimalsAreNear;
+    public EnemiesAreNear EnemiesAreNear;
     public NearEnemyTribe NearEnemyTribe;
     public ForestNear ForestNear;
-    public DroppedFood DroppedFood;
-    public DroppedWood DroppedWood;
+    public PickableFood DroppedFood;
+    public PickableWood DroppedWood;
     public HabitantHasLowEnergy HabitantHasLowEnergy;
     public UnclaimedTerritoryIsNear UnclaimedTerritoryIsNear;
     public KnownObstacles KnownObstacles;
+    public TribeTerritories TribeTerritories;
+    public CellSeenOrders CellSeenOrders;
 
     public IEnumerable<Belief> AllBeliefs {
         get {
@@ -123,6 +126,7 @@ public class Beliefs {
             yield return TribeIsBeingAttacked;
             yield return TribeHasLowFoodLevel;
             yield return TribeHasFewFlags;
+            yield return EnemiesAreNear;
             yield return AnimalsAreNear;
             yield return NearEnemyTribe;
             yield return ForestNear;
@@ -131,6 +135,8 @@ public class Beliefs {
             yield return HabitantHasLowEnergy;
             yield return UnclaimedTerritoryIsNear;
             yield return KnownObstacles;
+            yield return TribeTerritories;
+            yield return CellSeenOrders;
         }
     }
 
@@ -142,13 +148,16 @@ public class Beliefs {
         TribeHasLowFoodLevel=new TribeHasLowFoodLevel();
         TribeHasFewFlags=new TribeHasFewFlags();
         AnimalsAreNear=new AnimalsAreNear();
+        EnemiesAreNear=new EnemiesAreNear();
         NearEnemyTribe=new NearEnemyTribe();
-        ForestNear=new ForestNear();
-        DroppedFood=new DroppedFood();
-        DroppedWood=new DroppedWood();
+        ForestNear=new ForestNear(h);
+        DroppedFood=new PickableFood();
+        DroppedWood=new PickableWood();
         HabitantHasLowEnergy=new HabitantHasLowEnergy();
         UnclaimedTerritoryIsNear=new UnclaimedTerritoryIsNear();
         KnownObstacles=new KnownObstacles(h);
+        TribeTerritories=new TribeTerritories(h);
+        CellSeenOrders=new CellSeenOrders(h);
     }
 }
 
@@ -160,7 +169,6 @@ public class NearMeetingPoint : Belief {
     // satisfies the condition (Agent saw meeting point cells)
     // Found meeting point cells are saved in Relevant Cells
     // even when belief is inactive
-   
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
         foreach(var cell in p.SensorData.MeetingPointCells) {
@@ -275,6 +283,21 @@ public class AnimalsAreNear : Belief {
     }
 }
 
+public class EnemiesAreNear : Belief {
+    public override void UpdateBelief (Percept p) {
+        base.UpdateBelief(p);
+        if(p.SensorData.Enemies.Count > 0) {
+            RelevantCells = new List<Vector2I>();
+            foreach(Habitant h in p.SensorData.Enemies) {
+                RelevantCells.Add(CoordConvertions.AgentPosToTile(h.pos));
+            }
+            EnableBelief();
+        } else {
+            DisableBelief();
+        }
+    }
+}
+
 public class NearEnemyTribe : Belief {
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
@@ -288,21 +311,40 @@ public class NearEnemyTribe : Belief {
 }
 
 public class ForestNear : Belief {
+    public Matrix<Tree> Forest;
+    public IEnumerable<Vector2I> AvailableTrees {
+        get {
+            return Forest.AllCoords.Where(c=>Forest[c]!=null);
+        }
+    }
+
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
         if(p.SensorData.Trees.Count > 0) {
             RelevantCells = new List<Vector2I>();
             foreach(Tree t in p.SensorData.Trees) {
+                Vector2I c = t.Pos;
+                Forest[c] = t;
                 RelevantCells.Add(t.Pos);
             }
             EnableBelief();
         } else {
             DisableBelief();
         }
+        
+        // Update with depleted trees
+        foreach(var c in p.SensorData.NearbyCells) {
+            if (!p.Habitant.worldInfo.worldTiles.WorldTileInfoAtCoord(c).HasTree)
+                Forest[c] = null;
+        }
+    }
+    
+    public ForestNear(Habitant h) {
+        Forest = new Matrix<Tree>(h.worldInfo.Size);
     }
 }
 
-public class DroppedFood : Belief {
+public class PickableFood : Belief {
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
         if(p.SensorData.Food.Count > 0) {
@@ -318,7 +360,7 @@ public class DroppedFood : Belief {
     }
 }
 
-public class DroppedWood : Belief {
+public class PickableWood : Belief {
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
         if(p.SensorData.Stumps.Count > 0) {
@@ -384,7 +426,7 @@ public class KnownObstacles : Belief {
         ObstacleMap = new ObstacleMapEntry[mapSize.x,mapSize.y];
         foreach(var x in Enumerable.Range(0,mapSize.x)) {
             foreach(var y in Enumerable.Range(0,mapSize.y)) {
-                ObstacleMap[x,y] = ObstacleMapEntry.Obstacle;
+                ObstacleMap[x,y] = ObstacleMapEntry.Unknown;
             }
         }
     }
@@ -394,23 +436,55 @@ public class KnownObstacles : Belief {
 }
 
 public class TribeTerritories : Belief {
-    public Tribe[,] Territories;
+    public Matrix<Tribe> Territories;
+    public IEnumerable<Vector2I> UnclaimedTerritories {
+        get {
+            return Territories.AllCoords.Where(c=>Territories[c]==null);
+        }
+    }
+
 
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
         foreach(var coordTribe in p.SensorData.Territories) {
             Vector2I c = coordTribe.Key;
-            Territories[c.x,c.y] = coordTribe.Value;
+            Territories[c] = coordTribe.Value;
         }
         foreach(var c in p.SensorData.UnclaimedCells) {
-            Territories[c.x,c.y] = null;
+            Territories[c] = null;
         }
     }
 
     public TribeTerritories(Habitant h) {
         EnableBelief();
         var size = h.worldInfo.Size;
-        Territories = new Tribe[size.x,size.y];
+        Territories = new Matrix<Tribe>(size);
+
+        h.sensorData.Territories = new List<KeyValuePair<Vector2I,Tribe>>();
+        for (int i = h.tribe.start_x; i < h.tribe.cell_line; i++)
+            for (int j = h.tribe.start_y; j < h.tribe.cell_line; j++)
+                h.sensorData.Territories.Add(new KeyValuePair<Vector2I, Tribe>(new Vector2I(i,j),h.tribe));
+    }
+}
+
+public class CellSeenOrders : Belief {
+    public Matrix<int> LastSeenOrders;
+    public int CurrentOrder {
+        get; 
+        private set;
+    }
+    private readonly int NotSeenBeforeOrder = int.MinValue;
+    public CellSeenOrders(Habitant h) {
+        CurrentOrder = 0;
+        LastSeenOrders = new Matrix<int>(h.worldInfo.Size, NotSeenBeforeOrder);
+    }
+    public override void UpdateBelief (Percept p) {
+        base.UpdateBelief(p);
+        CurrentOrder += 1;
+        //Mark each seen cell with CurrentOrder.
+        foreach(var seenCoord in p.SensorData.Cells) {//FIXME: Make sure these are all the seen cells.
+            LastSeenOrders[seenCoord] = CurrentOrder;
+        }
     }
 }
 
