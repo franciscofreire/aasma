@@ -46,12 +46,17 @@ public class Plan {
         Path path = Pathfinder.PathInMapFromTo(beliefs.KnownObstacles.ObstacleMap, 
                                                CoordConvertions.AgentPosToTile(h.pos), 
                                                target);
-        for(int i=1; i<path.PathPoints.Count; i++) {
-            add(new Walk(h, path.PathPoints[i]));
+        try {
+            for(int i=1; i<path.PathPoints.Count; i++) {
+                add(new Walk(h, path.PathPoints[i]));
+            }
         }
-    }
-    
-    // Society rule: When you encounter a friendly agent,
+        catch (System.Exception) {
+            Debug.Log("AAAAAAAAAAAa");
+        }
+}
+
+// Society rule: When you encounter a friendly agent,
     // move to a cell near you and recalculate pathfinding
     public bool ensureFreeCell(Habitant habitant, Beliefs beliefs, Vector2I nextMove) {
         if (beliefs.WorldInfo.worldTiles.WorldTileInfoAtCoord(nextMove).HasAgent) {

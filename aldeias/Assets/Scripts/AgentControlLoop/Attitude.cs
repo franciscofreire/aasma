@@ -231,8 +231,9 @@ public class IncreaseFoodStock : Attitude {
 
 public class IncreaseWoodStock : Attitude {
     public override bool isDesirable(Beliefs beliefs) {
-        return beliefs.TribeHasFewFlags.IsActive
+        bool condition = beliefs.TribeHasFewFlags.IsActive
             && habitant.CanCarryWeight(Tree.WoodChopQuantity.Weight);
+        return condition;
         //return false;
     }
     
@@ -247,15 +248,30 @@ public class IncreaseWoodStock : Attitude {
 
         // Do we know about any trees?
         if (targets.Count() > 0) {
-            Vector2I target = habitant.closestCell(targets);
-            CellCoordsAround cca = new CellCoordsAround(target, habitant.worldInfo);
-            Vector2I neighbor = cca.CoordsAtDistance(1).Where(
-                c => {
-                    return beliefs.KnownObstacles.ObstacleMap[c.x, c.y] != KnownObstacles.ObstacleMapEntry.Obstacle;
+            Vector2I target = Vector2I.INVALID;
+            foreach(Vector2I t in targets) {
+                if (!habitant.DepletedTree(t)) {
+                    target = t;
+                    break;
                 }
-            ).First();
-
-            plan.addFollowPath(habitant, beliefs, neighbor);
+            }
+            //Vector2I target = habitant.closestCell(targets);
+            CellCoordsAround cca = new CellCoordsAround(target, habitant.worldInfo);
+            Vector2I neighbor = Vector2I.INVALID;
+            try {
+                neighbor = cca.CoordsAtDistance(1).Where(
+                    c => {
+                        return beliefs.KnownObstacles.ObstacleMap[c.x, c.y] != KnownObstacles.ObstacleMapEntry.Obstacle;
+                    }
+                ).First();
+            
+            }
+            catch (System.Exception) {
+                Debug.Log("bBBBBBBBBBBBBB");
+                return plan;
+            }
+        
+        plan.addFollowPath(habitant, beliefs, neighbor);
 
             if (habitant.AliveTree(target))
                 plan.add(new CutTree(habitant, target));
