@@ -393,4 +393,15 @@ public class Habitant : Agent {
     public bool MeetingPointInFront() {
 		return tribe.meetingPoint.IsInMeetingPoint(sensorData.FrontCell);
 	}
+
+    public bool closeToTribe() {
+        IList<Vector2I> result = new List<Vector2I>();
+        IList<Vector2I> cellsInRadius = worldInfo.nearbyFreeCellsInRadius(CoordConvertions.AgentPosToTile(pos), 3);
+        foreach (Vector2I candidate in cellsInRadius) {
+            if (worldInfo.worldTiles.WorldTileInfoAtCoord(candidate)
+                          .tribeTerritory.Flag.Value.Tribe.id.Equals(this.tribe.id))
+                return true;
+        }
+        return false;
+    }
 }

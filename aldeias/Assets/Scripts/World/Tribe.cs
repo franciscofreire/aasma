@@ -73,13 +73,19 @@ public class Tribe {
 
     public readonly FlagMakerMachine FlagMachine;
 
+    public int start_x;
+    public int start_y;
+    public int cell_line;
     public int cell_count;
     
-	public Tribe(string id, MeetingPoint meetingPoint, int cell_count) {
-		this.id = id;
+	public Tribe(string id, MeetingPoint meetingPoint, int cell_line, int start_x, int start_y) {
+		this.id           = id;
 		this.meetingPoint = meetingPoint;
-        this.FlagMachine = new FlagMakerMachine(this);
-        this.cell_count = cell_count;
+        this.FlagMachine  = new FlagMakerMachine(this);
+        this.start_x      = start_x;
+        this.start_y      = start_y;
+        this.cell_line    = cell_line;
+        this.cell_count   = cell_line * cell_line;
 	}
 
     //

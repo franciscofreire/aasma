@@ -433,6 +433,11 @@ public class TribeTerritories : Belief {
         EnableBelief();
         var size = h.worldInfo.Size;
         Territories = new Matrix<Tribe>(size);
+
+        h.sensorData.Territories = new List<KeyValuePair<Vector2I,Tribe>>();
+        for (int i = h.tribe.start_x; i < h.tribe.cell_line; i++)
+            for (int j = h.tribe.start_y; j < h.tribe.cell_line; j++)
+                h.sensorData.Territories.Add(new KeyValuePair<Vector2I, Tribe>(new Vector2I(i,j),h.tribe));
     }
 }
 

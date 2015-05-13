@@ -238,7 +238,7 @@ public partial class WorldInfo : MonoBehaviour {
 		int meetingPointz = posz + TRIBE_TERRITORY_SIDE/2;
 		Vector2I meetingPointCenter = new Vector2I(meetingPointx, meetingPointz);
 		MeetingPoint meetingPoint = new MeetingPoint(meetingPointCenter, MEETING_POINT_SIDE);
-        Tribe tribe = new Tribe(name, meetingPoint, TRIBE_TERRITORY_SIDE * TRIBE_TERRITORY_SIDE);
+        Tribe tribe = new Tribe(name, meetingPoint, TRIBE_TERRITORY_SIDE, posx, posz);
 		tribes.Add(tribe);
 		return tribe;
 	}
@@ -429,6 +429,25 @@ public partial class WorldInfo : MonoBehaviour {
 		return cells;
 	}
 
+    public Vector2I neighborCell(Vector2I cell) {
+        Vector2I candidate = Vector2I.INVALID;
+
+        candidate = new Vector2I(cell.x + 1, cell.y);
+        if (isInsideWorld(candidate) && worldTiles.WorldTileInfoAtCoord(candidate).IsEmpty)
+            return candidate;
+        candidate = new Vector2I(cell.x - 1, cell.y);
+        if (isInsideWorld(candidate) && worldTiles.WorldTileInfoAtCoord(candidate).IsEmpty)
+            return candidate;
+        candidate = new Vector2I(cell.x, cell.y + 1);
+        if (isInsideWorld(candidate) && worldTiles.WorldTileInfoAtCoord(candidate).IsEmpty)
+            return candidate;
+        candidate = new Vector2I(cell.x, cell.y - 1);
+        if (isInsideWorld(candidate) && worldTiles.WorldTileInfoAtCoord(candidate).IsEmpty)
+            return candidate;
+
+        return candidate;
+    }
+
 	public IList<Vector2I> nearbyFreeCells(IList<Vector2I> cells) {
 		IList<Vector2I> freeCells = new List<Vector2I>();
 		foreach (Vector2I pos in cells) {
@@ -438,6 +457,18 @@ public partial class WorldInfo : MonoBehaviour {
 		
 		return freeCells;
 	}
+
+    public IList<Vector2I> nearbyFreeCellsInRadius(Vector2I pos, int radius) {
+        IList<Vector2I> result = new List<Vector2I>();
+        for (int i = -radius/2; i <= radius/2; i++) {
+            for (int j = -radius/2; j <= radius/2; j++) {
+                Vector2I candidate = new Vector2I(pos.x + i, pos.y + j);
+                if (isInsideWorld(candidate) && worldTiles.WorldTileInfoAtCoord(candidate).IsEmpty)
+                    result.Add(candidate);
+            }
+        }
+        return result;
+    }
 
 	public bool isInsideWorld(Vector2I coord) {
 		return coord.x >= 0 && coord.y >= 0 && coord.x < xSize && coord.y < zSize;

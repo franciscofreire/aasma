@@ -107,7 +107,18 @@ public class Explore : Attitude {
     }
 
     public override Plan createPlan(Beliefs beliefs) {
-        plan.add(Action.WalkRandomly(habitant));
+        // Try to move away from one's tribe territory
+        /*
+        if (habitant.closeToTribe()) {
+            IEnumerable<Vector2I> targets = beliefs.TribeTerritories.UnclaimedTerritories
+                .Where(t=>beliefs.KnownObstacles.ObstacleMap[t.x,t.y]!=KnownObstacles.ObstacleMapEntry.Obstacle);
+            Vector2I target = habitant.closestCell(targets);
+            
+            plan.addFollowPath(habitant, beliefs, target);
+        } else
+        */
+            plan.add(Action.WalkRandomly(habitant));
+
         return plan;
     }
     
@@ -132,14 +143,9 @@ public class ExpandTribe : Attitude {
     }
 
     public override Plan createPlan(Beliefs beliefs) {
-        // TODO: First part of concat not needed
-        IEnumerable<Vector2I> targets = beliefs
-            .UnclaimedTerritoryIsNear.RelevantCells
-            .Concat(beliefs.TribeTerritories.UnclaimedTerritories)
+        IEnumerable<Vector2I> targets = beliefs.TribeTerritories.UnclaimedTerritories
             .Where(t=>beliefs.KnownObstacles.ObstacleMap[t.x,t.y]!=KnownObstacles.ObstacleMapEntry.Obstacle);
         Vector2I target = habitant.closestCell(targets);
-
-        // FIXME: what if there is no cell left?
 
         plan.addFollowPath(habitant, beliefs, target);
         plan.addLastAction(new PlaceFlag(habitant, target));
@@ -202,8 +208,9 @@ public class IncreaseFoodStock : Attitude {
 
 public class IncreaseWoodStock : Attitude {
     public override bool isDesirable(Beliefs beliefs) {
-        //return beliefs.TribeHasFewFlags.IsActive;
-        return false;
+        return beliefs.TribeHasFewFlags.IsActive
+            && habitant.CanCarryWeight(Tree.WOOD_WEIGHT);
+        //return false;
     }
     
     public override bool isSound(Beliefs beliefs) {
@@ -219,13 +226,18 @@ public class IncreaseWoodStock : Attitude {
         // Do we know about any trees?
         if (targets.Count() > 0) {
             Vector2I target = habitant.closestCell(targets);
-            
-            ///// TODO: path to adjacent position, then chop close tree
-            plan.addFollowPath(habitant, beliefs, target);
-            if (beliefs.WorldInfo.worldTiles.WorldTileInfoAtCoord(target).Tree.Alive)
-                plan.addLastAction(new ChopTree(habitant, target));
-            else
+            Vector2I neighbor = beliefs.WorldInfo.neighborCell(target);
+
+            if (neighbor == Vector2I.INVALID) {
+                return plan; // The mythical tree of unreachability
+            }
+
+            plan.addFollowPath(habitant, beliefs, neighbor);
+
+            if (habitant.AliveTree(target))
                 plan.addLastAction(new CutTree(habitant, target));
+
+            plan.addLastAction(new ChopTree(habitant, target));
         }
         // Search for trees
         else {

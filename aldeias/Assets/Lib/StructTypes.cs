@@ -5,6 +5,8 @@ public struct Vector2I : IEquatable<Vector2I> {
 	public int x;
 	public int y;
 	
+    public static Vector2I INVALID = new Vector2I(-1, -1);
+
 	public Vector2I(Vector2 v) {
 		this.x = (int) v[0];
 		this.y = (int) v[1];
