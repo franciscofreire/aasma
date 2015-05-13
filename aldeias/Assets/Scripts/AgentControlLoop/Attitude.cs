@@ -237,8 +237,7 @@ public class IncreaseWoodStock : Attitude {
     }
     
     public override bool isSound(Beliefs beliefs) {
-        return beliefs.WorldInfo.worldTiles.WorldTileInfoAtCoord(plan.LastAction.target)
-               .HasTree;
+        return habitant.DepletedTree(plan.LastAction.target);
     }
     
     public override Plan createPlan(Beliefs beliefs) {
@@ -249,16 +248,17 @@ public class IncreaseWoodStock : Attitude {
         // Do we know about any trees?
         if (targets.Count() > 0) {
             Vector2I target = habitant.closestCell(targets);
-            Vector2I neighbor = ;
-
-            if (neighbor == Vector2I.INVALID) {
-                return plan; // The mythical tree of unreachability
-            }
+            CellCoordsAround cca = new CellCoordsAround(target, habitant.worldInfo);
+            Vector2I neighbor = cca.CoordsAtDistance(1).Where(
+                c => {
+                    return beliefs.KnownObstacles.ObstacleMap[c.x, c.y] != KnownObstacles.ObstacleMapEntry.Obstacle;
+                }
+            ).First();
 
             plan.addFollowPath(habitant, beliefs, neighbor);
 
             if (habitant.AliveTree(target))
-                plan.addLastAction(new CutTree(habitant, target));
+                plan.add(new CutTree(habitant, target));
 
             plan.addLastAction(new ChopTree(habitant, target));
         }
@@ -281,33 +281,25 @@ public class DropResources : Attitude {
     }
     
     public override bool isSound(Beliefs beliefs) {
+        // TODO: ensureFreeCell check
         return true;
     }
     
     public override Plan createPlan(Beliefs beliefs) {
-        /*
-        IEnumerable<Vector2I> targets = beliefs.
+        Vector2I target = habitant.tribe.meetingPoint.center;
+        plan.addFollowPath(habitant, beliefs, target);
 
-        if (targets.Count() > 0) {
-            Vector2I target = habitant.closestCell(targets);
-            Vector2I neighbor = ;
-            
-            if (neighbor == Vector2I.INVALID) {
-                return plan; // The mythical tree of unreachability
-            }
-            
-            plan.addFollowPath(habitant, beliefs, neighbor);
-            
-            if (habitant.AliveTree(target))
-                plan.addLastAction(new CutTree(habitant, target));
-            
-            plan.addLastAction(new ChopTree(habitant, target));
-        }
-        */
+        if (habitant.CarryingFood)
+            plan.add(new DropFood(habitant, target));
+        if (habitant.CarryingWood)
+            plan.add(new DropTree(habitant, target));
+
         return plan;
     }
     
-    public DropResources(Habitant habitant) : base(habitant) {}
+    public DropResources(Habitant habitant) : base(habitant) {
+        Importance = 50;
+    }
 }
 
 public class StartAttack : Attitude {

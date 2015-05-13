@@ -135,6 +135,11 @@ public abstract class Agent {
         WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(cell);
         return t.HasTree && !t.Tree.Alive && t.Tree.HasWood;
     }
+    
+    public bool DepletedTree(Vector2I cell) {
+        WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(cell);
+        return t.HasTree && !t.Tree.Alive && !t.Tree.HasWood;
+    }
 
 	// FIXME: I don't know where to put this function as it is not part of the Agent.
     // Or is it? It can also belong to the WorldInfo.
