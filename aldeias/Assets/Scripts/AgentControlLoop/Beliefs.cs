@@ -209,16 +209,12 @@ public class TribeIsBeingAttacked : Belief {
 public class TribeHasLowFoodLevel : Belief {
     public FoodQuantity foodQuantity;
 
-    // Here we let Food Low level be active for 3 updates, even 
-    // when perceptions conditions are not satisfied
     public override void UpdateBelief (Percept p) {
-        base.UpdateBelief(p);
-        if(p.SensorData.FoodTribe < new FoodQuantity(Tribe.CRITICAL_FOOD_LEVEL)) {
-            this.foodQuantity = p.SensorData.FoodTribe;
-            EnableBelief(2);
-        } else if(timesToBeActive > 0) {
-            timesToBeActive--;
-        } else {
+
+        if(p.SensorData.FoodTribe < new FoodQuantity(Tribe.CRITICAL_FOOD_LEVEL) &&
+           !IsActive) {
+            EnableBelief();
+        } else if(IsActive) {
             DisableBelief();
         }
     }
