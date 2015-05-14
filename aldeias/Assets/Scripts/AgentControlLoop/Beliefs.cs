@@ -170,23 +170,13 @@ public class NearMeetingPoint : Belief {
     // Found meeting point cells are saved in Relevant Cells
     // even when belief is inactive
     public override void UpdateBelief (Percept p) {
-        base.UpdateBelief(p);
         foreach(var cell in p.SensorData.MeetingPointCells) {
             addRelevantCell(cell);
         }
+    }
 
-        if(p.SensorData.MeetingPointCells.Count != 0 ) {
-            EnableBelief();
-        } else if(IsActive) {
-            try {
-                SensorData prevSensorData = GetSensorData(1);
-                if(prevSensorData.MeetingPointCells.Count == 0) {
-                   DisableBeliefKeepingRelevantCells();
-                }
-            } catch (SensorDataDoesNotExists) {
-                ; // do nothing
-            }
-        }     
+    public NearMeetingPoint() {
+        EnableBelief ();
     }
 }
 
@@ -196,13 +186,8 @@ public class TribeIsBeingAttacked : Belief {
      *  - Tribe territory is decreasing
      */
     private bool ArePreconditionsSatisfied(SensorData sensorData) {
-        try {
-            return ((PreviousSensorDataCount > 0 &&
-                    GetSensorData(1).TribeCellCount > sensorData.TribeCellCount) ||
-                    sensorData.Enemies.Count > 0);
-        } catch(SensorDataDoesNotExists) {
-            return false;
-        }
+        return sensorData.AgentIsInsideTribe &&
+            sensorData.Enemies.Count > 0;
     }
    
     public override void UpdateBelief (Percept p) {
@@ -213,23 +198,8 @@ public class TribeIsBeingAttacked : Belief {
             }
             EnableBelief();
         } else if(IsActive) {
-            // Here we only disable if statistics show us that things are getting better,
-            // i.e. in previous sensorData, tribe cells number did not decrease
-            // and we didn't see enemies
-            int initialCellCount = 0;
-            int finalCellCount = 0;
-            int rangeMax = Mathf.CeilToInt(PreviousSensorDataCount/2f);
-            int enemiesCount = 0;
-            for(int i = 0; i < rangeMax; i++) {
-                SensorData sd = GetSensorData(i);
-                if(i == 0) {
-                    initialCellCount = sd.TribeCellCount;
-                } else if(i == rangeMax-1) {
-                    finalCellCount = sd.TribeCellCount;
-                }
-                enemiesCount = (sd.Enemies.Count > 0) ? enemiesCount + 1 : enemiesCount;
-            }
-            if(enemiesCount == 0 && (finalCellCount >= initialCellCount)) {
+            // TODO: consider communication between habitants
+            if(p.SensorData.Enemies.Count == 0) {
                 DisableBelief();
             }
         }
@@ -239,16 +209,13 @@ public class TribeIsBeingAttacked : Belief {
 public class TribeHasLowFoodLevel : Belief {
     public FoodQuantity foodQuantity;
 
-    // Here we let Food Low level be active for 3 updates, even 
-    // when perceptions conditions are not satisfied
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
         this.foodQuantity = p.SensorData.FoodTribe;
-        if(p.SensorData.FoodTribe < new FoodQuantity(Tribe.CRITICAL_FOOD_LEVEL)) {
-            EnableBelief(2);
-        } else if(timesToBeActive > 0) {
-            timesToBeActive--;
-        } else {
+        if(p.SensorData.FoodTribe < new FoodQuantity(Tribe.CRITICAL_FOOD_LEVEL) &&
+           !IsActive) {
+            EnableBelief();
+        } else if(IsActive) {
             DisableBelief();
         }
     }

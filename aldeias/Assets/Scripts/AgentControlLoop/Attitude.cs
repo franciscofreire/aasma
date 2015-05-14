@@ -62,6 +62,10 @@ public abstract class Attitude {
         this.vv       = new ValidationVisitor(this);
     }
 
+    protected bool habitantIsInMeetingPoint() {
+        return habitant.tribe.meetingPoint.IsInMeetingPoint(habitant.WorldPos);
+    }
+
     public abstract bool isDesirable(Beliefs beliefs);
     
     public abstract bool isSound(Beliefs beliefs);
@@ -327,15 +331,34 @@ public class DropResources : Attitude {
     }
     
     public override Plan createPlan(Beliefs beliefs) {
-        Vector2I target = habitant.tribe.meetingPoint.center;
+        Vector2I target = habitant.WorldPos;
 
-        try {
-            plan.addFollowPath(habitant, beliefs, target);
-        }
-        catch (System.Exception) {
-            plan.clear();
-            plan.add(Action.WalkRandomly(habitant));
-            return plan;
+        // In this case we will have to go to the meeting point.
+        if(!habitantIsInMeetingPoint()) {
+            KeyValuePair<int,Vector2I> targetDistance = 
+                new KeyValuePair<int,Vector2I>(int.MaxValue,new Vector2I(0,0));
+
+            // plan fails
+            if(beliefs.NearMeetingPoint.RelevantCells.Count == 0) {
+                return plan;
+            }
+            // Let's see which is the closest meeting point cell
+            foreach(var pos in beliefs.NearMeetingPoint.RelevantCells) {
+                int distance = pos.DistanceTo(habitant.WorldPos);
+                if(distance < targetDistance.Key) {
+                    targetDistance = 
+                        new KeyValuePair<int,Vector2I>(distance,pos);
+                }
+            }
+            target = targetDistance.Value;
+            try {
+                plan.addFollowPath(habitant, beliefs, target);
+            }
+            catch (System.Exception) {
+                plan.clear();
+                plan.add(Action.WalkRandomly(habitant));
+                return plan;
+            }
         }
 
         if (habitant.CarryingFood)
