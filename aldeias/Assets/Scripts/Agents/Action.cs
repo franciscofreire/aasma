@@ -161,7 +161,12 @@ public abstract class HabitantAction : Action {
 		get {
 			return habitant;
 		}
-	}
+    }
+    public Habitant Habitant {
+        get {
+            return habitant;
+        }
+    }
 
 	public HabitantAction(Habitant habitant, Vector2I target) : base(target) {
 		this.habitant = habitant;

@@ -22,14 +22,29 @@ public abstract class Belief {
     public Belief(IList<Vector2I> relevantCells) {
         this.relevantCells = relevantCells;
     }
-
+    
     public IList<Vector2I> RelevantCells {
         get { return this.relevantCells; }
         set { this.relevantCells = value; }
     }
 
+    // It only adds if it does not exists
+    public void addRelevantCell(Vector2I cell) {
+        bool isPresent = false;
+        foreach(var pos in RelevantCells) {
+            if(pos == cell) {
+                isPresent = true;
+                break;
+            }
+        }
+        if(!isPresent) {
+            RelevantCells.Add (cell);
+        }
+    }
+
     public bool IsActive {
         get { return this.isActive; }
+        set { this.isActive = value; }
     }
 
     public void AddSensorData(SensorData sensorData) {
@@ -59,11 +74,17 @@ public abstract class Belief {
         this.isActive = true;
         this.timesToBeActive = count;
     }
-
+    // default disable
     public void DisableBelief() {
         this.isActive = false;
         this.previousSensorData.Clear();
         this.relevantCells.Clear();
+        this.timesToBeActive = 0;
+    }
+
+    public void DisableBeliefKeepingRelevantCells() {
+        this.isActive = false;
+        this.previousSensorData.Clear();
         this.timesToBeActive = 0;
     }
 
@@ -90,7 +111,7 @@ public class Beliefs {
     public AnimalsAreNear AnimalsAreNear;
     public EnemiesAreNear EnemiesAreNear;
     public NearEnemyTribe NearEnemyTribe;
-    public ForestNear ForestNear;
+    public KnownWood KnownWood;
     public PickableFood DroppedFood;
     public PickableWood DroppedWood;
     public HabitantHasLowEnergy HabitantHasLowEnergy;
@@ -108,7 +129,7 @@ public class Beliefs {
             yield return EnemiesAreNear;
             yield return AnimalsAreNear;
             yield return NearEnemyTribe;
-            yield return ForestNear;
+            yield return KnownWood;
             yield return DroppedFood;
             yield return DroppedWood;
             yield return HabitantHasLowEnergy;
@@ -129,7 +150,7 @@ public class Beliefs {
         AnimalsAreNear=new AnimalsAreNear();
         EnemiesAreNear=new EnemiesAreNear();
         NearEnemyTribe=new NearEnemyTribe();
-        ForestNear=new ForestNear(h);
+        KnownWood=new KnownWood(h);
         DroppedFood=new PickableFood();
         DroppedWood=new PickableWood();
         HabitantHasLowEnergy=new HabitantHasLowEnergy();
@@ -144,25 +165,28 @@ public class Beliefs {
  *  - MeetingPoint is on Agents' vision
  */  
 public class NearMeetingPoint : Belief {
-    // Belief remains active if the last but one sensor
+    // Belief remains active if the last sensor
     // satisfies the condition (Agent saw meeting point cells)
+    // Found meeting point cells are saved in Relevant Cells
+    // even when belief is inactive
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
-        if(p.SensorData.MeetingPointCells.Count != 0) {
-            RelevantCells = p.SensorData.MeetingPointCells;
-            EnableBelief();
-        } else {
-            if(IsActive) {
-                try {
-                    SensorData prevSensorData = GetSensorData(2);
-                    if(prevSensorData.MeetingPointCells.Count != 0) {
-                        DisableBelief();
-                    }
-                } catch (SensorDataDoesNotExists) {
-                    ; // do nothing
-                }
-            }
+        foreach(var cell in p.SensorData.MeetingPointCells) {
+            addRelevantCell(cell);
         }
+
+        if(p.SensorData.MeetingPointCells.Count != 0 ) {
+            EnableBelief();
+        } else if(IsActive) {
+            try {
+                SensorData prevSensorData = GetSensorData(1);
+                if(prevSensorData.MeetingPointCells.Count == 0) {
+                   DisableBeliefKeepingRelevantCells();
+                }
+            } catch (SensorDataDoesNotExists) {
+                ; // do nothing
+            }
+        }     
     }
 }
 
@@ -170,7 +194,6 @@ public class TribeIsBeingAttacked : Belief {
     /* Conditions:
      *  - Habitant is near enemy and it is insideTribe
      *  - Tribe territory is decreasing
-     *  - 
      */
     private bool ArePreconditionsSatisfied(SensorData sensorData) {
         try {
@@ -287,16 +310,29 @@ public class NearEnemyTribe : Belief {
     }   
 }
 
-public class ForestNear : Belief {
-    public Matrix<Tree> Forest;
-    public IEnumerable<Vector2I> AvailableTrees {
+public class KnownWood : Belief {
+    public struct KnownWoodEntry {
+        WoodQuantity Wood;
+        bool Alive;
+        public KnownWoodEntry(WoodQuantity wood, bool alive) {
+            this.Wood = wood;
+            this.Alive = alive;
+        }
+        public bool HasWood() {
+            return Wood > new WoodQuantity(0);
+        }
+    }
+    public Matrix<KnownWoodEntry?> Map;
+    public IEnumerable<Vector2I> CoordsWithWood {
         get {
-            return Forest.AllCoords.Where(c=>Forest[c]!=null && Forest[c].HasWood);
+            return Map.AllCoords.Where(c=>Map[c]!=null && Map[c].Value.HasWood());
         }
     }
 
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
+
+            /*
         if(p.SensorData.Trees.Count > 0) {
             RelevantCells = new List<Vector2I>();
             foreach(Tree t in p.SensorData.Trees) {
@@ -315,11 +351,20 @@ public class ForestNear : Belief {
         foreach(var c in p.SensorData.NearbyCells) {
             if (!p.Habitant.worldInfo.worldTiles.WorldTileInfoAtCoord(c).HasTree)
                 Forest[c] = null;
+                */
+
+        foreach(Tree t in p.SensorData.Trees.Concat(p.SensorData.Stumps))
+            Map[t.Pos] = t.HasWood ? new KnownWoodEntry(t.Wood, t.Alive) : (KnownWoodEntry?)null;
+            
+        // Update with depleted trees
+        foreach(var c in p.SensorData.NearbyCells) {
+            if (!p.Habitant.worldInfo.worldTiles.WorldTileInfoAtCoord(c).HasTree)
+                Map[c] = null;
         }
     }
     
-    public ForestNear(Habitant h) {
-        Forest = new Matrix<Tree>(h.worldInfo.Size);
+    public KnownWood(Habitant h) {
+        Map = new Matrix<KnownWoodEntry?>(h.worldInfo.Size);
     }
 }
 
@@ -382,18 +427,20 @@ public class UnclaimedTerritoryIsNear : Belief {
 }
 
 public class KnownObstacles : Belief {
-    public ObstacleMapEntry[,] ObstacleMap;
-
     public enum ObstacleMapEntry { Obstacle, Free, Unknown };
+    public Matrix<ObstacleMapEntry> ObstacleMap;
+    public bool CoordIsFree(Vector2I coord) {
+        return ObstacleMap[coord]!=ObstacleMapEntry.Obstacle;
+    }
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
         //Update obstacle positions.
         foreach(var obsCoord in SensorDataObstacles(p.SensorData)) {
-            ObstacleMap[obsCoord.x, obsCoord.y] = ObstacleMapEntry.Obstacle;
+            ObstacleMap[obsCoord] = ObstacleMapEntry.Obstacle;
         }
         //Update free positions.
         foreach(var freeCoord in p.SensorData.Cells.Except(SensorDataObstacles(p.SensorData))) {
-            ObstacleMap[freeCoord.x, freeCoord.y] = ObstacleMapEntry.Free;
+            ObstacleMap[freeCoord] = ObstacleMapEntry.Free;
         }
     }
     public KnownObstacles(Habitant h) {
@@ -402,16 +449,11 @@ public class KnownObstacles : Belief {
     }
     private void CreateObstacleMapForHabitant(Habitant h) {
         var mapSize = h.worldInfo.Size;
-        ObstacleMap = new ObstacleMapEntry[mapSize.x,mapSize.y];
-        foreach(var x in Enumerable.Range(0,mapSize.x)) {
-            foreach(var y in Enumerable.Range(0,mapSize.y)) {
-                ObstacleMap[x,y] = ObstacleMapEntry.Unknown;
-            }
-        }
+        ObstacleMap = new Matrix<ObstacleMapEntry>(mapSize,ObstacleMapEntry.Unknown);
     }
     private IEnumerable<Vector2I> SensorDataObstacles(SensorData sensorData) {
         return sensorData.Trees
-                .Concat(sensorData.Stumps).Select(t=>t.Pos)
+                .Concat(sensorData.Stumps).Where(t=>t.HasWood).Select(t=>t.Pos)
                 .Concat(sensorData.Enemies.Select(e=>CoordConvertions.AgentPosToTile(e.pos)))
                 .Concat(sensorData.Animals.Select(a=>CoordConvertions.AgentPosToTile(a.pos))); 
     }

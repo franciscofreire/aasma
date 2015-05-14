@@ -35,7 +35,7 @@ public class ValidationVisitor {
     /************/
 
     public bool isCutTreeValid(CutTree a) {
-        return a.performer.AliveTree(a.target);
+        return a.Habitant.AliveTree(a.target);
     }
 
     public bool isChopTreeValid(ChopTree a) {

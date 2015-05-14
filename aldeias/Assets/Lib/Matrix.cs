@@ -38,4 +38,17 @@ public class Matrix<T> {
             return AllCoords.Select(c=>this[c]);
         }
     }
+    /*private string GridString {
+        get {
+            string lines = "";
+            for(int y=Size.y-1; y>=0; y--) {
+                string line = "";
+                for(int x=0; x<Size.x; x++) {
+                    line += this[new Vector2I(x,y)] + " ";
+                }
+                lines += line + "\n";
+            }
+            return lines;
+        }
+    }*/
 }

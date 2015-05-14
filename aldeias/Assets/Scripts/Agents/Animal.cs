@@ -198,8 +198,7 @@ public class Animal : Agent {
         }
     }
     
-    public static int    FOOD_TEAR_QUANTITY = 50;
-    public static Weight FOOD_WEIGHT        = new Weight(FOOD_TEAR_QUANTITY);
+    public static FoodQuantity    FoodTearQuantity = new FoodQuantity(50);
     private FoodQuantity food;
     public  FoodQuantity Food {
         get {
@@ -214,16 +213,7 @@ public class Animal : Agent {
             return !Alive && (food > FoodQuantity.Zero);
         }
     }
-    public override bool LowEnergy() {
-        return false;
-    }
-    public override void AnnounceDeath() {
-        worldInfo.NotifyAnimalDiedListeners(this);
-    }
-    
-    public override void AnnounceDeletion() {
-        worldInfo.NotifyAnimalDeletedListeners(this);
-    }
+
 
     public override void updateSensors() {
         //FIXME: Sensors must be updated here
@@ -234,7 +224,7 @@ public class Animal : Agent {
         if (Alive) {
             return FoodQuantity.Zero;
         } else {
-            var foodToRemove = new FoodQuantity(FOOD_TEAR_QUANTITY);
+            var foodToRemove = FoodTearQuantity;
             var removedFood = foodToRemove <= food ? foodToRemove : food;
             food = food-removedFood;
             return removedFood;
@@ -252,14 +242,13 @@ public class Animal : Agent {
 
         worldInfo.AddAnimalDeletedListener(removeFromWorldInfo);
     }
-    
-    public override void removeFromWorldInfo() {
-        // Remove agent reference in tile
-        worldInfo.worldTiles.WorldTileInfoAtCoord(
-            CoordConvertions.AgentPosToTile(pos)).Agent = null;
-        
-        // Remove agent from tribe
-        habitat.RemoveAnimal(this);
+
+    public override void OnWorldTick () {
+        if(!worldInfo.AnimalMovement)
+            return;
+        base.OnWorldTick ();
+        if (Alive)
+            MoveLikeAVehicle();
     }
 
 	private IEnumerable<Animal> Myself {
@@ -313,16 +302,23 @@ public class Animal : Agent {
 		ChangePosition(newPos);
 	}
 
-    public override bool EnemyInFront() {
-        return false; //FIXME: Don't forget to change this
-    }
 
-    public override void OnWorldTick () {
-        if(!worldInfo.AnimalMovement)
-            return;
-        base.OnWorldTick ();
-        if (Alive)
-            MoveLikeAVehicle();
+
+    public override void AnnounceDeath() {
+        worldInfo.NotifyAnimalDiedListeners(this);
+    }
+    
+    public override void AnnounceDeletion() {
+        worldInfo.NotifyAnimalDeletedListeners(this);
+    }
+    
+    public override void removeFromWorldInfo() {
+        // Remove agent reference in tile
+        worldInfo.worldTiles.WorldTileInfoAtCoord(
+            CoordConvertions.AgentPosToTile(pos)).Agent = null;
+        
+        // Remove agent from tribe
+        habitat.RemoveAnimal(this);
     }
 }
 

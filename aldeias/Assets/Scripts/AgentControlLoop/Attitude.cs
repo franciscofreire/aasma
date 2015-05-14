@@ -176,7 +176,7 @@ public class ExpandTribe : Attitude {
 
     public override Plan createPlan(Beliefs beliefs) {
         IEnumerable<Vector2I> targets = beliefs.TribeTerritories.UnclaimedTerritories
-            .Where(t=>beliefs.KnownObstacles.ObstacleMap[t.x,t.y]!=KnownObstacles.ObstacleMapEntry.Obstacle);
+            .Where(t=>beliefs.KnownObstacles.ObstacleMap[t]!=KnownObstacles.ObstacleMapEntry.Obstacle);
         Vector2I target = habitant.closestCell(targets);
 
         plan.addFollowPath(habitant, beliefs, target);
@@ -242,7 +242,7 @@ public class IncreaseWoodStock : Attitude {
     public override bool isDesirable(Beliefs beliefs) {
         return beliefs.TribeHasFewFlags.IsActive
             && habitant.CanCarryWeight(Tree.WoodChopQuantity.Weight)
-            && beliefs.ForestNear.AvailableTrees.Count() > 0; // TODO: This condition is removed when createPlan is ok
+            && beliefs.KnownWood.CoordsWithWood.Count() > 0; // TODO: This condition is removed when createPlan is ok
     }
     
     public override bool isSound(Beliefs beliefs) {
@@ -258,7 +258,7 @@ public class IncreaseWoodStock : Attitude {
     }
     
     public override Plan createPlan(Beliefs beliefs) {
-        IEnumerable<Vector2I> targets = beliefs.ForestNear.AvailableTrees;
+        IEnumerable<Vector2I> targets = beliefs.KnownWood.CoordsWithWood;
 
         // Do we know about any trees?
         if (targets.Count() > 0) {
@@ -268,7 +268,7 @@ public class IncreaseWoodStock : Attitude {
             Vector2I neighbor = Vector2I.INVALID;
             try {
                 IEnumerable<Vector2I> neighbors = cca.CoordsAtDistance(1).Where(c => {
-                    return beliefs.KnownObstacles.ObstacleMap[c.x, c.y] != KnownObstacles.ObstacleMapEntry.Obstacle;
+                    return beliefs.KnownObstacles.CoordIsFree(c);
                 });
                 neighbor = habitant.closestCell(neighbors);
             }
@@ -303,7 +303,7 @@ public class IncreaseWoodStock : Attitude {
 public class DropResources : Attitude {
     public override bool isDesirable(Beliefs beliefs) {
         return !habitant.CanCarryWeight(Tree.WoodChopQuantity.Weight)
-            && !habitant.CanCarryWeight(Animal.FOOD_WEIGHT);
+            && !habitant.CanCarryWeight(Animal.FoodTearQuantity.Weight);
     }
     
     public override bool isSound(Beliefs beliefs) {
