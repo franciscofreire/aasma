@@ -250,12 +250,22 @@ public class MaintainEnergy : Attitude {
         //   distance to our closest territory -> if tribe has food
         //   distance to closest dead animal
         //   distance to closest alive animal -> if has enough energy
+        if(beliefs.TribeHasLowFoodLevel.foodQuantity > FoodQuantity.Zero) {
+            var allCoords = new CellCoordsAround(habitant).CloserFirst;
+            var closestAllyTerritory = allCoords.First(c=>beliefs.TribeTerritories.Territories[c]==habitant.tribe);
 
+            plan = new Plan(this);
+            plan.addFollowPath(habitant, beliefs, closestAllyTerritory);
+            plan.addLastAction(new EatInTribe(habitant, closestAllyTerritory));
+            return plan;
+        }
 
         return plan;
     }
 
-    public MaintainEnergy(Habitant habitant) : base(habitant) {}
+    public MaintainEnergy(Habitant habitant) : base(habitant) {
+        Importance = 100;
+    }
 }
 
 public class IncreaseFoodStock : Attitude {

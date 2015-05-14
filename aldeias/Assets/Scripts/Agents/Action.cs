@@ -102,7 +102,7 @@ public class Walk : AnyAgentAction {
 
         // decrement energy when a habitant walks
         if(target != origin) {
-            //agent.RemoveEnergy(new Energy(WALK_DECREMENT));
+            agent.RemoveEnergy(new Energy(WALK_DECREMENT));
         }
 	}
     
