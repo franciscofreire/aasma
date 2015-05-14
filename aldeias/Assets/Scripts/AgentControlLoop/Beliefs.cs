@@ -113,8 +113,8 @@ public class Beliefs {
     public EnemiesAreNear EnemiesAreNear;
     public NearEnemyTribe NearEnemyTribe;
     public KnownWood KnownWood;
-    public PickableFood DroppedFood;
-    public PickableWood DroppedWood;
+    public PickableFood PickableFood;
+    public PickableWood PickableWood;
     public HabitantHasLowEnergy HabitantHasLowEnergy;
     public UnclaimedTerritoryIsNear UnclaimedTerritoryIsNear;
     public KnownObstacles KnownObstacles;
@@ -131,8 +131,8 @@ public class Beliefs {
             yield return AnimalsAreNear;
             yield return NearEnemyTribe;
             yield return KnownWood;
-            yield return DroppedFood;
-            yield return DroppedWood;
+            yield return PickableFood;
+            yield return PickableWood;
             yield return HabitantHasLowEnergy;
             yield return UnclaimedTerritoryIsNear;
             yield return KnownObstacles;
@@ -152,8 +152,8 @@ public class Beliefs {
         EnemiesAreNear=new EnemiesAreNear();
         NearEnemyTribe=new NearEnemyTribe();
         KnownWood=new KnownWood(h);
-        DroppedFood=new PickableFood();
-        DroppedWood=new PickableWood();
+        PickableFood=new PickableFood();
+        PickableWood=new PickableWood();
         HabitantHasLowEnergy=new HabitantHasLowEnergy();
         UnclaimedTerritoryIsNear=new UnclaimedTerritoryIsNear();
         KnownObstacles=new KnownObstacles(h);

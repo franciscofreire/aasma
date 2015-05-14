@@ -218,30 +218,172 @@ public class MaintainEnergy : Attitude {
     }
     
     public override bool isSound(Beliefs beliefs) {
-        return true;
+        return plan.peek().acceptValidationVisitor(vv);
     }
 
     public override Plan createPlan(Beliefs beliefs) {
+        IEnumerable<Vector2I> targets = beliefs.PickableFood.RelevantCells;
+        
+        // Do we know about any chicken legs lying around?
+        if (targets.Count() > 0) {
+            Vector2I target = habitant.closestCell(targets);
+            
+            CellCoordsAround cca = new CellCoordsAround(target, habitant.worldInfo);
+            Vector2I neighbor = Vector2I.INVALID;
+            try {
+                IEnumerable<Vector2I> neighbors = cca.CoordsAtDistance(1).Where(c => {
+                    return beliefs.KnownObstacles.CoordIsFree(c);
+                });
+                neighbor = habitant.closestCell(neighbors);
+            }
+            catch (System.Exception) {
+                Debug.Log("#### NO NEIGHBOR");
+                plan.clear();
+                plan.add(Action.WalkRandomly(habitant));
+                return plan;
+            }
+            
+            try {
+                plan.addFollowPath(habitant, beliefs, neighbor);
+            }
+            catch (System.Exception) {
+                plan.clear();
+                plan.add(Action.WalkRandomly(habitant));
+                return plan;
+            }
+
+            plan.add(new PickupFood(habitant, target));
+            plan.addLastAction(new EatCarriedFood(habitant));
+        }
+        // Hunt animals
+        else {
+            IEnumerable<Vector2I> animals = beliefs.AnimalsAreNear.RelevantCells;
+            
+            // Do we know some live animals?
+            if (targets.Count() > 0) {
+                Vector2I target = habitant.closestCell(targets);
+                
+                CellCoordsAround cca = new CellCoordsAround(target, habitant.worldInfo);
+                Vector2I neighbor = Vector2I.INVALID;
+                try {
+                    IEnumerable<Vector2I> neighbors = cca.CoordsAtDistance(1).Where(c => {
+                        return beliefs.KnownObstacles.CoordIsFree(c);
+                    });
+                    neighbor = habitant.closestCell(neighbors);
+                }
+                catch (System.Exception) {
+                    Debug.Log("#### NO NEIGHBOR");
+                    plan.clear();
+                    plan.add(Action.WalkRandomly(habitant));
+                    return plan;
+                }
+                
+                try {
+                    plan.addFollowPath(habitant, beliefs, neighbor);
+                }
+                catch (System.Exception) {
+                    plan.clear();
+                    plan.add(Action.WalkRandomly(habitant));
+                    return plan;
+                }
+                
+                plan.addLastAction(new Attack(habitant, target));
+            }
+        }
+
         return plan;
     }
 
-    public MaintainEnergy(Habitant habitant) : base(habitant) {}
+    public MaintainEnergy(Habitant habitant) : base(habitant) {
+        Importance = 999;
+    }
 }
 
 public class IncreaseFoodStock : Attitude {
     public override bool isDesirable(Beliefs beliefs) {
-        return beliefs.TribeHasLowFoodLevel.IsActive;
+        return beliefs.TribeHasLowFoodLevel.IsActive
+            && habitant.CanCarryWeight(Animal.FoodTearQuantity.Weight);
     }
     
     public override bool isSound(Beliefs beliefs) {
-        return true;
+        return plan.peek().acceptValidationVisitor(vv);
     }
 
-    public override Plan createPlan(Beliefs beliefs) {
+    public override Plan createPlan(Beliefs beliefs) {        
+        IEnumerable<Vector2I> targets = beliefs.PickableFood.RelevantCells;
+        
+        // Do we know about any chicken legs lying around?
+        if (targets.Count() > 0) {
+            Vector2I target = habitant.closestCell(targets);
+            
+            CellCoordsAround cca = new CellCoordsAround(target, habitant.worldInfo);
+            Vector2I neighbor = Vector2I.INVALID;
+            try {
+                IEnumerable<Vector2I> neighbors = cca.CoordsAtDistance(1).Where(c => {
+                    return beliefs.KnownObstacles.CoordIsFree(c);
+                });
+                neighbor = habitant.closestCell(neighbors);
+            }
+            catch (System.Exception) {
+                Debug.Log("#### NO NEIGHBOR");
+                plan.clear();
+                plan.add(Action.WalkRandomly(habitant));
+                return plan;
+            }
+            
+            try {
+                plan.addFollowPath(habitant, beliefs, neighbor);
+            }
+            catch (System.Exception) {
+                plan.clear();
+                plan.add(Action.WalkRandomly(habitant));
+                return plan;
+            }
+            
+            plan.addLastAction(new PickupFood(habitant, target));
+        }
+        // Hunt animals
+        else {
+            IEnumerable<Vector2I> animals = beliefs.AnimalsAreNear.RelevantCells;
+            
+            // Do we know some live animals?
+            if (targets.Count() > 0) {
+                Vector2I target = habitant.closestCell(targets);
+                
+                CellCoordsAround cca = new CellCoordsAround(target, habitant.worldInfo);
+                Vector2I neighbor = Vector2I.INVALID;
+                try {
+                    IEnumerable<Vector2I> neighbors = cca.CoordsAtDistance(1).Where(c => {
+                        return beliefs.KnownObstacles.CoordIsFree(c);
+                    });
+                    neighbor = habitant.closestCell(neighbors);
+                }
+                catch (System.Exception) {
+                    Debug.Log("#### NO NEIGHBOR");
+                    plan.clear();
+                    plan.add(Action.WalkRandomly(habitant));
+                    return plan;
+                }
+                
+                try {
+                    plan.addFollowPath(habitant, beliefs, neighbor);
+                }
+                catch (System.Exception) {
+                    plan.clear();
+                    plan.add(Action.WalkRandomly(habitant));
+                    return plan;
+                }
+                
+                plan.addLastAction(new Attack(habitant, target));
+            }
+        }
+        
         return plan;
     }
 
-    public IncreaseFoodStock(Habitant habitant) : base(habitant) {}
+    public IncreaseFoodStock(Habitant habitant) : base(habitant) {
+        Importance = 20;
+    }
 }
 
 public class IncreaseWoodStock : Attitude {
@@ -280,6 +422,9 @@ public class IncreaseWoodStock : Attitude {
             }
             catch (System.Exception) {
                 Debug.Log("#### NO NEIGHBOR");
+                plan.clear();
+                plan.add(Action.WalkRandomly(habitant));
+                return plan;
             }
         
             try {
@@ -370,7 +515,8 @@ public class DropResources : Attitude {
 
 public class StartAttack : Attitude {
     public override bool isDesirable(Beliefs beliefs) {
-        return beliefs.EnemiesAreNear.IsActive; // FIXME: Maybe another belief
+        return beliefs.EnemiesAreNear.IsActive
+            || beliefs.AnimalsAreNear.IsActive;
     }
     
     public override bool isSound(Beliefs beliefs) {
@@ -378,7 +524,8 @@ public class StartAttack : Attitude {
     }
     
     public override Plan createPlan(Beliefs beliefs) {
-        IEnumerable<Vector2I> targets = beliefs.EnemiesAreNear.RelevantCells;
+        IEnumerable<Vector2I> targets = beliefs.EnemiesAreNear.RelevantCells
+            .Concat(beliefs.AnimalsAreNear.RelevantCells);
         Vector2I target = Vector2I.INVALID;
         try {
             target = habitant.closestCell(targets);
@@ -397,6 +544,9 @@ public class StartAttack : Attitude {
         }
         catch (System.Exception) {
             Debug.Log("#### NO NEIGHBOR");
+            plan.clear();
+            plan.add(Action.WalkRandomly(habitant));
+            return plan;
         }
         
         try {
