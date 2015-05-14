@@ -252,7 +252,6 @@ public class PlaceFlag : HabitantAction {
         if (flag != null) {
             world.worldTiles.WorldTileInfoAtCoord(target).tribeTerritory.Flag = flag;
 
-            //TODO: Dec cellcount of enemy
             habitant.tribe.cell_count++;
         }
 	}
@@ -262,6 +261,30 @@ public class PlaceFlag : HabitantAction {
     }
 
 	public PlaceFlag(Habitant habitant, Vector2I target) : base(habitant, target) {}
+}
+
+public class RemoveFlag : HabitantAction {
+    public override void apply () {
+        WorldTileInfo wti = habitant.worldInfo.worldTiles.WorldTileInfoAtCoord(target);
+
+        if(wti.tribeTerritory.IsClaimed && 
+           !wti.tribeTerritory.Flag.Value.Tribe.Equals(habitant.tribe)) {
+
+            Flag? flag = habitant.tribe.FlagMachine.MakeFlag();
+            if (flag != null) {
+                world.worldTiles.WorldTileInfoAtCoord(target).tribeTerritory.Flag = flag;
+
+                world.GetEnemyTribe(habitant.tribe).cell_count--;
+                habitant.tribe.cell_count++;
+            }
+        }
+    }
+    
+    public override bool acceptValidationVisitor(ValidationVisitor vv) {
+        return vv.isRemoveFlagValid(this);
+    }
+    
+    public RemoveFlag(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }
 
 public class PickupFood : HabitantAction {
