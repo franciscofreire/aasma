@@ -17,7 +17,8 @@ public class ValidationVisitor {
     }
 
     public bool isAttackValid(Attack a) {
-        return true;
+        return a.performer.worldInfo.worldTiles.WorldTileInfoAtCoord(a.target).HasAgent
+            && a.performer.worldInfo.worldTiles.WorldTileInfoAtCoord(a.target).Agent.Alive;
     }
     
     /**********/
