@@ -82,7 +82,7 @@ namespace HabitantMessages {
             public HabitantBeingAttacked(Habitant sender, IList<Vector2I> currentEnemyPositions) : base(sender) {
                 this.EnemyPositions = currentEnemyPositions;
             }
-            public void AcceptVisitor(IMessageVisitor visitor) {
+            public override void AcceptMessageVisitor(IMessageVisitor visitor) {
                 visitor.VisitHabitantBeingAttacked(this);
             }
         }

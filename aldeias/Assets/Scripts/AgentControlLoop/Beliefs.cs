@@ -98,6 +98,7 @@ public abstract class Belief {
         foreach(var b in beliefs.AllBeliefs) {
             b.UpdateBelief (p);
         }
+        p.Habitant.PendingMessages.Clear();//FIXME: Make sure we want to clear the message queue after each belief review.
     }
 }
 
@@ -144,7 +145,7 @@ public class Beliefs {
         WorldInfo = h.worldInfo;
 
         NearMeetingPoint=new NearMeetingPoint();
-        TribeIsBeingAttacked=new TribeIsBeingAttacked();
+        TribeIsBeingAttacked=new TribeIsBeingAttacked(h);
         TribeHasLowFoodLevel=new TribeHasLowFoodLevel();
         TribeHasFewFlags=new TribeHasFewFlags();
         AnimalsAreNear=new AnimalsAreNear();
@@ -181,6 +182,7 @@ public class NearMeetingPoint : Belief {
 }
 
 public class TribeIsBeingAttacked : Belief {
+    Habitant habitant;
     /* Conditions:
      *  - Habitant is near enemy and it is insideTribe
      *  - Tribe territory is decreasing
@@ -190,18 +192,46 @@ public class TribeIsBeingAttacked : Belief {
             sensorData.Enemies.Count > 0;
     }
    
+    private void InformOthers() {
+        var message = new HabitantMessages.Messages.HabitantBeingAttacked(habitant, RelevantCells);
+        habitant.SendMessageToAllies(message);
+    }
+
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
         if(!IsActive && ArePreconditionsSatisfied(p.SensorData)) {
             foreach (Habitant h in p.SensorData.Enemies) {
                 RelevantCells.Add (CoordConvertions.AgentPosToTile(h.pos));
             }
+            InformOthers();
             EnableBelief();
-        } else if(IsActive) {
+        } else if(p.Habitant.PendingMessages.Count != 0) { 
+            foreach(HabitantMessages.Message m in p.Habitant.PendingMessages) {
+                var messageVisitor = new TribeAttackedRecognizer();
+                m.AcceptMessageVisitor(messageVisitor);
+                if(messageVisitor.EnemyPositions.Count != 0) {
+                    foreach(var pos in messageVisitor.EnemyPositions) {
+                        RelevantCells.Add(pos);
+                    }
+                    EnableBelief();
+                }
+            }
+        }
+        else if(IsActive) {
             // TODO: consider communication between habitants
             if(p.SensorData.Enemies.Count == 0) {
                 DisableBelief();
             }
+        }
+    }
+    public TribeIsBeingAttacked(Habitant habitant) {
+        this.habitant = habitant;
+    }
+    private class TribeAttackedRecognizer : HabitantMessages.IMessageVisitor {
+        public List<Vector2I> EnemyPositions = new List<Vector2I>();
+        public void VisitHabitantBeingAttacked(HabitantMessages.Messages.HabitantBeingAttacked message) {
+            EnemyPositions.AddRange(message.EnemyPositions);
+
         }
     }
 }
