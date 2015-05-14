@@ -11,7 +11,9 @@ public class ValidationVisitor {
     }
 
     public bool isWalkValid(Walk a) {
-        return a.performer.worldInfo.worldTiles.WorldTileInfoAtCoord(a.target).IsEmpty;
+        return !a.performer.worldInfo.worldTiles.WorldTileInfoAtCoord(a.target).HasAgent
+            && (!a.performer.worldInfo.worldTiles.WorldTileInfoAtCoord(a.target).HasTree ||
+                !a.performer.worldInfo.worldTiles.WorldTileInfoAtCoord(a.target).Tree.HasWood);
     }
 
     public bool isAttackValid(Attack a) {

@@ -110,15 +110,27 @@ public class HabitantDeliberative : AgentImplementation {
     //
     // Note that the next perception is already available when doAction() is called.
     public void doAction() {
-        // If we have nothing planned, do we have valid SensorData do update beliefs?
-        if (plan.isEmpty() && habitant.sensorData.AdjacentCells.Count > 0) {
+        // If we are trapped, we need to backtrack
+        if (habitant.sensorData.AdjacentCells.Count == 0) {
+            plan.clear();
+            Action a = Action.RunAwayOrWalkRandomly(habitant);
+            a.apply();
+
+            ActionExecuted = true;
+
+            return;
+        }
+
+        // Nothing planned
+        if (plan.isEmpty()) {
             Belief.brf(beliefs, CurrentPercept);
             updateOptions();
             updateFilter();
 
             // We couldn't generate intentions, tough luck
-            if (intentions.Count == 0)
+            if (intentions.Count == 0) {
                 return; 
+            }
 
             plan = updatePlan();
         }

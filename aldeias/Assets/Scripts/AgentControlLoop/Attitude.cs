@@ -178,8 +178,16 @@ public class ExpandTribe : Attitude {
         IEnumerable<Vector2I> targets = beliefs.TribeTerritories.UnclaimedTerritories
             .Where(t=>beliefs.KnownObstacles.ObstacleMap[t]!=KnownObstacles.ObstacleMapEntry.Obstacle);
         Vector2I target = habitant.closestCell(targets);
+        
+        try {
+            plan.addFollowPath(habitant, beliefs, target);
+        }
+        catch (System.Exception) {
+            plan.clear();
+            plan.add(Action.WalkRandomly(habitant));
+            return plan;
+        }
 
-        plan.addFollowPath(habitant, beliefs, target);
         plan.addLastAction(new PlaceFlag(habitant, target));
 
         return plan;
@@ -274,14 +282,16 @@ public class IncreaseWoodStock : Attitude {
             }
             catch (System.Exception) {
                 Debug.Log("#### NO NEIGHBOR");
-                /*
+            }
+        
+            try {
+                plan.addFollowPath(habitant, beliefs, neighbor);
+            }
+            catch (System.Exception) {
                 plan.clear();
                 plan.add(Action.WalkRandomly(habitant));
                 return plan;
-                */
             }
-        
-            plan.addFollowPath(habitant, beliefs, neighbor);
 
             if (habitant.AliveTree(target))
                 plan.add(new CutTree(habitant, target));
@@ -307,16 +317,26 @@ public class DropResources : Attitude {
     }
     
     public override bool isSound(Beliefs beliefs) {
+        return plan.peek().acceptValidationVisitor(vv);
+/*
         if (!plan.peek().acceptValidationVisitor(vv)) {
             plan.updatePath(habitant, beliefs, plan.peek().target);
         }
         
-        return true;
+        return true;*/
     }
     
     public override Plan createPlan(Beliefs beliefs) {
         Vector2I target = habitant.tribe.meetingPoint.center;
-        plan.addFollowPath(habitant, beliefs, target);
+
+        try {
+            plan.addFollowPath(habitant, beliefs, target);
+        }
+        catch (System.Exception) {
+            plan.clear();
+            plan.add(Action.WalkRandomly(habitant));
+            return plan;
+        }
 
         if (habitant.CarryingFood)
             plan.add(new DropFood(habitant, target));

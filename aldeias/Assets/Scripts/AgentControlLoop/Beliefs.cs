@@ -243,8 +243,8 @@ public class TribeHasLowFoodLevel : Belief {
     // when perceptions conditions are not satisfied
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
+        this.foodQuantity = p.SensorData.FoodTribe;
         if(p.SensorData.FoodTribe < new FoodQuantity(Tribe.CRITICAL_FOOD_LEVEL)) {
-            this.foodQuantity = p.SensorData.FoodTribe;
             EnableBelief(2);
         } else if(timesToBeActive > 0) {
             timesToBeActive--;
@@ -259,8 +259,8 @@ public class TribeHasFewFlags : Belief {
 
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
+        this.flagsCount = p.SensorData.TribeFlags;
         if(p.SensorData.TribeFlags < Tribe.CRITICAL_FLAG_QUANTITY) {
-            this.flagsCount = p.SensorData.TribeFlags;
             EnableBelief(2);
         } else if(IsActive && timesToBeActive-- == 0){
             DisableBelief();
@@ -271,8 +271,8 @@ public class TribeHasFewFlags : Belief {
 public class AnimalsAreNear : Belief {
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
+        RelevantCells = new List<Vector2I>();
         if(p.SensorData.Animals.Count > 0) {
-            RelevantCells = new List<Vector2I>();
             foreach(Animal a in p.SensorData.Animals) {
                 RelevantCells.Add(CoordConvertions.AgentPosToTile(a.pos));
             }
@@ -286,8 +286,8 @@ public class AnimalsAreNear : Belief {
 public class EnemiesAreNear : Belief {
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
+        RelevantCells = new List<Vector2I>();
         if(p.SensorData.Enemies.Count > 0) {
-            RelevantCells = new List<Vector2I>();
             foreach(Habitant h in p.SensorData.Enemies) {
                 RelevantCells.Add(CoordConvertions.AgentPosToTile(h.pos));
             }
@@ -371,8 +371,8 @@ public class KnownWood : Belief {
 public class PickableFood : Belief {
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
+        RelevantCells = new List<Vector2I>();
         if(p.SensorData.Food.Count > 0) {
-            RelevantCells = new List<Vector2I>();
             foreach(Animal a in p.SensorData.Food) {
                 RelevantCells.Add(CoordConvertions.AgentPosToTile(a.pos));
             }
@@ -387,8 +387,8 @@ public class PickableFood : Belief {
 public class PickableWood : Belief {
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
+        RelevantCells = new List<Vector2I>();
         if(p.SensorData.Stumps.Count > 0) {
-            RelevantCells = new List<Vector2I>();
             foreach(Tree t in p.SensorData.Stumps) {
                 RelevantCells.Add(t.Pos);
             }
@@ -404,8 +404,8 @@ public class HabitantHasLowEnergy : Belief {
 
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
+        habitantEnergy = p.Habitant.energy;
         if(p.Habitant.LowEnergy()) {
-            habitantEnergy = p.Habitant.energy;
             EnableBelief();
         } else {
             DisableBelief();
@@ -417,8 +417,8 @@ public class UnclaimedTerritoryIsNear : Belief {
 
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
+        RelevantCells = p.SensorData.UnclaimedCells;
         if(p.SensorData.UnclaimedCells.Count > 0) {
-            RelevantCells = p.SensorData.UnclaimedCells;
             EnableBelief(2);
         } else if(IsActive && timesToBeActive-- == 0){
             DisableBelief();
@@ -466,7 +466,6 @@ public class TribeTerritories : Belief {
             return Territories.AllCoords.Where(c=>Territories[c]==null);
         }
     }
-
 
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);

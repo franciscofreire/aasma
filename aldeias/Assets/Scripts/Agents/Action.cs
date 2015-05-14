@@ -37,8 +37,36 @@ public abstract class Action {
         }
         return new Walk(habitant, target);
     }
+
     public static Action WalkFront(Habitant habitant) {
         return new Walk(habitant, habitant.sensorData.FrontCell);
+    }
+
+    public static Action RunAwayOrWalkRandomly(Habitant habitant) {
+        
+        Vector2 oppositePos = habitant.pos + 
+            habitant.orientation.LeftOrientation().LeftOrientation().ToVector2();
+        Vector2I tileCoordOppositePos = CoordConvertions.AgentPosToTile(oppositePos);
+        if(habitant.worldInfo.isInsideWorld(tileCoordOppositePos)) {
+            return new Walk(habitant, tileCoordOppositePos);
+        } else {
+            return Action.WalkRandomly(habitant);
+        }
+    }
+    
+    public static Action RunAwayOrWalkRandomlyOrEat(Habitant habitant) {
+        Vector2 oppositePos = habitant.pos + 
+            habitant.orientation.LeftOrientation().LeftOrientation().ToVector2();
+        Vector2I tileCoordOppositePos = CoordConvertions.AgentPosToTile(oppositePos);
+        CryptoRandom rnd = new CryptoRandom();
+        if(rnd.Next (10) <= 5) {
+            return new EatInTribe(habitant,CoordConvertions.AgentPosToTile(habitant.pos));
+        }
+        if(habitant.worldInfo.isInsideWorld(tileCoordOppositePos)) {
+            return new Walk(habitant, tileCoordOppositePos);
+        } else {
+            return Action.WalkRandomly(habitant);
+        }
     }
 }
 

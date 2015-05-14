@@ -3,33 +3,6 @@ using UnityEngine;
 public class HabitantReactive : AgentImplementation {
     private Habitant habitant;
 
-    private Action RunAwayOrWalkRandomly() {
-
-        Vector2 oppositePos = habitant.pos + 
-            habitant.orientation.LeftOrientation().LeftOrientation().ToVector2();
-        Vector2I tileCoordOppositePos = CoordConvertions.AgentPosToTile(oppositePos);
-        if(habitant.worldInfo.isInsideWorld(tileCoordOppositePos)) {
-            return new Walk(habitant, tileCoordOppositePos);
-        } else {
-            return Action.WalkRandomly(habitant);
-        }
-    }
-
-    private Action RunAwayOrWalkRandomlyOrEat() {
-        Vector2 oppositePos = habitant.pos + 
-            habitant.orientation.LeftOrientation().LeftOrientation().ToVector2();
-        Vector2I tileCoordOppositePos = CoordConvertions.AgentPosToTile(oppositePos);
-        CryptoRandom rnd = new CryptoRandom();
-        if(rnd.Next (10) <= 5) {
-            return new EatInTribe(habitant,CoordConvertions.AgentPosToTile(habitant.pos));
-        }
-        if(habitant.worldInfo.isInsideWorld(tileCoordOppositePos)) {
-            return new Walk(habitant, tileCoordOppositePos);
-        } else {
-            return Action.WalkRandomly(habitant);
-        }
-    }
-
     public void doAction() {
         createAction().apply();
     }
@@ -37,7 +10,7 @@ public class HabitantReactive : AgentImplementation {
     public Action createAction() {
         Vector2I target;
         if ((habitant.EnemyInAdjacentPos(out target) || habitant.AnimalInAdjacentPos(out target)) && habitant.LowEnergy()) {
-            return RunAwayOrWalkRandomly();
+            return Action.RunAwayOrWalkRandomly(habitant);
         }
         else if (habitant.EnemyInAdjacentPos(out target) || habitant.AnimalInAdjacentPos(out target)) {
             Logger.Log("Attacker pos: " + habitant.pos.x + "," + habitant.pos.y, Logger.VERBOSITY.AGENTS);

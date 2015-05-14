@@ -16,7 +16,7 @@ public partial class WorldInfo : MonoBehaviour {
     public bool AnimalMovement = true;
 
     // Habitant Properties
-    private const int MAX_HABITANTS = 1;
+    private const int MAX_HABITANTS = 10;
     public bool Reactive = true;
 
 	// The size of the world in rows and columns.
@@ -430,7 +430,8 @@ public partial class WorldInfo : MonoBehaviour {
 	public IList<Vector2I> nearbyFreeCells(IList<Vector2I> cells) {
 		IList<Vector2I> freeCells = new List<Vector2I>();
 		foreach (Vector2I pos in cells) {
-			if (worldTiles.WorldTileInfoAtCoord(pos).IsEmpty)
+			if (!worldTiles.WorldTileInfoAtCoord(pos).HasAgent
+                && (!worldTiles.WorldTileInfoAtCoord(pos).HasTree || !worldTiles.WorldTileInfoAtCoord(pos).Tree.HasWood))
 				freeCells.Add (pos);
 		}
 		

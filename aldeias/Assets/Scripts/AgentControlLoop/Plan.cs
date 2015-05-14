@@ -74,14 +74,14 @@ public class Plan {
         Path path = Pathfinder.PathInMapFromTo(beliefs.KnownObstacles.ObstacleMap, 
                                                from, 
                                                target);
-        try {
+       // try {
             for(int i=1; i<path.PathPoints.Count; i++) {
                 add(new Walk(h, path.PathPoints[i]));
             }
-        }
+    /*    }
         catch (System.Exception) {
             Debug.Log("#### NO PATHPOINT FROM CELL");
-        }
+        }*/
     }
 
     // Society rule: When you encounter a friendly agent,
