@@ -113,8 +113,8 @@ public class Beliefs {
     public EnemiesAreNear EnemiesAreNear;
     public NearEnemyTribe NearEnemyTribe;
     public KnownWood KnownWood;
-    public PickableFood DroppedFood;
-    public PickableWood DroppedWood;
+    public PickableFood PickableFood;
+    public PickableWood PickableWood;
     public HabitantHasLowEnergy HabitantHasLowEnergy;
     public UnclaimedTerritoryIsNear UnclaimedTerritoryIsNear;
     public KnownObstacles KnownObstacles;
@@ -131,8 +131,8 @@ public class Beliefs {
             yield return AnimalsAreNear;
             yield return NearEnemyTribe;
             yield return KnownWood;
-            yield return DroppedFood;
-            yield return DroppedWood;
+            yield return PickableFood;
+            yield return PickableWood;
             yield return HabitantHasLowEnergy;
             yield return UnclaimedTerritoryIsNear;
             yield return KnownObstacles;
@@ -152,8 +152,8 @@ public class Beliefs {
         EnemiesAreNear=new EnemiesAreNear();
         NearEnemyTribe=new NearEnemyTribe();
         KnownWood=new KnownWood(h);
-        DroppedFood=new PickableFood();
-        DroppedWood=new PickableWood();
+        PickableFood=new PickableFood(h);
+        PickableWood=new PickableWood();
         HabitantHasLowEnergy=new HabitantHasLowEnergy();
         UnclaimedTerritoryIsNear=new UnclaimedTerritoryIsNear();
         KnownObstacles=new KnownObstacles(h);
@@ -366,9 +366,11 @@ public class KnownWood : Belief {
 }
 
 public class PickableFood : Belief {
+    public Matrix<bool> Map;
+    public int CellsWithFoodNum;
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
-        RelevantCells = new List<Vector2I>();
+        /*RelevantCells = new List<Vector2I>();
         if(p.SensorData.Food.Count > 0) {
             foreach(Animal a in p.SensorData.Food) {
                 RelevantCells.Add(CoordConvertions.AgentPosToTile(a.pos));
@@ -377,7 +379,22 @@ public class PickableFood : Belief {
         } else {
             
             DisableBelief();
+        }*/
+        // Count the available food.
+        int erasedFood = p.SensorData.Cells.Count(c=>Map[c]);
+        int addedFood = p.SensorData.Food.Count;
+        CellsWithFoodNum += addedFood - erasedFood;
+
+        // Update food map.
+        foreach(var coord in p.SensorData.Cells) {
+            Map[coord] = false;
         }
+        foreach(var deadAnimal in p.SensorData.Food) {
+            Map[CoordConvertions.AgentPosToTile(deadAnimal.pos)] = true;
+        }
+    }
+    public PickableFood(Habitant h) {
+        Map = new Matrix<bool>(h.worldInfo.Size, false);
     }
 }
 
@@ -458,10 +475,15 @@ public class KnownObstacles : Belief {
 
 public class TribeTerritories : Belief {
     public Matrix<Tribe> Territories;
+
     public IEnumerable<Vector2I> UnclaimedTerritories {
         get {
             return Territories.AllCoords.Where(c=>Territories[c]==null);
         }
+    }
+
+    public IEnumerable<Vector2I> TerritoriesTribe(Tribe t) {
+        return Territories.AllCoords.Where(c=>Territories[c]==t);
     }
 
     public override void UpdateBelief (Percept p) {
