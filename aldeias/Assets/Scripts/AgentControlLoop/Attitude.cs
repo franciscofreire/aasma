@@ -235,6 +235,8 @@ public class MaintainEnergy : Attitude {
         //Go to the nearest food source
         //Eat until energy is filled
 
+        //habitant.carriedFood
+        //    the food the habitant is currently carrying
         //beliefs.PickableFood.RelevantCells
         //    known dead animals with food to be collected
         //beliefs.AnimalsAreNear.RelevantCells
@@ -247,9 +249,31 @@ public class MaintainEnergy : Attitude {
         //    ours, theirs and '()
 
         //choose closest between:
+        //   the food we are carrying
         //   distance to our closest territory -> if tribe has food
         //   distance to closest dead animal
         //   distance to closest alive animal -> if has enough energy
+
+        //Eat from backpack.
+        if(habitant.CarryingFood) {
+            plan = new Plan(this);
+            plan.addLastAction(new EatCarriedFood(habitant));
+            return plan;
+        }
+
+        //Eat from dead animal.
+        if(beliefs.DroppedFood.CellsWithFoodNum > 0) {
+            var allCoords = new CellCoordsAround(habitant).CloserFirst;
+            var closerDroppedFood = allCoords.First(c=>beliefs.DroppedFood.Map[c]);//TODO: Prioritize according to seen order.
+
+            plan = new Plan(this);
+            plan.addFollowPath(habitant, beliefs, closerDroppedFood);
+            plan.add (new PickupFood(habitant, closerDroppedFood));
+            plan.add (new EatCarriedFood(habitant));
+            return plan;
+        }
+
+        //Eat from tribe.
         if(beliefs.TribeHasLowFoodLevel.foodQuantity > FoodQuantity.Zero) {
             var allCoords = new CellCoordsAround(habitant).CloserFirst;
             var closestAllyTerritory = allCoords.First(c=>beliefs.TribeTerritories.Territories[c]==habitant.tribe);
@@ -259,6 +283,9 @@ public class MaintainEnergy : Attitude {
             plan.addLastAction(new EatInTribe(habitant, closestAllyTerritory));
             return plan;
         }
+
+
+
 
         return plan;
     }

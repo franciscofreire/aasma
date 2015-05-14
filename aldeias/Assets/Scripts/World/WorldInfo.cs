@@ -368,7 +368,10 @@ public partial class WorldInfo : MonoBehaviour {
             xMaxSize = height;
             zMaxSize = width;
         } else { // RIGHT???
-            return; // This will never happen ;)
+            //return; // This will never happen ;)
+            leftCorner = new Vector2I(agentPos.x, agentPos.y + width_delta);
+            xMaxSize = height;
+            zMaxSize = width;
         }
 
         for(int i = 0; i < xMaxSize; i++) {
