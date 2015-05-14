@@ -57,6 +57,13 @@ public class ValidationVisitor {
                  .tribeTerritory.IsClaimed; // TODO: Enemy flag case
     }
 
+    public bool isRemoveFlagValid (RemoveFlag a) {
+        WorldTileInfo wti = a.performer.worldInfo.worldTiles.WorldTileInfoAtCoord(a.target);
+        return wti.tribeTerritory.IsClaimed && 
+            !wti.tribeTerritory.Flag.Value.Tribe.Equals(a.Habitant.tribe);
+
+    }
+
     public bool isPickupFoodValid(PickupFood a) {
         return true;
     }
