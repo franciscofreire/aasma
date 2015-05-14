@@ -330,3 +330,32 @@ public class EatInTribe : HabitantAction {
 
 	public EatInTribe(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }
+
+public class TurnLeft : HabitantAction {
+
+    public override void apply () {
+        Orientation newOrientation = habitant.orientation.LeftOrientation();
+        habitant.orientation = newOrientation;
+    }
+    
+    public override bool acceptValidationVisitor(ValidationVisitor vv) {
+        return vv.isTurnLeftValid(this);
+    }
+
+    public TurnLeft(Habitant habitant, Vector2I target) : base(habitant, target) {}
+}
+
+public class TurnOppositeDirection : HabitantAction {
+    
+    public override void apply () {
+        Orientation newOrientation = 
+            habitant.orientation.LeftOrientation().LeftOrientation();
+        habitant.orientation = newOrientation;
+    }
+    
+    public override bool acceptValidationVisitor(ValidationVisitor vv) {
+        return vv.isTurnOppositeDirectionValid(this);
+    }
+    
+    public TurnOppositeDirection(Habitant habitant, Vector2I target) : base(habitant, target) {}
+}
