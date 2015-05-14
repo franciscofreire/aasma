@@ -113,9 +113,9 @@ public class HabitantDeliberative : AgentImplementation {
         // If we are trapped, we need to backtrack
         if (habitant.sensorData.AdjacentCells.Count == 0) {
             plan.clear();
-            Action a = Action.RunAwayOrWalkRandomly(habitant);
+            /*Action a = Action.RunAwayOrWalkRandomly(habitant);*/
+            Action a = new TurnOppositeDirection(habitant, Vector2I.INVALID);
             a.apply();
-
             ActionExecuted = true;
 
             return;
@@ -161,7 +161,6 @@ public class HabitantDeliberative : AgentImplementation {
             }
             */
             if (!sound()) {
-                Debug.Log("!SOUND");
                 plan = updatePlan();
             }
 

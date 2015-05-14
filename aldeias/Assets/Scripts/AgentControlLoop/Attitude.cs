@@ -116,7 +116,7 @@ public class Explore : Attitude {
     }
     
     public override bool isSound(Beliefs beliefs) {
-        return true;
+        return plan.peek().acceptValidationVisitor(vv);
     }
 
     public override Plan createPlan(Beliefs beliefs) {

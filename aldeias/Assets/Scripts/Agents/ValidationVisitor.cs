@@ -72,4 +72,12 @@ public class ValidationVisitor {
     public bool isEatInTribeValid(EatInTribe a) {
         return true;
     }
+
+    public bool isTurnLeftValid(TurnLeft a) {
+        return true;
+    }
+
+    public bool isTurnOppositeDirectionValid(TurnOppositeDirection a) {
+        return true;
+    }
 }
