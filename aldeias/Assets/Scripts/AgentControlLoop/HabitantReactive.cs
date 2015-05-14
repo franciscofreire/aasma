@@ -43,7 +43,7 @@ public class HabitantReactive : AgentImplementation {
             Logger.Log("Attacker pos: " + habitant.pos.x + "," + habitant.pos.y, Logger.VERBOSITY.AGENTS);
             return new Attack(habitant, target);
         }
-        else if (habitant.CanCarryWeight(Animal.FOOD_WEIGHT) && habitant.FoodInAdjacentPos(out target)) {
+        else if (habitant.CanCarryWeight(Animal.FoodTearQuantity.Weight) && habitant.FoodInAdjacentPos(out target)) {
             return new PickupFood(habitant, target);
         }
         else if (habitant.CanCarryWeight(Tree.WoodChopQuantity.Weight) && habitant.CutDownTreeWithWoodInFront()) {

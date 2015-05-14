@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 // An Habitant is an Agent that starts as part of a Tribe.
 //    He can Pickup resources as long as he is able to carry them. Otherwise he won't pick them up and they will fall.
@@ -10,6 +11,9 @@ using System.Collections.Generic;
 public class Habitant : Agent {
     public readonly HabitantReactive agentImplReactive;
     public readonly HabitantDeliberative agentImplDeliberative;
+
+    public SensorData sensorData;
+    //public SensorInfo Sensors;
 
 	public Tribe tribe;
 
@@ -210,10 +214,6 @@ public class Habitant : Agent {
 	//*************
 	//** SENSORS **
 	//*************
-    //FIXME
-	public override bool EnemyInFront () {
-        return false;
-    }
 
 	public bool EnemyInAdjacentPos(out Vector2I target) {
         target = new Vector2I(-1,-1);
@@ -371,7 +371,7 @@ public class Habitant : Agent {
     }
 
 	private static Energy CRITICAL_ENERGY_LEVEL = new Energy(50);
-	public override bool LowEnergy() {
+	public bool LowEnergy() {
 		return this.energy <= CRITICAL_ENERGY_LEVEL;
 	}
 
@@ -394,6 +394,12 @@ public class Habitant : Agent {
 		return tribe.meetingPoint.IsInMeetingPoint(sensorData.FrontCell);
 	}
 
+    public Vector2I closestCell(IEnumerable<Vector2I> cells) {
+        Vector2I source = CoordConvertions.AgentPosToTile(pos);
+        return cells
+            .Aggregate((c1,c2)=>c2.DistanceTo(source)<c1.DistanceTo(source) ? c2 : c1);
+    }
+    
     public bool closeToTribe() {
         IList<Vector2I> result = new List<Vector2I>();
         IList<Vector2I> cellsInRadius = worldInfo.nearbyFreeCellsInRadius(CoordConvertions.AgentPosToTile(pos), 3);
@@ -403,5 +409,191 @@ public class Habitant : Agent {
                 return true;
         }
         return false;
+    }
+
+    public bool AliveTreeInFront() {
+        WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(sensorData.FrontCell);
+        return t.HasTree && t.Tree.Alive;
+    }
+    
+    public bool AliveTree(Vector2I cell) {
+        WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(cell);
+        return t.HasTree && t.Tree.Alive;
+    }
+    
+    public bool DeadTreeInFront() {
+        WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(sensorData.FrontCell);
+        return t.HasTree && !t.Tree.Alive;
+    }
+    
+    public bool DeadTree(Vector2I cell) {
+        WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(cell);
+        return t.HasTree && !t.Tree.Alive;
+    }
+    
+    public bool CutDownTreeWithWoodInFront() {
+        WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(sensorData.FrontCell);
+        return t.HasTree && !t.Tree.Alive && t.Tree.HasWood;
+    }
+    
+    public bool CutDownTreeWithWood(Vector2I cell) {
+        WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(cell);
+        return t.HasTree && !t.Tree.Alive && t.Tree.HasWood;
+    }
+    
+    public bool DepletedTree(Vector2I cell) {
+        WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(cell);
+        return t.HasTree && !t.Tree.Alive && !t.Tree.HasWood;
+    }
+    
+
+}
+
+public struct SensorData {
+    private IList<Vector2I> _cells;
+    private Vector2I _front_cell;
+    private Vector2I _left_cell;
+    private Vector2I _right_cell;
+    private IList<Vector2I> _far_away_cells;
+    private IList<Vector2I> _adjacent_cells;
+    private IList<Vector2I> _meeting_point_cells;
+    private IList<KeyValuePair<Vector2I,Tribe>> _territories; 
+    private IList<Vector2I> _unclaimed_cells;
+    private IList<Tree> _trees;
+    private IList<Tree> _stumps;
+    private IList<Habitant> _enemies;
+    private IList<Animal> _animals;
+    private IList<Animal> _food;
+    private FoodQuantity _food_tribe;
+    private int _tribe_cell_count;
+    private int _tribe_flags;
+    private bool _agent_is_inside_tribe;
+    private Tribe _agent_tribe;
+    
+    public IList<Vector2I> NearbyCells { get; set; }
+    
+    public Tribe AgentTribe {
+        get { return this._agent_tribe; }
+        set { this._agent_tribe = value; }
+    }
+    
+    public IList<Vector2I> Cells
+    {
+        get { return _cells; }
+        set { _cells = value; }
+    }
+    public IList<Vector2I> MeetingPointCells
+    {
+        get { return _meeting_point_cells; }
+        set { _meeting_point_cells = value; }
+    }
+    public IList<Vector2I> EnemyTribeCells
+    {
+        get { 
+            IList<Vector2I> enemyTribeCells = new List<Vector2I>();
+            foreach(var entry in Territories) {
+                if(!entry.Value.Equals(AgentTribe)) {
+                    enemyTribeCells.Add(entry.Key);
+                }
+            }
+            return enemyTribeCells;
+        }
+    }
+    public IList<Tree> Trees
+    {
+        get { return _trees; }
+        set { _trees = value; }
+    }
+    public IList<Tree> Stumps
+    {
+        get { return _stumps; }
+        set { _stumps = value; }
+    }
+    
+    public IList<Habitant> Enemies
+    {
+        get { return _enemies; }
+        set { _enemies = value; }
+    }
+    
+    public IList<Animal> Animals
+    {
+        get { return _animals; }
+        set { _animals = value; }
+    }
+    
+    public IList<Animal> Food
+    {
+        get { return _food; }
+        set { _food = value; }
+    }
+    
+    public Vector2I FrontCell
+    {
+        get { return _front_cell; }
+        set { _front_cell = value; }
+    }
+    
+    public Vector2I LeftCell
+    {
+        get { return _left_cell; }
+        set { _left_cell = value; }
+    }
+    
+    public Vector2I RightCell
+    {
+        get { return _right_cell; }
+        set { _right_cell = value; }
+    }
+    
+    public IList<Vector2I> AdjacentCells {
+        get { return _adjacent_cells; }
+        set { _adjacent_cells = value; }
+    }
+    
+    public IList<Vector2I> FarAwayCells {
+        get { return _far_away_cells; }
+        set { _far_away_cells = value; }
+    }
+    
+    public IList<Vector2I> UnclaimedCells {
+        get { return _unclaimed_cells; }
+        set { _unclaimed_cells = value; }
+    }
+    
+    public FoodQuantity FoodTribe {
+        get { return _food_tribe; }
+        set { _food_tribe = value; }
+    }
+    
+    public int TribeFlags {
+        get { return _tribe_flags; }
+        set { _tribe_flags = value; }
+    }
+    
+    public int TribeCellCount {
+        get { return _tribe_cell_count; }
+        set { _tribe_cell_count = value; }
+    }
+    
+    public bool AgentIsInsideTribe {
+        get { return _agent_is_inside_tribe; }
+        set { _agent_is_inside_tribe = value; }
+    }
+    
+    public IList<KeyValuePair<Vector2I,Tribe>> Territories {
+        get { return _territories; }
+        set { _territories = value; }
+    }
+    
+    public void FillAdjacentCells (Vector2I agentPos) {
+        if (Cells != null) {
+            AdjacentCells = new List<Vector2I> ();
+            foreach (Vector2I pos in Cells) {
+                if (agentPos.isAdjacent (pos)) {
+                    AdjacentCells.Add (pos);
+                }
+            }
+        }
     }
 }

@@ -275,7 +275,7 @@ public class IncreaseWoodStock : Attitude {
 public class DropResources : Attitude {
     public override bool isDesirable(Beliefs beliefs) {
         return !habitant.CanCarryWeight(Tree.WoodChopQuantity.Weight)
-            && !habitant.CanCarryWeight(Animal.FOOD_WEIGHT);
+            && !habitant.CanCarryWeight(Animal.FoodTearQuantity.Weight);
     }
     
     public override bool isSound(Beliefs beliefs) {
