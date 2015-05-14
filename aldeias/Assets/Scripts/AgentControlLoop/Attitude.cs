@@ -127,7 +127,8 @@ public class Explore : Attitude {
         // TODO: - Try not to travel nor too little nor too much.
         if (habitant.closeToTribe()) {
             IEnumerable<Vector2I> targets = beliefs.TribeTerritories.UnclaimedTerritories
-                .Where(t=>beliefs.KnownObstacles.ObstacleMap[t]!=KnownObstacles.ObstacleMapEntry.Obstacle);
+                .Where(t=>beliefs.KnownObstacles.ObstacleMap[t]!=KnownObstacles.ObstacleMapEntry.Obstacle
+                       && t != CoordConvertions.AgentPosToTile(habitant.pos));
             Vector2I target = habitant.closestCell(targets);
 
             /*
