@@ -116,7 +116,7 @@ public class Explore : Attitude {
     }
     
     public override bool isSound(Beliefs beliefs) {
-        return true;
+        return plan.peek().acceptValidationVisitor(vv);
     }
 
     public override Plan createPlan(Beliefs beliefs) {
@@ -213,6 +213,15 @@ public class ConquerTribe : Attitude {
 }
 
 public class MaintainEnergy : Attitude {
+    /*
+     -> Manter energia em níveis aceitáveis
+        - Evitar animais e inimigos
+        - Procurar animais ou comida
+        - Matar animais
+        - Recolher comida
+    */
+    public enum Intention {  }
+
     public override bool isDesirable(Beliefs beliefs) {
         return beliefs.HabitantHasLowEnergy.IsActive;
     }
@@ -222,10 +231,41 @@ public class MaintainEnergy : Attitude {
     }
 
     public override Plan createPlan(Beliefs beliefs) {
+
+        //Go to the nearest food source
+        //Eat until energy is filled
+
+        //beliefs.PickableFood.RelevantCells
+        //    known dead animals with food to be collected
+        //beliefs.AnimalsAreNear.RelevantCells
+        //    known alive animals
+        //beliefs.NearMeetingPoint.RelevantCells
+        //    meeting point cells visible in the last percept
+        //beliefs.TribeHasLowFoodLevel.foodQuantity
+        //    current tribe food level
+        //beliefs.TribeTerritories
+        //    ours, theirs and '()
+
+        //choose closest between:
+        //   distance to our closest territory -> if tribe has food
+        //   distance to closest dead animal
+        //   distance to closest alive animal -> if has enough energy
+        if(beliefs.TribeHasLowFoodLevel.foodQuantity > FoodQuantity.Zero) {
+            var allCoords = new CellCoordsAround(habitant).CloserFirst;
+            var closestAllyTerritory = allCoords.First(c=>beliefs.TribeTerritories.Territories[c]==habitant.tribe);
+
+            plan = new Plan(this);
+            plan.addFollowPath(habitant, beliefs, closestAllyTerritory);
+            plan.addLastAction(new EatInTribe(habitant, closestAllyTerritory));
+            return plan;
+        }
+
         return plan;
     }
 
-    public MaintainEnergy(Habitant habitant) : base(habitant) {}
+    public MaintainEnergy(Habitant habitant) : base(habitant) {
+        Importance = 100;
+    }
 }
 
 public class IncreaseFoodStock : Attitude {
@@ -374,14 +414,48 @@ public class StartAttack : Attitude {
     }
     
     public override bool isSound(Beliefs beliefs) {
-        return true;
+        return plan.peek().acceptValidationVisitor(vv);
     }
     
     public override Plan createPlan(Beliefs beliefs) {
+        IEnumerable<Vector2I> targets = beliefs.EnemiesAreNear.RelevantCells;
+        Vector2I target = Vector2I.INVALID;
+        try {
+            target = habitant.closestCell(targets);
+        }
+        catch (System.Exception) {
+            Debug.Log("#### NO TARGET");
+        }
+
+        CellCoordsAround cca = new CellCoordsAround(target, habitant.worldInfo);
+        Vector2I neighbor = Vector2I.INVALID;
+        try {
+            IEnumerable<Vector2I> neighbors = cca.CoordsAtDistance(1).Where(c => {
+                return beliefs.KnownObstacles.CoordIsFree(c);
+            });
+            neighbor = habitant.closestCell(neighbors);
+        }
+        catch (System.Exception) {
+            Debug.Log("#### NO NEIGHBOR");
+        }
+        
+        try {
+            plan.addFollowPath(habitant, beliefs, neighbor);
+        }
+        catch (System.Exception) {
+            plan.clear();
+            plan.add(Action.WalkRandomly(habitant));
+            return plan;
+        }
+        
+        plan.addLastAction(new Attack(habitant, target));
+
         return plan;
     }
     
-    public StartAttack(Habitant habitant) : base(habitant) {}
+    public StartAttack(Habitant habitant) : base(habitant) {
+        Importance = 100;
+    }
 }
 
 public class HelpDefense : Attitude {

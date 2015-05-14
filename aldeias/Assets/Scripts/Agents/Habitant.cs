@@ -402,13 +402,14 @@ public partial class Habitant : Agent {
     
     public bool closeToTribe() {
         CellCoordsAround cca = new CellCoordsAround(CoordConvertions.AgentPosToTile(pos), worldInfo);
-        IEnumerable<Vector2I> neighbors = cca.CoordsAtDistance(2);
+        IEnumerable<Vector2I> neighbors = cca.CoordsAtDistance(3);
+        int foreignCells = 0;
         foreach (Vector2I candidate in neighbors) {
             Flag? flag = worldInfo.worldTiles.WorldTileInfoAtCoord(candidate).tribeTerritory.Flag;
             if (flag == null || !flag.Value.Tribe.id.Equals(this.tribe.id))
-                return false;
+                foreignCells++;
         }
-        return true;
+        return foreignCells < 5;
     }
 
     public bool AliveTreeInFront() {
