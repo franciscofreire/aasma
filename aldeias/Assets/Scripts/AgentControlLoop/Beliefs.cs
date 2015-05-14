@@ -170,23 +170,13 @@ public class NearMeetingPoint : Belief {
     // Found meeting point cells are saved in Relevant Cells
     // even when belief is inactive
     public override void UpdateBelief (Percept p) {
-        base.UpdateBelief(p);
         foreach(var cell in p.SensorData.MeetingPointCells) {
             addRelevantCell(cell);
         }
+    }
 
-        if(p.SensorData.MeetingPointCells.Count != 0 ) {
-            EnableBelief();
-        } else if(IsActive) {
-            try {
-                SensorData prevSensorData = GetSensorData(1);
-                if(prevSensorData.MeetingPointCells.Count == 0) {
-                   DisableBeliefKeepingRelevantCells();
-                }
-            } catch (SensorDataDoesNotExists) {
-                ; // do nothing
-            }
-        }     
+    public NearMeetingPoint() {
+        EnableBelief ();
     }
 }
 

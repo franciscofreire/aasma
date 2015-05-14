@@ -35,6 +35,9 @@ public abstract class Agent {
             agentImplementation = value;
         }
     }
+    public Vector2I WorldPos {
+        get { return CoordConvertions.AgentPosToTile(pos); }
+    }
 
 	public Agent (WorldInfo world, Vector2 pos, Energy e) {
 		this.worldInfo = world;
