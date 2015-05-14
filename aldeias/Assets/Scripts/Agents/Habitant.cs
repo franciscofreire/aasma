@@ -8,7 +8,7 @@ using System.Linq;
 //    He can then Drop some or all of it wherever he wants. If he doesn't have enough of the resource he won't drop anything.
 //    He can pickup Food if he wants to.
 //    He can also pickup Wood.
-public class Habitant : Agent {
+public partial class Habitant : Agent {
     public readonly HabitantReactive agentImplReactive;
     public readonly HabitantDeliberative agentImplDeliberative;
 
