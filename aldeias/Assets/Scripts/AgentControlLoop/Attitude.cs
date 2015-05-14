@@ -213,6 +213,15 @@ public class ConquerTribe : Attitude {
 }
 
 public class MaintainEnergy : Attitude {
+    /*
+     -> Manter energia em níveis aceitáveis
+        - Evitar animais e inimigos
+        - Procurar animais ou comida
+        - Matar animais
+        - Recolher comida
+    */
+    public enum Intention {  }
+
     public override bool isDesirable(Beliefs beliefs) {
         return beliefs.HabitantHasLowEnergy.IsActive;
     }
@@ -222,6 +231,27 @@ public class MaintainEnergy : Attitude {
     }
 
     public override Plan createPlan(Beliefs beliefs) {
+
+        //Go to the nearest food source
+        //Eat until energy is filled
+
+        //beliefs.PickableFood.RelevantCells
+        //    known dead animals with food to be collected
+        //beliefs.AnimalsAreNear.RelevantCells
+        //    known alive animals
+        //beliefs.NearMeetingPoint.RelevantCells
+        //    meeting point cells visible in the last percept
+        //beliefs.TribeHasLowFoodLevel.foodQuantity
+        //    current tribe food level
+        //beliefs.TribeTerritories
+        //    ours, theirs and '()
+
+        //choose closest between:
+        //   distance to our closest territory -> if tribe has food
+        //   distance to closest dead animal
+        //   distance to closest alive animal -> if has enough energy
+
+
         return plan;
     }
 
