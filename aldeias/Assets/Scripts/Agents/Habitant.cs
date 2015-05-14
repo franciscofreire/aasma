@@ -450,6 +450,193 @@ public class Habitant : Agent {
 }
 
 public struct SensorData {
+
+    //############################################################################
+
+    public VisionInfo CurrentVisionInfo;
+    public HabitantSelfInfo CurrentSelfInfo;
+    public TribeStocksInfo CurrentTribeStocks;
+
+    //############################################################################
+
+    public struct VisionInfo {
+        public List<Vector2I> VisibleCoords;
+        public List<AnimalInfo> VisibleAnimals;
+        public List<HabitantInfo> VisibleHabitants;
+        public List<TreeInfo> VisibleTrees;
+    }
+
+    public struct AnimalInfo {
+        public Vector2 Position;
+        public bool IsAlive;
+        public FoodQuantity Food;
+        public Vector2I Coord {
+            get {
+                return CoordConvertions.AgentPosToTile(Position);
+            }
+        }
+    }
+
+    public struct HabitantInfo {
+        public HabitantId Id;
+        public Vector2 Position;
+        public bool IsAlive;
+        public Tribe Tribe;
+        public Vector2I Coord {
+            get {
+                return CoordConvertions.AgentPosToTile(Position);
+            }
+        }
+    }
+
+    public struct TreeInfo {
+        public Vector2I Coord;
+        public bool IsAlive;
+        public WoodQuantity Wood;
+    }
+
+    public struct HabitantSelfInfo {
+        public Vector2 Position;
+        public Orientation Orientation;
+        public Energy Energy;
+        public WoodQuantity CarriedWood;
+        public FoodQuantity CarriedFood;
+        public Vector2I Coord {
+            get {
+                return CoordConvertions.AgentPosToTile(Position);
+            }
+        }
+    }
+
+    public struct TribeStocksInfo {
+        public WoodQuantity WoodStock;
+        public FoodQuantity FoodStock;
+    }
+
+    //############################################################################
+
+    public struct HabitantId {
+        private Habitant habitant;
+        public HabitantId(Habitant h) {
+            habitant = h;
+        }
+    }
+
+    //############################################################################
+
+    private static List<Vector2I> VisibleCoordsForHabitant(Habitant h) {
+        Vector2I center = CoordConvertions.AgentPosToTile(h.pos);
+        Vector2I forward = new Vector2I(h.orientation.ToVector2() * 1.5f); /*Make sure it casts to unit Vector2I*/
+        Vector2I right = new Vector2I(h.orientation.RightOrientation().ToVector2() * 1.5f); /*Same as previous line*/
+
+        List<Vector2I> coordsList = new List<Vector2I>();
+        coordsList.Add(center+right);
+        coordsList.Add(center-right);
+
+        for(int forwardDist = 1; forwardDist<=2; forwardDist+=1) {
+            for(int rightDist = -1; rightDist<=1; rightDist+=1) {
+                Vector2I centerDist =  forward.TimesScalar(forwardDist) + right.TimesScalar(rightDist);
+                coordsList.Add(center+centerDist);
+            }
+        }
+
+        return coordsList;
+    }
+
+    private static List<AnimalInfo> AnimalInfosFromWorldAtCoords(WorldInfo world, List<Vector2I> coords) {
+        IEnumerable<Animal> animalsInCoords = world.AllAnimals.Where(a=>coords.Contains(CoordConvertions.AgentPosToTile(a.pos)));
+        List<AnimalInfo> animalInfos = new List<AnimalInfo>();
+        foreach(var animal in animalsInCoords) {
+            animalInfos.Add(AnimalInfoFromAnimal(animal));
+        }
+        return animalInfos;
+    }
+
+    private static AnimalInfo AnimalInfoFromAnimal(Animal a) {
+        AnimalInfo info = new AnimalInfo();
+        info.Position = a.pos;
+        info.IsAlive = a.Alive;
+        info.Food = a.Food;
+        return info;
+    }
+
+    private static List<HabitantInfo> HabitantInfosFromWorldAtCoordsExceptHabitant(WorldInfo world, List<Vector2I> coords, Habitant habitant) {
+        IEnumerable<Habitant> habitantsInCoords = world.AllHabitants.Where(h=>coords.Contains(CoordConvertions.AgentPosToTile(h.pos)));
+        IEnumerable<Habitant> habsExceptHabitant = habitantsInCoords.Where(h=>h!=habitant);
+        List<HabitantInfo> habitantInfos = new List<HabitantInfo>();
+        foreach(var h in habsExceptHabitant) {
+            habitantInfos.Add(HabitantInfoFromHabitant(h));
+        }
+        return habitantInfos;
+    }
+
+    private static HabitantInfo HabitantInfoFromHabitant(Habitant h) {
+        HabitantInfo info = new HabitantInfo();
+        info.Id = new HabitantId(h);
+        info.Position = h.pos;
+        info.IsAlive = h.Alive;
+        info.Tribe = h.tribe;
+        return info;
+    }
+
+    private static List<TreeInfo> TreeInfosFromWorldAtCoords(WorldInfo world, List<Vector2I> coords) {
+        IEnumerable<Vector2I> coordsWithTrees = coords.Where(c=>world.worldTiles.WorldTileInfoAtCoord(c).HasTree);
+        IEnumerable<Tree> treesAtCoords = coordsWithTrees.Select(c=>world.worldTiles.WorldTileInfoAtCoord(c).Tree);
+        List<TreeInfo> treeInfos = new List<TreeInfo>();
+        foreach(var t in treesAtCoords) {
+            treeInfos.Add (TreeInfoFromTree(t));
+        }
+        return treeInfos;
+    }
+
+    private static TreeInfo TreeInfoFromTree(Tree t) {
+        TreeInfo info = new TreeInfo();
+        info.Coord = t.Pos;
+        info.IsAlive = t.Alive;
+        info.Wood = t.Wood;
+        return info;
+    }
+
+    private static VisionInfo VisionInfoForHabitant(Habitant h) {
+        VisionInfo habVisionInfo = new VisionInfo();
+        List<Vector2I> habitantVisibleCoords = VisibleCoordsForHabitant(h);
+        habVisionInfo.VisibleCoords = habitantVisibleCoords;
+        habVisionInfo.VisibleAnimals = AnimalInfosFromWorldAtCoords(h.worldInfo, habitantVisibleCoords);
+        habVisionInfo.VisibleHabitants = HabitantInfosFromWorldAtCoordsExceptHabitant(h.worldInfo, habitantVisibleCoords, h);
+        habVisionInfo.VisibleTrees = TreeInfosFromWorldAtCoords(h.worldInfo, habitantVisibleCoords);
+        return habVisionInfo;
+    }
+
+    private static HabitantSelfInfo HabitantSelfInfoForHabitant(Habitant h) {
+        HabitantSelfInfo info = new HabitantSelfInfo();
+        info.Position = h.pos;
+        info.Orientation = h.orientation;
+        info.Energy = h.energy;
+        info.CarriedFood = h.carriedFood;
+        info.CarriedWood = h.carriedWood;
+        return info;
+    }
+
+    private static TribeStocksInfo TribeStocksForHabitant(Habitant h) {
+        TribeStocksInfo info = new TribeStocksInfo();
+        info.FoodStock = h.tribe.FoodStock;
+        info.WoodStock = h.tribe.WoodStock;
+        return info;
+    }
+
+    //############################################################################
+
+    public static SensorData CurrentSensorDataForHabitant(Habitant h) {
+        SensorData sensorData = new SensorData();
+        sensorData.CurrentVisionInfo = VisionInfoForHabitant(h);
+        sensorData.CurrentSelfInfo = HabitantSelfInfoForHabitant(h);
+        sensorData.CurrentTribeStocks = TribeStocksForHabitant(h);
+        return sensorData;
+    }
+
+    //############################################################################
+
+
     private IList<Vector2I> _cells;
     private Vector2I _front_cell;
     private Vector2I _left_cell;
