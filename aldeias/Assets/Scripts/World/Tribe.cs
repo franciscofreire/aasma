@@ -58,7 +58,7 @@ public class FlagMakerMachine {
     }
 }
 
-public class Tribe {
+public partial class Tribe {
 	//Insert tribe identification here
 	public readonly string id;
 	public readonly MeetingPoint meetingPoint;

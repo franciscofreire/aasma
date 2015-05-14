@@ -374,14 +374,48 @@ public class StartAttack : Attitude {
     }
     
     public override bool isSound(Beliefs beliefs) {
-        return true;
+        return plan.peek().acceptValidationVisitor(vv);
     }
     
     public override Plan createPlan(Beliefs beliefs) {
+        IEnumerable<Vector2I> targets = beliefs.EnemiesAreNear.RelevantCells;
+        Vector2I target = Vector2I.INVALID;
+        try {
+            target = habitant.closestCell(targets);
+        }
+        catch (System.Exception) {
+            Debug.Log("#### NO TARGET");
+        }
+
+        CellCoordsAround cca = new CellCoordsAround(target, habitant.worldInfo);
+        Vector2I neighbor = Vector2I.INVALID;
+        try {
+            IEnumerable<Vector2I> neighbors = cca.CoordsAtDistance(1).Where(c => {
+                return beliefs.KnownObstacles.CoordIsFree(c);
+            });
+            neighbor = habitant.closestCell(neighbors);
+        }
+        catch (System.Exception) {
+            Debug.Log("#### NO NEIGHBOR");
+        }
+        
+        try {
+            plan.addFollowPath(habitant, beliefs, neighbor);
+        }
+        catch (System.Exception) {
+            plan.clear();
+            plan.add(Action.WalkRandomly(habitant));
+            return plan;
+        }
+        
+        plan.addLastAction(new Attack(habitant, target));
+
         return plan;
     }
     
-    public StartAttack(Habitant habitant) : base(habitant) {}
+    public StartAttack(Habitant habitant) : base(habitant) {
+        Importance = 100;
+    }
 }
 
 public class HelpDefense : Attitude {

@@ -363,10 +363,12 @@ public partial class WorldInfo : MonoBehaviour {
             xMaxSize = height;
             zMaxSize = width;
 
-        } else { // RIGHT
+        } else if(agent.orientation == Orientation.Right){ // RIGHT
             leftCorner = new Vector2I(agentPos.x, agentPos.y + width_delta);
             xMaxSize = height;
             zMaxSize = width;
+        } else { // RIGHT???
+            return; // This will never happen ;)
         }
 
         for(int i = 0; i < xMaxSize; i++) {
