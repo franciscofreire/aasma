@@ -145,6 +145,11 @@ public struct Orientation {
     public Vector2 ToVector2() {//Up=(0,1), Down=(0,-1), Left=(-1,0), Right=(1,0)
         return new Vector2(Mathf.Sin(radiansToUp), Mathf.Cos(radiansToUp));
     }
+
+    public Vector2I ToVector2I() {
+        var v2 = ToVector2();
+        return new Vector2I(v2*1.5f);//Ensure cast returns unit vector for Up,Down,Left,Right
+    }
     
     public Quaternion ToQuaternion() {
         return Quaternion.AngleAxis(radiansToUp*Mathf.Rad2Deg, Vector3.up);
