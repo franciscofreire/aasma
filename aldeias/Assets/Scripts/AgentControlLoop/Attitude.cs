@@ -202,10 +202,31 @@ public class ConquerTribe : Attitude {
     }
 
     public override bool isSound(Beliefs beliefs) {
-        return true;
+        return plan.peek().acceptValidationVisitor(vv);
     }
 
     public override Plan createPlan(Beliefs beliefs) {
+        IEnumerable<Vector2I> territoriesEnum = 
+            beliefs.TribeTerritories
+                .TerritoriesTribe(habitant.worldInfo.GetEnemyTribe(habitant.tribe));
+
+        List<Vector2I> territoriesList = territoriesEnum.ToList();
+        territoriesList.Sort(
+            delegate(Vector2I p1, Vector2I p2)
+            {
+                int distanceToP1 = p1.DistanceTo(habitant.WorldPos);
+                int distanceToP2 = p2.DistanceTo(habitant.WorldPos);
+                return distanceToP1 - distanceToP2;
+            }
+        );
+        Vector2I fromPos = habitant.WorldPos;
+
+        foreach(var pos in territoriesList) {
+            plan.addFollowPath(habitant, beliefs, pos);
+            plan.add (new RemoveFlag(habitant,pos));
+            plan.add (new PlaceFlag(habitant,pos));
+        }
+
         return plan;
     }
 
