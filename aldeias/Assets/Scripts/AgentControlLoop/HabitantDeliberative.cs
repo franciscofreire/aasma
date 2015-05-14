@@ -13,7 +13,6 @@ public class HabitantDeliberative : AgentImplementation {
 
     public Attitude CurrentIntention {
         get {
-            //NOTE: Does an habitant always have an intention?
             return intentions.FirstOrDefault();
         }
     }
@@ -43,6 +42,11 @@ public class HabitantDeliberative : AgentImplementation {
         }
 
         intentions = candidates;
+        
+        // We clear the plans of less important intentions, so that when they
+        // are at the head, they don't continue plans they had pending
+        for (int i = 1; i < intentions.Count; i++)
+            intentions[i].clearPlan();
     }
 
     private void filterDesire(List<Attitude> candidates, Attitude desire) {
@@ -123,6 +127,7 @@ public class HabitantDeliberative : AgentImplementation {
         if(!ActionExecuted && actionsPending()) {
             Action a = createAction();
             a.apply();
+
             ActionExecuted = true;
 
             // Let other agents run their doAction()
@@ -144,6 +149,7 @@ public class HabitantDeliberative : AgentImplementation {
             }
             */
             if (!sound()) {
+                Debug.Log("!SOUND");
                 plan = updatePlan();
             }
 

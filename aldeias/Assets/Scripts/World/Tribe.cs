@@ -65,7 +65,7 @@ public class Tribe {
 	public List<Habitant> habitants = new List<Habitant>();
 	
     public FoodQuantity FoodStock = new FoodQuantity(5000);
-    public WoodQuantity WoodStock = new WoodQuantity(1000); // We have 100 flags to place
+    public WoodQuantity WoodStock = new WoodQuantity(10); // We have 100 flags to place
 
     public static readonly int CRITICAL_FOOD_LEVEL = 500;
 

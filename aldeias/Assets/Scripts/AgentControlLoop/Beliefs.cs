@@ -291,7 +291,7 @@ public class ForestNear : Belief {
     public Matrix<Tree> Forest;
     public IEnumerable<Vector2I> AvailableTrees {
         get {
-            return Forest.AllCoords.Where(c=>Forest[c]!=null);
+            return Forest.AllCoords.Where(c=>Forest[c]!=null && Forest[c].HasWood);
         }
     }
 
@@ -300,9 +300,11 @@ public class ForestNear : Belief {
         if(p.SensorData.Trees.Count > 0) {
             RelevantCells = new List<Vector2I>();
             foreach(Tree t in p.SensorData.Trees) {
-                Vector2I c = t.Pos;
-                Forest[c] = t;
-                RelevantCells.Add(t.Pos);
+                if(t.HasWood) {
+                    Vector2I c = t.Pos;
+                    Forest[c] = t;
+                    RelevantCells.Add(t.Pos);
+                }
             }
             EnableBelief();
         } else {
@@ -408,7 +410,10 @@ public class KnownObstacles : Belief {
         }
     }
     private IEnumerable<Vector2I> SensorDataObstacles(SensorData sensorData) {
-        return sensorData.Trees.Concat(sensorData.Stumps).Select(t=>t.Pos);
+        return sensorData.Trees
+                .Concat(sensorData.Stumps).Select(t=>t.Pos)
+                .Concat(sensorData.Enemies.Select(e=>CoordConvertions.AgentPosToTile(e.pos)))
+                .Concat(sensorData.Animals.Select(a=>CoordConvertions.AgentPosToTile(a.pos))); 
     }
 }
 

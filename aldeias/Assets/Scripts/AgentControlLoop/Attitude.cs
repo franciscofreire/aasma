@@ -46,8 +46,9 @@ public class Attitudes {
 }
 
 public abstract class Attitude {
-    protected Habitant habitant;
-    protected Plan plan;
+    public Habitant habitant;
+    public Plan plan;
+    protected ValidationVisitor vv;
 
     // Used by the Filter method
     // The bigger the value, the bigger the chance of being an Intention
@@ -57,12 +58,17 @@ public abstract class Attitude {
 
     public Attitude(Habitant habitant) {
         this.habitant = habitant;
-        this.plan = new Plan(this);
+        this.plan     = new Plan(this);
+        this.vv       = new ValidationVisitor(this);
     }
 
     public abstract bool isDesirable(Beliefs beliefs);
     
     public abstract bool isSound(Beliefs beliefs);
+    
+    public void clearPlan() {
+        this.plan.clear();
+    }
     public Plan updatePlan(Beliefs beliefs) {
         this.plan.clear();
         this.plan = createPlan(beliefs);
@@ -157,12 +163,15 @@ public class ExpandTribe : Attitude {
     }
     
     public override bool isSound(Beliefs beliefs) {
-        // If the target was claimed in the meantime, you're screwed
-        Vector2I target = plan.LastAction.target;
-        return !beliefs.WorldInfo.worldTiles.WorldTileInfoAtCoord(plan.LastAction.target)
-                       .tribeTerritory.IsClaimed
-               ;
-               //&& plan.ensureFreeCell(habitant, beliefs, plan.peek().target);
+        return plan.peek().acceptValidationVisitor(vv);
+        /*
+        if (!plan.peek().acceptValidationVisitor(vv)) {
+            plan.updatePath(habitant, beliefs, plan.peek().target);
+            Debug.Log("!SOUND PEEK: " + plan.peek().target.x + ", " + plan.peek().target.y);
+        }
+
+        return = plan.LastAction.acceptValidationVisitor(vv);
+        */
     }
 
     public override Plan createPlan(Beliefs beliefs) {
@@ -231,47 +240,48 @@ public class IncreaseFoodStock : Attitude {
 
 public class IncreaseWoodStock : Attitude {
     public override bool isDesirable(Beliefs beliefs) {
-        bool condition = beliefs.TribeHasFewFlags.IsActive
-            && habitant.CanCarryWeight(Tree.WoodChopQuantity.Weight);
-        return condition;
-        //return false;
+        return beliefs.TribeHasFewFlags.IsActive
+            && habitant.CanCarryWeight(Tree.WoodChopQuantity.Weight)
+            && beliefs.ForestNear.AvailableTrees.Count() > 0; // TODO: This condition is removed when createPlan is ok
     }
     
     public override bool isSound(Beliefs beliefs) {
-        return habitant.DepletedTree(plan.LastAction.target);
+        return plan.peek().acceptValidationVisitor(vv);
+        /*
+        if (!plan.peek().acceptValidationVisitor(vv)) {
+            plan.updatePath(habitant, beliefs, plan.peek().target);
+            Debug.Log("!SOUND PEEK: " + plan.peek().target.x + ", " + plan.peek().target.y);
+        }
+
+        return = plan.LastAction.acceptValidationVisitor(vv);
+        */
     }
     
     public override Plan createPlan(Beliefs beliefs) {
-        IEnumerable<Vector2I> targets = beliefs.ForestNear.AvailableTrees
-            ;
-            //.Where(t=>beliefs.KnownObstacles.ObstacleMap[t.x,t.y]!=KnownObstacles.ObstacleMapEntry.Obstacle);
+        IEnumerable<Vector2I> targets = beliefs.ForestNear.AvailableTrees;
 
         // Do we know about any trees?
         if (targets.Count() > 0) {
-            Vector2I target = Vector2I.INVALID;
-            foreach(Vector2I t in targets) {
-                if (!habitant.DepletedTree(t)) {
-                    target = t;
-                    break;
-                }
-            }
-            //Vector2I target = habitant.closestCell(targets);
+            Vector2I target = habitant.closestCell(targets);
+
             CellCoordsAround cca = new CellCoordsAround(target, habitant.worldInfo);
             Vector2I neighbor = Vector2I.INVALID;
             try {
-                neighbor = cca.CoordsAtDistance(1).Where(
-                    c => {
-                        return beliefs.KnownObstacles.ObstacleMap[c.x, c.y] != KnownObstacles.ObstacleMapEntry.Obstacle;
-                    }
-                ).First();
-            
+                IEnumerable<Vector2I> neighbors = cca.CoordsAtDistance(1).Where(c => {
+                    return beliefs.KnownObstacles.ObstacleMap[c.x, c.y] != KnownObstacles.ObstacleMapEntry.Obstacle;
+                });
+                neighbor = habitant.closestCell(neighbors);
             }
             catch (System.Exception) {
-                Debug.Log("bBBBBBBBBBBBBB");
+                Debug.Log("#### NO NEIGHBOR");
+                /*
+                plan.clear();
+                plan.add(Action.WalkRandomly(habitant));
                 return plan;
+                */
             }
         
-        plan.addFollowPath(habitant, beliefs, neighbor);
+            plan.addFollowPath(habitant, beliefs, neighbor);
 
             if (habitant.AliveTree(target))
                 plan.add(new CutTree(habitant, target));
@@ -280,7 +290,7 @@ public class IncreaseWoodStock : Attitude {
         }
         // Search for trees
         else {
-
+            // TODO
         }
         return plan;
     }
@@ -297,7 +307,10 @@ public class DropResources : Attitude {
     }
     
     public override bool isSound(Beliefs beliefs) {
-        // TODO: ensureFreeCell check
+        if (!plan.peek().acceptValidationVisitor(vv)) {
+            plan.updatePath(habitant, beliefs, plan.peek().target);
+        }
+        
         return true;
     }
     

@@ -126,19 +126,19 @@ public abstract class Agent {
         return t.HasTree && !t.Tree.Alive;
     }
 
-    public bool CutDownTreeWithWoodInFront() {
+    public bool StumpWithWoodInFront() {
 		WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(sensorData.FrontCell);
 		return t.HasTree && !t.Tree.Alive && t.Tree.HasWood;
     }
     
-    public bool CutDownTreeWithWood(Vector2I cell) {
+    public bool StumpWithWood(Vector2I cell) {
         WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(cell);
         return t.HasTree && !t.Tree.Alive && t.Tree.HasWood;
     }
     
     public bool DepletedTree(Vector2I cell) {
         WorldTileInfo t = worldInfo.worldTiles.WorldTileInfoAtCoord(cell);
-        return t.HasTree && !t.Tree.Alive && !t.Tree.HasWood;
+        return t.HasTree && !t.Tree.HasWood;
     }
 
 	// FIXME: I don't know where to put this function as it is not part of the Agent.

@@ -21,6 +21,9 @@ public abstract class Action {
 		}
 	}
 
+    // isSound() will use this to ensure an action is possible
+    public abstract bool acceptValidationVisitor(ValidationVisitor vv);
+
     public static Action WalkRandomly(Habitant habitant) {
         int index = WorldRandom.Next(habitant.sensorData.AdjacentCells.Count);
         Vector2I target;
@@ -74,6 +77,11 @@ public class Walk : AnyAgentAction {
             //agent.RemoveEnergy(new Energy(WALK_DECREMENT));
         }
 	}
+    
+    public override bool acceptValidationVisitor(ValidationVisitor vv) {
+        return vv.isWalkValid(this);
+    }
+
 	public Walk(Agent walker, Vector2I target) : base(walker, target) { }
 }
 
@@ -85,8 +93,67 @@ public class Attack : AnyAgentAction {
 			enemy.RemoveEnergy(ENERGY_TO_REMOVE);
         }
     }
+    
+    public override bool acceptValidationVisitor(ValidationVisitor vv) {
+        return vv.isAttackValid(this);
+    }
+
 	public Attack(Agent agent, Vector2I target) : base(agent, target) {}
 }
+
+/**********/
+/* ANIMAL */
+/**********/
+
+public class AnimalAccelerate : Action {
+    private Animal animal;
+    private Vector2 acceleration;
+    public override Agent performer {
+        get {
+            return animal;
+        }
+    }
+
+    public AnimalAccelerate(Animal animal, Vector2 acceleration):base(new Vector2I(0,0))/*SHUT UP, COMPILER!*/ {
+        this.animal = animal;
+        this.acceleration = acceleration;
+    }
+
+    public override void apply() {
+        animal.ApplyAcceleration(acceleration);
+    }
+    
+    public override bool acceptValidationVisitor(ValidationVisitor vv) {
+        return vv.isAnimalAccelerateValid(this);
+    }
+}
+
+public class AnimalAttackHabitant : Action {
+    private Animal animal;
+    private Habitant habitant;
+    public override Agent performer {
+        get {
+            return animal;
+        }
+    }
+
+    public AnimalAttackHabitant(Animal animal, Habitant habitant):base(new Vector2I(0,0)) {
+        this.animal = animal;
+        this.habitant = habitant;
+    }
+
+    public override void apply() {
+        animal.AttackMechanism.TryAttackAgent(habitant);
+    }
+
+    public override bool acceptValidationVisitor(ValidationVisitor vv) {
+        return vv.isAnimalAttackHabitantValid(this);
+    }
+}
+
+/************/
+/* HABITANT */
+/************/
 
 public abstract class HabitantAction : Action {
 	protected Habitant habitant;
@@ -95,6 +162,7 @@ public abstract class HabitantAction : Action {
 			return habitant;
 		}
 	}
+
 	public HabitantAction(Habitant habitant, Vector2I target) : base(target) {
 		this.habitant = habitant;
 	}
@@ -107,6 +175,11 @@ public class CutTree : HabitantAction {
 			//FIXME: if some WoodQuantity was dropped it is lost.
 		}
 	}
+    
+    public override bool acceptValidationVisitor(ValidationVisitor vv) {
+        return vv.isCutTreeValid(this);
+    }
+
 	public CutTree(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }
 
@@ -116,6 +189,11 @@ public class ChopTree : HabitantAction {
 		habitant.PickupWood(wood);
 		//FIXME: if the habitant can't carry the WoodQuantity than it is lost.
 	}
+    
+    public override bool acceptValidationVisitor(ValidationVisitor vv) {
+        return vv.isChopTreeValid(this);
+    }
+
 	public ChopTree(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }
 
@@ -124,6 +202,11 @@ public class DropTree : HabitantAction {
 		WoodQuantity wood = habitant.DropWood(habitant.carriedWood);
 		habitant.tribe.AddWoodToStock(wood);
     }
+    
+    public override bool acceptValidationVisitor(ValidationVisitor vv) {
+        return vv.isDropTreeValid(this);
+    }
+
 	public DropTree(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }
 
@@ -140,6 +223,11 @@ public class PlaceFlag : HabitantAction {
             habitant.tribe.cell_count++;
         }
 	}
+    
+    public override bool acceptValidationVisitor(ValidationVisitor vv) {
+        return vv.isPlaceFlagValid(this);
+    }
+
 	public PlaceFlag(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }
 
@@ -152,6 +240,11 @@ public class PickupFood : HabitantAction {
         }
         //FIXME: if the habitant can't carry the FoodQuantity than it is lost.
     }
+    
+    public override bool acceptValidationVisitor(ValidationVisitor vv) {
+        return vv.isPickupFoodValid(this);
+    }
+
 	public PickupFood(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }
 	
@@ -160,6 +253,11 @@ public class DropFood : HabitantAction {
         FoodQuantity food = habitant.DropFood(habitant.carriedFood);
 		habitant.tribe.AddFoodToStock(food);
     }
+    
+    public override bool acceptValidationVisitor(ValidationVisitor vv) {
+        return vv.isDropFoodValid(this);
+    }
+
 	public DropFood(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }
 
@@ -173,6 +271,11 @@ public class EatCarriedFood : HabitantAction {
 			habitant.Eat(habitant.DropFood(FoodConsumedByHabitant));
 		}
     }
+    
+    public override bool acceptValidationVisitor(ValidationVisitor vv) {
+        return vv.isEatCarriedFoodValid(this);
+    }
+
 	public EatCarriedFood(Habitant habitant) : base(habitant, new Vector2I(0,0)) {} /*SHUT UP COMPILER! */
 }
 
@@ -187,5 +290,10 @@ public class EatInTribe : HabitantAction {
 		    habitant.Eat(habitant.tribe.RemoveFoodFromStock(FoodConsumedByHabitant));
         }
     }
+    
+    public override bool acceptValidationVisitor(ValidationVisitor vv) {
+        return vv.isEatInTribeValid(this);
+    }
+
 	public EatInTribe(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }
