@@ -174,40 +174,6 @@ public class AnimalBoidImplementation : AgentImplementation {
     }
 }
 
-public class AnimalAccelerate : Action {
-    private Animal animal;
-    private Vector2 acceleration;
-    public override Agent performer {
-        get {
-            return animal;
-        }
-    }
-    public AnimalAccelerate(Animal animal, Vector2 acceleration):base(new Vector2I(0,0))/*SHUT UP, COMPILER!*/ {
-        this.animal = animal;
-        this.acceleration = acceleration;
-    }
-    public override void apply() {
-        animal.ApplyAcceleration(acceleration);
-    }
-}
-
-public class AnimalAttackHabitant : Action {
-    private Animal animal;
-    private Habitant habitant;
-    public override Agent performer {
-        get {
-            return animal;
-        }
-    }
-    public AnimalAttackHabitant(Animal animal, Habitant habitant):base(new Vector2I(0,0)) {
-        this.animal = animal;
-        this.habitant = habitant;
-    }
-    public override void apply() {
-        animal.AttackMechanism.TryAttackAgent(habitant);
-    }
-}
-
 public class Animal : Agent {
 
 	public static readonly Energy INITIAL_ENERGY = new Energy(40);

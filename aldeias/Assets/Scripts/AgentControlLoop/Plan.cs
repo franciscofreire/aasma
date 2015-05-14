@@ -1,11 +1,20 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Priority_Queue;
 
 public class Plan {
     private Queue<Action> plan = new Queue<Action>();
     public Action LastAction { get; set; }
+    public Vector2I LastActionTarget {
+        get {
+            if (LastAction == null)
+                return plan.Peek().target;
+            else
+                return LastAction.target;
+        }
+    }
 
     private Attitude intention;
 
@@ -21,8 +30,13 @@ public class Plan {
         return plan.Count == 0;
     }
     
+    public int actionsRemaining() {
+        return plan.Count;
+    }
+    
     public void clear() {
         plan.Clear();
+        LastAction = null;
     }
 
     public Action peek() {
@@ -52,15 +66,40 @@ public class Plan {
             }
         }
         catch (System.Exception) {
-            Debug.Log("AAAAAAAAAAAa");
+            Debug.Log("#### NO PATHPOINT FROM AGENT");
         }
-}
+    }
+    
+    public void addFollowPath(Habitant h, Beliefs beliefs, Vector2I from, Vector2I target) {
+        Path path = Pathfinder.PathInMapFromTo(beliefs.KnownObstacles.ObstacleMap, 
+                                               from, 
+                                               target);
+        try {
+            for(int i=1; i<path.PathPoints.Count; i++) {
+                add(new Walk(h, path.PathPoints[i]));
+            }
+        }
+        catch (System.Exception) {
+            Debug.Log("#### NO PATHPOINT FROM CELL");
+        }
+    }
 
-// Society rule: When you encounter a friendly agent,
+    // Society rule: When you encounter a friendly agent,
     // move to a cell near you and recalculate pathfinding
-    public bool ensureFreeCell(Habitant habitant, Beliefs beliefs, Vector2I nextMove) {
-        if (beliefs.WorldInfo.worldTiles.WorldTileInfoAtCoord(nextMove).HasAgent) {
+    public void updatePath(Habitant habitant, Beliefs beliefs, Vector2I nextMove) {
             // Find a free near cell that isn't nextMove
+            CellCoordsAround cca = new CellCoordsAround(nextMove, habitant.worldInfo);
+            Vector2I neighbor = cca.CoordsAtDistance(1).Where(
+                c => {
+                    return beliefs.KnownObstacles.ObstacleMap[c] != KnownObstacles.ObstacleMapEntry.Obstacle;
+                }
+            ).First();
+
+            head(); // Trash the invalid move
+            add(new Walk(habitant, neighbor));
+            addFollowPath(habitant, beliefs, nextMove);
+
+            /*
             bool candidateAvailable = false;
             IList<Vector2I> candidates = habitant.sensorData.AdjacentCells;
             foreach (Vector2I candidate in candidates) {
@@ -73,11 +112,10 @@ public class Plan {
                     break;
                 }
             }
+            
             if (!candidateAvailable)
                 return false; // Couldn't apply society rule
-        }
-
-        return true;
+            */
     }
 }
 

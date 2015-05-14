@@ -284,19 +284,48 @@ public class KnownWood : Belief {
             this.Wood = wood;
             this.Alive = alive;
         }
+        public bool HasWood() {
+            return Wood > new WoodQuantity(0);
+        }
     }
     public Matrix<KnownWoodEntry?> Map;
     public IEnumerable<Vector2I> CoordsWithWood {
         get {
-            return Map.AllCoords.Where(c=>Map[c]!=null);
+            return Map.AllCoords.Where(c=>Map[c]!=null && Map[c].Value.HasWood());
         }
     }
 
     public override void UpdateBelief (Percept p) {
         base.UpdateBelief(p);
 
-        foreach(Tree t in p.SensorData.Trees.Concat(p.SensorData.Stumps)) {
+            /*
+        if(p.SensorData.Trees.Count > 0) {
+            RelevantCells = new List<Vector2I>();
+            foreach(Tree t in p.SensorData.Trees) {
+                if(t.HasWood) {
+                    Vector2I c = t.Pos;
+                    Forest[c] = t;
+                    RelevantCells.Add(t.Pos);
+                }
+            }
+            EnableBelief();
+        } else {
+            DisableBelief();
+        }
+        
+        // Update with depleted trees
+        foreach(var c in p.SensorData.NearbyCells) {
+            if (!p.Habitant.worldInfo.worldTiles.WorldTileInfoAtCoord(c).HasTree)
+                Forest[c] = null;
+                */
+
+        foreach(Tree t in p.SensorData.Trees.Concat(p.SensorData.Stumps))
             Map[t.Pos] = t.HasWood ? new KnownWoodEntry(t.Wood, t.Alive) : (KnownWoodEntry?)null;
+            
+        // Update with depleted trees
+        foreach(var c in p.SensorData.NearbyCells) {
+            if (!p.Habitant.worldInfo.worldTiles.WorldTileInfoAtCoord(c).HasTree)
+                Map[c] = null;
         }
     }
     
@@ -389,9 +418,10 @@ public class KnownObstacles : Belief {
         ObstacleMap = new Matrix<ObstacleMapEntry>(mapSize,ObstacleMapEntry.Unknown);
     }
     private IEnumerable<Vector2I> SensorDataObstacles(SensorData sensorData) {
-        return sensorData.Trees.Concat(sensorData.Stumps)
-            .Where(t=>t.HasWood)
-                .Select(t=>t.Pos);
+        return sensorData.Trees
+                .Concat(sensorData.Stumps).Where(t=>t.HasWood).Select(t=>t.Pos)
+                .Concat(sensorData.Enemies.Select(e=>CoordConvertions.AgentPosToTile(e.pos)))
+                .Concat(sensorData.Animals.Select(a=>CoordConvertions.AgentPosToTile(a.pos))); 
     }
 }
 

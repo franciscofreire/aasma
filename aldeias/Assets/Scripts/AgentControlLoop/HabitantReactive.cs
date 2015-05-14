@@ -46,7 +46,7 @@ public class HabitantReactive : AgentImplementation {
         else if (habitant.CanCarryWeight(Animal.FoodTearQuantity.Weight) && habitant.FoodInAdjacentPos(out target)) {
             return new PickupFood(habitant, target);
         }
-        else if (habitant.CanCarryWeight(Tree.WoodChopQuantity.Weight) && habitant.CutDownTreeWithWoodInFront()) {
+        else if (habitant.CanCarryWeight(Tree.WoodChopQuantity.Weight) && habitant.StumpWithWoodInFront()) {
             return new ChopTree(habitant, habitant.sensorData.FrontCell);
         }
         else if (habitant.CanCarryWeight(Tree.WoodChopQuantity.Weight) && habitant.AliveTreeInFront()) {
@@ -75,7 +75,7 @@ public class HabitantReactive : AgentImplementation {
         }
         else if((habitant.AnimalsInFrontPositions() || habitant.FoodInFrontPositions() ||
                 habitant.EnemiesInFrontPositions() || habitant.TreesInFrontPositions()) &&
-                (!habitant.AliveTreeInFront() && !habitant.DeadTreeInFront())){
+                (!habitant.AliveTreeInFront() && !habitant.DeadTreeInFront())) {
             return Action.WalkFront(habitant);
         }
         return Action.WalkRandomly(habitant);

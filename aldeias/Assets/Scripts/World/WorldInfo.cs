@@ -16,7 +16,7 @@ public partial class WorldInfo : MonoBehaviour {
     public bool AnimalMovement = true;
 
     // Habitant Properties
-    private const int MAX_HABITANTS = 20;
+    private const int MAX_HABITANTS = 1;
     public bool Reactive = true;
 
 	// The size of the world in rows and columns.
