@@ -140,7 +140,8 @@ public struct Energy {
 public struct Orientation {
     //The clockwise amplitude of the angle between this orientation and the up orientation.
     private Radians radiansToUp;
-    
+    private const int nOrientations = 4;
+
     public Radians ToRadiansToUp() {
         return radiansToUp;
     }
@@ -170,12 +171,39 @@ public struct Orientation {
     }
 
     public Orientation LeftOrientation() {
-        return new Orientation(this.radiansToUp + (new Degrees(-90)).Radians);
+        if(this == Up) {
+            return Left;
+        }
+        if(this == Down) {
+            return Right;
+        }
+        if(this == Left) {
+            return Down;
+        }
+        if(this == Right) {
+            return Up;
+        }
+   
+        return this;
     }
 
     public Orientation RightOrientation() {
-        return new Orientation(this.radiansToUp + (new Degrees(90)).Radians);
+        if(this == Up) {
+            return Right;
+        }
+        if(this == Down) {
+            return Left;
+        }
+        if(this == Left) {
+            return Up;
+        }
+        if(this == Right) {
+            return Down;
+        }
+
+        return this;
     }
+
     public static bool operator== (Orientation o1, Orientation o2) { 
         return o1.radiansToUp.value == o2.radiansToUp.value;
     }
