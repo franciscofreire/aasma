@@ -475,10 +475,15 @@ public class KnownObstacles : Belief {
 
 public class TribeTerritories : Belief {
     public Matrix<Tribe> Territories;
+
     public IEnumerable<Vector2I> UnclaimedTerritories {
         get {
             return Territories.AllCoords.Where(c=>Territories[c]==null);
         }
+    }
+
+    public IEnumerable<Vector2I> TerritoriesTribe(Tribe t) {
+        return Territories.AllCoords.Where(c=>Territories[c]==t);
     }
 
     public override void UpdateBelief (Percept p) {
