@@ -121,37 +121,31 @@ public class Explore : Attitude {
 
     public override Plan createPlan(Beliefs beliefs) {
         // Try to move away from one's tribe territory
-        /*
+        // TODO: - Go somewhere we haven't been before.
+        // TODO: - Prefer to go to places that are least known.
+        // TODO: --- Go to a place we haven't visited for a long time.
+        // TODO: - Try not to travel nor too little nor too much.
         if (habitant.closeToTribe()) {
             IEnumerable<Vector2I> targets = beliefs.TribeTerritories.UnclaimedTerritories
-                .Where(t=>beliefs.KnownObstacles.ObstacleMap[t.x,t.y]!=KnownObstacles.ObstacleMapEntry.Obstacle);
+                .Where(t=>beliefs.KnownObstacles.ObstacleMap[t]!=KnownObstacles.ObstacleMapEntry.Obstacle);
             Vector2I target = habitant.closestCell(targets);
+
+            /*
+            // Select the closest cell that is not an obstacle and that has the minimum
+            HabitantCellCoords habitantCoords = new CellCoordsAround(habitant.pos, habitant.worldInfo);
+            IEnumerable<Vector2I> nearbycellsNotObstacles = habitantCoords.CoordUntilDistance(5)
+                .Where(c=>beliefs.KnownObstacles.ObstacleMap[c.x,c.y]!=KnownObstacles.ObstacleMapEntry.Obstacle);
+            
+            Vector2I target = nearbycellsNotObstacles//.Take(1)//FIXME: The number of cells to consider here is hardcoded.
+                .OrderBy(c=>beliefs.CellSeenOrders.LastSeenOrders[c])
+                    .First();
+            */
             
             plan.addFollowPath(habitant, beliefs, target);
-        } else
-        */
+        } else {
+            plan.add(Action.WalkRandomly(habitant));
+        }
 
-        //TODO: - Go somewhere we haven't been before.
-        //TODO: - Prefer to go to places that are least known.
-        //TODO: --- Go to a place we haven't visited for a long time.
-        //TODO: - Try not to travel nor too little nor too much.
-
-        /*
-        //Select the closest cell that is not an obstacle and that has the minimum
-        HabitantCellCoords habitantCoords = new CellCoordsAround(habitant.pos, habitant.worldInfo);
-        IEnumerable<Vector2I> nearbycellsNotObstacles = habitantCoords.CoordUntilDistance(5)
-            .Where(c=>beliefs.KnownObstacles.ObstacleMap[c.x,c.y]!=KnownObstacles.ObstacleMapEntry.Obstacle);
-        
-        Vector2I target = nearbycellsNotObstacles//.Take(1)//FIXME: The number of cells to consider here is hardcoded.
-            .OrderBy(c=>beliefs.CellSeenOrders.LastSeenOrders[c])
-                .First();
-        
-        Plan p = new Plan(this);
-        p.addFollowPath(habitant, Pathfinder.PathInMapFromTo(beliefs.KnownObstacles.ObstacleMap, habitantCoords.Center, target));
-        
-        return p;*/
-
-        plan.add(Action.WalkRandomly(habitant));
         return plan;
     }
     

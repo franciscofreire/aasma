@@ -401,14 +401,14 @@ public class Habitant : Agent {
     }
     
     public bool closeToTribe() {
-        IList<Vector2I> result = new List<Vector2I>();
-        IList<Vector2I> cellsInRadius = worldInfo.nearbyFreeCellsInRadius(CoordConvertions.AgentPosToTile(pos), 3);
-        foreach (Vector2I candidate in cellsInRadius) {
-            if (worldInfo.worldTiles.WorldTileInfoAtCoord(candidate)
-                          .tribeTerritory.Flag.Value.Tribe.id.Equals(this.tribe.id))
-                return true;
+        CellCoordsAround cca = new CellCoordsAround(CoordConvertions.AgentPosToTile(pos), worldInfo);
+        IEnumerable<Vector2I> neighbors = cca.CoordsAtDistance(2);
+        foreach (Vector2I candidate in neighbors) {
+            Flag? flag = worldInfo.worldTiles.WorldTileInfoAtCoord(candidate).tribeTerritory.Flag;
+            if (flag == null || !flag.Value.Tribe.id.Equals(this.tribe.id))
+                return false;
         }
-        return false;
+        return true;
     }
 
     public bool AliveTreeInFront() {
