@@ -8,6 +8,7 @@ public class CellCoordsAround {
         this.center = center;
         this.world = world;
     }
+    public CellCoordsAround (Habitant h) : this(CoordConvertions.AgentPosToTile(h.pos), h.worldInfo) { }
     public Vector2I Center {
         get {
             return center;
