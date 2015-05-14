@@ -186,13 +186,8 @@ public class TribeIsBeingAttacked : Belief {
      *  - Tribe territory is decreasing
      */
     private bool ArePreconditionsSatisfied(SensorData sensorData) {
-        try {
-            return ((PreviousSensorDataCount > 0 &&
-                    GetSensorData(1).TribeCellCount > sensorData.TribeCellCount) ||
-                    sensorData.Enemies.Count > 0);
-        } catch(SensorDataDoesNotExists) {
-            return false;
-        }
+        return sensorData.AgentIsInsideTribe &&
+            sensorData.Enemies.Count > 0;
     }
    
     public override void UpdateBelief (Percept p) {
@@ -203,23 +198,8 @@ public class TribeIsBeingAttacked : Belief {
             }
             EnableBelief();
         } else if(IsActive) {
-            // Here we only disable if statistics show us that things are getting better,
-            // i.e. in previous sensorData, tribe cells number did not decrease
-            // and we didn't see enemies
-            int initialCellCount = 0;
-            int finalCellCount = 0;
-            int rangeMax = Mathf.CeilToInt(PreviousSensorDataCount/2f);
-            int enemiesCount = 0;
-            for(int i = 0; i < rangeMax; i++) {
-                SensorData sd = GetSensorData(i);
-                if(i == 0) {
-                    initialCellCount = sd.TribeCellCount;
-                } else if(i == rangeMax-1) {
-                    finalCellCount = sd.TribeCellCount;
-                }
-                enemiesCount = (sd.Enemies.Count > 0) ? enemiesCount + 1 : enemiesCount;
-            }
-            if(enemiesCount == 0 && (finalCellCount >= initialCellCount)) {
+            // TODO: consider communication between habitants
+            if(p.SensorData.Enemies.Count == 0) {
                 DisableBelief();
             }
         }
