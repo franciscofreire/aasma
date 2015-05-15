@@ -435,8 +435,8 @@ public class IncreaseFoodStock : Attitude {
             IEnumerable<Vector2I> animals = beliefs.AnimalsAreNear.RelevantCells;
             
             // Do we know some live animals?
-            if (targets.Count() > 0) {
-                Vector2I target = habitant.closestCell(targets);
+            if (animals.Count() > 0) {
+                Vector2I target = habitant.closestCell(animals);
                 
                 CellCoordsAround cca = new CellCoordsAround(target, habitant.worldInfo);
                 Vector2I neighbor = Vector2I.INVALID;
