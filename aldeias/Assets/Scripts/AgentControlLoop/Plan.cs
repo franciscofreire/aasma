@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,6 +57,29 @@ public class Plan {
         LastAction = a;
     }
 
+    public void addRandomPath(Habitant habitant, Beliefs beliefs) {
+        int index = WorldRandom.Next(habitant.sensorData.AdjacentCells.Count);
+        Vector2I target;
+        try {
+            target = habitant.sensorData.AdjacentCells[index];
+            // Make sure the target is inside the world
+            if(target == habitant.sensorData.FrontCell) {
+                target.y = Math.Max(target.y + 3, habitant.worldInfo.zSize - 1);
+            }
+            if(target == habitant.sensorData.LeftCell) {
+                target.x = Math.Min(target.x - 3, 0);
+            }
+            if(target == habitant.sensorData.RightCell) {
+                target.x = Math.Max(target.x + 3, habitant.worldInfo.xSize - 1);
+            }
+        }
+        catch (System.Exception) {
+            add(Action.WalkRandomly(habitant));
+            return;
+        }
+        addFollowPath(habitant, beliefs, target);
+    }
+
     public void addFollowPath(Habitant h, Beliefs beliefs, Vector2I target) {
         Path path = Pathfinder.PathInMapFromTo(beliefs.KnownObstacles.ObstacleMap, 
                                                CoordConvertions.AgentPosToTile(h.pos), 
@@ -74,14 +98,14 @@ public class Plan {
         Path path = Pathfinder.PathInMapFromTo(beliefs.KnownObstacles.ObstacleMap, 
                                                from, 
                                                target);
-       // try {
+        try {
             for(int i=1; i<path.PathPoints.Count; i++) {
                 add(new Walk(h, path.PathPoints[i]));
             }
-    /*    }
+        }
         catch (System.Exception) {
             Debug.Log("#### NO PATHPOINT FROM CELL");
-        }*/
+        }
     }
 
     // Society rule: When you encounter a friendly agent,

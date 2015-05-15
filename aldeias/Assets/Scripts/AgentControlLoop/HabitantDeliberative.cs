@@ -18,6 +18,7 @@ public class HabitantDeliberative : AgentImplementation {
     }
 
     private Plan plan;
+    private Attitude activeIntention;
 
     private bool ActionExecuted {
         get; set;
@@ -47,6 +48,9 @@ public class HabitantDeliberative : AgentImplementation {
         // are at the head, they don't continue plans they had pending
         for (int i = 1; i < intentions.Count; i++)
             intentions[i].clearPlan();
+
+        // Select the intention to create a plan
+        activeIntention = intentions.First();
     }
 
     private void filterDesire(List<Attitude> candidates, Attitude desire) {
@@ -75,7 +79,7 @@ public class HabitantDeliberative : AgentImplementation {
     
     // Choose the plan from the most important intention
     public Plan updatePlan() {
-        return intentions.First().updatePlan(beliefs);
+        return activeIntention.updatePlan(beliefs);
     }
 
     public bool succeded() {
@@ -86,8 +90,12 @@ public class HabitantDeliberative : AgentImplementation {
         return false;
     }
 
+    // Reconsider only when you should stop exploring
     public bool reconsider() {
-        return false;
+        return (attitudes.AllAttitudes.Where(a=>{
+                   return a.isDesirable(beliefs) && (a.Importance != Explore.IMPORTANCE);
+               }).Count() > 0)
+            && activeIntention.Importance == Explore.IMPORTANCE;
     }
 
     public bool sound() {
@@ -164,13 +172,15 @@ public class HabitantDeliberative : AgentImplementation {
         // After executing an action, we reconsider our way in life
         if(ActionExecuted && actionsPending()) {
             Belief.brf(beliefs, CurrentPercept);
-            /*
-            if (reconsider()) {
-                doOptions();
-                doFilter();
-            }
-            */
+            
             if (!sound()) {
+                plan = updatePlan();
+            }
+
+            if (reconsider()) {
+                plan.clear();
+                updateOptions();
+                updateFilter();
                 plan = updatePlan();
             }
 

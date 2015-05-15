@@ -7,7 +7,7 @@ using System.Linq;
 public abstract class Belief {
     private const int MAX_SIZE_SENSOR_DATA = 10;
 
-    private bool isActive;
+    public bool isActive;
     private IList<Vector2I> relevantCells;
     private List<SensorData> previousSensorData;
     protected int timesToBeActive;

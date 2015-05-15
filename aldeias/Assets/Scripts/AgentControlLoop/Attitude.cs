@@ -111,6 +111,8 @@ Lista candidata de Desires/Intentions:
  */
 
 public class Explore : Attitude {
+    public static int IMPORTANCE = 0;
+
     public override bool isDesirable(Beliefs beliefs) {
         return true;
     }
@@ -144,14 +146,15 @@ public class Explore : Attitude {
             
             plan.addFollowPath(habitant, beliefs, target);
         } else {
-            plan.add(Action.WalkRandomly(habitant));
+            //plan.add(Action.WalkRandomly(habitant));
+            plan.addRandomPath(habitant, beliefs);
         }
 
         return plan;
     }
     
     public Explore(Habitant habitant) : base(habitant) {
-        Importance = 0; // Only explore when you have no other desires
+        Importance = IMPORTANCE; // Only explore when you have no other desires
     }
 }
 
@@ -460,6 +463,9 @@ public class IncreaseFoodStock : Attitude {
                 }
                 
                 plan.addLastAction(new Attack(habitant, target));
+            } else {
+                // Search for animals
+                plan.add(Action.WalkRandomly(habitant));
             }
         }
         
