@@ -62,6 +62,7 @@ public class Plan {
         Vector2I target;
         try {
             target = habitant.sensorData.AdjacentCells[index];
+
             // Make sure the target is inside the world
             if(target == habitant.sensorData.FrontCell) {
                 target.y = Math.Max(target.y + 3, habitant.worldInfo.zSize - 1);
@@ -90,7 +91,7 @@ public class Plan {
             }
         }
         catch (System.Exception) {
-            Debug.Log("#### NO PATHPOINT FROM AGENT");
+            //Debug.Log("#### NO PATHPOINT FROM AGENT");
         }
     }
     
@@ -106,6 +107,38 @@ public class Plan {
         catch (System.Exception) {
             Debug.Log("#### NO PATHPOINT FROM CELL");
         }
+    }
+
+    public bool addPathToNeighbor(Habitant habitant, Beliefs beliefs, Vector2I target) {
+        CellCoordsAround cca = new CellCoordsAround(target, habitant.worldInfo);
+        Vector2I neighbor = Vector2I.INVALID;
+        try {
+            IEnumerable<Vector2I> neighbors = cca.CoordsAtDistance(1).Where(c => {
+                return beliefs.KnownObstacles.CoordIsFree(c);
+            });
+            neighbor = habitant.closestCell(neighbors);
+        }
+        catch (System.Exception) {
+            Debug.Log("#### NO NEIGHBOR");
+            clear();
+            add(Action.WalkRandomly(habitant));
+            return false;
+        }
+
+        // We don't need to move when we are already adjacent to our target
+        if (CoordConvertions.AgentPosToTile(habitant.pos) == neighbor)
+            return true;
+        
+        try {
+            addFollowPath(habitant, beliefs, neighbor);
+        }
+        catch (System.Exception) {
+            clear();
+            add(Action.WalkRandomly(habitant));
+            return false;
+        }
+
+        return true;
     }
 
     // Society rule: When you encounter a friendly agent,
@@ -266,18 +299,18 @@ public class AmazingPathfinder {
         List<Vector2I> points = new List<Vector2I>();
         points.Add(pos);
         if (pos.x != target.x)
-        for (int i = pos.x + step.x; i != target.x; i += step.x) {
-            points.Add(new Vector2I(i, pos.y));
-        }
+            for (int i = pos.x + step.x; i != target.x; i += step.x) {
+                points.Add(new Vector2I(i, pos.y));
+            }
         if (pos.y != target.y)
-        for (int i = pos.y + step.y; i != target.y; i += step.y) {
-            points.Add(new Vector2I(target.x, i));
-        }
-            // Diagonal case: none of the previous adds where made, so force one of them
-            // Of course it doesn't work, plz replace with A*
-            //if ((int) Mathf.Abs(step.x) == 1 && (int) Mathf.Abs(step.y) == 1) {
-            //    add(new Walk(agent, new Vector2I(target.x, pos.y + step.y)));
-            //}
+            for (int i = pos.y + step.y; i != target.y; i += step.y) {
+                points.Add(new Vector2I(target.x, i));
+            }
+        // Diagonal case: none of the previous adds where made, so force one of them
+        // Of course it doesn't work, plz replace with A*
+        //if ((int) Mathf.Abs(step.x) == 1 && (int) Mathf.Abs(step.y) == 1) {
+        //    add(new Walk(agent, new Vector2I(target.x, pos.y + step.y)));
+        //}
         return new Path(points);
     }
 }

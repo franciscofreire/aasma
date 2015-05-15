@@ -263,29 +263,7 @@ public class MaintainEnergy : Attitude {
         if (targets.Count() > 0) {
             Vector2I target = habitant.closestCell(targets);
             
-            CellCoordsAround cca = new CellCoordsAround(target, habitant.worldInfo);
-            Vector2I neighbor = Vector2I.INVALID;
-            try {
-                IEnumerable<Vector2I> neighbors = cca.CoordsAtDistance(1).Where(c => {
-                    return beliefs.KnownObstacles.CoordIsFree(c);
-                });
-                neighbor = habitant.closestCell(neighbors);
-            }
-            catch (System.Exception) {
-                Debug.Log("#### NO NEIGHBOR");
-                plan.clear();
-                plan.add(Action.WalkRandomly(habitant));
-                return plan;
-            }
-            
-            try {
-                plan.addFollowPath(habitant, beliefs, neighbor);
-            }
-            catch (System.Exception) {
-                plan.clear();
-                plan.add(Action.WalkRandomly(habitant));
-                return plan;
-            }
+            pathtoneighbor
 
             plan.add(new PickupFood(habitant, target));
             plan.addLastAction(new EatCarriedFood(habitant));
@@ -298,29 +276,7 @@ public class MaintainEnergy : Attitude {
             if (targets.Count() > 0) {
                 Vector2I target = habitant.closestCell(targets);
                 
-                CellCoordsAround cca = new CellCoordsAround(target, habitant.worldInfo);
-                Vector2I neighbor = Vector2I.INVALID;
-                try {
-                    IEnumerable<Vector2I> neighbors = cca.CoordsAtDistance(1).Where(c => {
-                        return beliefs.KnownObstacles.CoordIsFree(c);
-                    });
-                    neighbor = habitant.closestCell(neighbors);
-                }
-                catch (System.Exception) {
-                    Debug.Log("#### NO NEIGHBOR");
-                    plan.clear();
-                    plan.add(Action.WalkRandomly(habitant));
-                    return plan;
-                }
-                
-                try {
-                    plan.addFollowPath(habitant, beliefs, neighbor);
-                }
-                catch (System.Exception) {
-                    plan.clear();
-                    plan.add(Action.WalkRandomly(habitant));
-                    return plan;
-                }
+                path to neighbor
                 
                 plan.addLastAction(new Attack(habitant, target));
             }
@@ -379,6 +335,22 @@ public class MaintainEnergy : Attitude {
             return plan;
         }
 
+        // Hunt animals
+        IEnumerable<Vector2I> animals = beliefs.AnimalsAreNear.RelevantCells;
+            
+        // Do we know some live animals?
+        if (animals.Count() > 0) {
+            Vector2I target = habitant.closestCell(animals);
+            
+            plan.addPathToNeighbor(habitant, beliefs, target);
+                
+            plan.addLastAction(new Attack(habitant, target));
+        }
+        // Search for animals
+        else {
+            plan.addRandomPath(habitant, beliefs);
+        }
+
         return plan;
     }
 
@@ -403,30 +375,8 @@ public class IncreaseFoodStock : Attitude {
         // Do we know about any chicken legs lying around?
         if (targets.Count() > 0) {
             Vector2I target = habitant.closestCell(targets);
-            
-            CellCoordsAround cca = new CellCoordsAround(target, habitant.worldInfo);
-            Vector2I neighbor = Vector2I.INVALID;
-            try {
-                IEnumerable<Vector2I> neighbors = cca.CoordsAtDistance(1).Where(c => {
-                    return beliefs.KnownObstacles.CoordIsFree(c);
-                });
-                neighbor = habitant.closestCell(neighbors);
-            }
-            catch (System.Exception) {
-                Debug.Log("#### NO NEIGHBOR");
-                plan.clear();
-                plan.add(Action.WalkRandomly(habitant));
-                return plan;
-            }
-            
-            try {
-                plan.addFollowPath(habitant, beliefs, neighbor);
-            }
-            catch (System.Exception) {
-                plan.clear();
-                plan.add(Action.WalkRandomly(habitant));
-                return plan;
-            }
+
+            plan.addPathToNeighbor(habitant, beliefs, target);
             
             plan.addLastAction(new PickupFood(habitant, target));
         }
@@ -438,29 +388,7 @@ public class IncreaseFoodStock : Attitude {
             if (targets.Count() > 0) {
                 Vector2I target = habitant.closestCell(targets);
                 
-                CellCoordsAround cca = new CellCoordsAround(target, habitant.worldInfo);
-                Vector2I neighbor = Vector2I.INVALID;
-                try {
-                    IEnumerable<Vector2I> neighbors = cca.CoordsAtDistance(1).Where(c => {
-                        return beliefs.KnownObstacles.CoordIsFree(c);
-                    });
-                    neighbor = habitant.closestCell(neighbors);
-                }
-                catch (System.Exception) {
-                    Debug.Log("#### NO NEIGHBOR");
-                    plan.clear();
-                    plan.add(Action.WalkRandomly(habitant));
-                    return plan;
-                }
-                
-                try {
-                    plan.addFollowPath(habitant, beliefs, neighbor);
-                }
-                catch (System.Exception) {
-                    plan.clear();
-                    plan.add(Action.WalkRandomly(habitant));
-                    return plan;
-                }
+                plan.addPathToNeighbor(habitant, beliefs, target);
                 
                 plan.addLastAction(new Attack(habitant, target));
             } else {
@@ -503,29 +431,7 @@ public class IncreaseWoodStock : Attitude {
         if (targets.Count() > 0) {
             Vector2I target = habitant.closestCell(targets);
 
-            CellCoordsAround cca = new CellCoordsAround(target, habitant.worldInfo);
-            Vector2I neighbor = Vector2I.INVALID;
-            try {
-                IEnumerable<Vector2I> neighbors = cca.CoordsAtDistance(1).Where(c => {
-                    return beliefs.KnownObstacles.CoordIsFree(c);
-                });
-                neighbor = habitant.closestCell(neighbors);
-            }
-            catch (System.Exception) {
-                Debug.Log("#### NO NEIGHBOR");
-                plan.clear();
-                plan.add(Action.WalkRandomly(habitant));
-                return plan;
-            }
-        
-            try {
-                plan.addFollowPath(habitant, beliefs, neighbor);
-            }
-            catch (System.Exception) {
-                plan.clear();
-                plan.add(Action.WalkRandomly(habitant));
-                return plan;
-            }
+            plan.addPathToNeighbor(habitant, beliefs, target);
 
             if (habitant.AliveTree(target))
                 plan.add(new CutTree(habitant, target));
@@ -625,32 +531,8 @@ public class StartAttack : Attitude {
             Debug.Log("#### NO TARGET");
         }
 
-        CellCoordsAround cca = new CellCoordsAround(target, habitant.worldInfo);
-        Vector2I neighbor = Vector2I.INVALID;
-        try {
-            IEnumerable<Vector2I> neighbors = cca.CoordsAtDistance(1).Where(c => {
-                return beliefs.KnownObstacles.CoordIsFree(c);
-            });
-            neighbor = habitant.closestCell(neighbors);
-        }
-        catch (System.Exception) {
-            Debug.Log("#### NO NEIGHBOR");
-            plan.clear();
-            plan.add(Action.WalkRandomly(habitant));
-            return plan;
-        }
-        
-        try {
-            plan.addFollowPath(habitant, beliefs, neighbor);
-        }
-        catch (System.Exception) {
-            Debug.Log("#### NO PATH TO NEIGHBOR");
-            plan.clear();
-            plan.add(Action.WalkRandomly(habitant));
-            return plan;
-        }
-        
-        plan.addLastAction(new Attack(habitant, target));
+        if (plan.addPathToNeighbor(habitant, beliefs, target))
+            plan.addLastAction(new Attack(habitant, target));
 
         return plan;
     }

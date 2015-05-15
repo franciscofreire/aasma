@@ -178,7 +178,6 @@ public class HabitantDeliberative : AgentImplementation {
             }
 
             if (reconsider()) {
-                plan.clear();
                 updateOptions();
                 updateFilter();
                 plan = updatePlan();
