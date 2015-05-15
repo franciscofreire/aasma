@@ -205,11 +205,11 @@ public struct Orientation {
     }
 
     public static bool operator== (Orientation o1, Orientation o2) { 
-        return o1.radiansToUp.value == o2.radiansToUp.value;
+        return Mathf.Abs(o1.radiansToUp.value - o2.radiansToUp.value) < 0.1;
     }
     
     public static bool operator!= (Orientation o1, Orientation o2) { 
-        return !(o1 == o2);
+        return Mathf.Abs(o1.radiansToUp.value - o2.radiansToUp.value) >= 0.1;
     }
 
 	public static readonly Orientation Up    = new Orientation(new Degrees(0));

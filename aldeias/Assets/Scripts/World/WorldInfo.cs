@@ -151,8 +151,12 @@ public partial class WorldInfo : MonoBehaviour {
         int AliveAnimalDeficit = MAX_ANIMALS - AliveAnimals.Count();
         if (AliveAnimalDeficit > 0) {
             if (cooldown-- == 0) {
-                foreach(var habitatTile in HabitatCellCoords.Take(AliveAnimalDeficit))
-                    CreateAnimalAt(habitatTile, habitats.First());
+                while(AliveAnimalDeficit-- > 0)
+                    CreateAnimalAt(
+                        HabitatCellCoords.Where(c=>{
+                            return worldTiles.WorldTileInfoAtCoord(c).IsEmpty;
+                        }).First(),
+                        habitats.First());
                 cooldown = ANIMAL_RESPAWN_COOLDOWN;
             }
         }
@@ -363,11 +367,7 @@ public partial class WorldInfo : MonoBehaviour {
             xMaxSize = height;
             zMaxSize = width;
 
-        } else if(agent.orientation == Orientation.Right){ // RIGHT
-            leftCorner = new Vector2I(agentPos.x, agentPos.y + width_delta);
-            xMaxSize = height;
-            zMaxSize = width;
-        } else { // RIGHT???
+        } else { // RIGHT
             leftCorner = new Vector2I(agentPos.x, agentPos.y + width_delta);
             xMaxSize = height;
             zMaxSize = width;
@@ -398,7 +398,6 @@ public partial class WorldInfo : MonoBehaviour {
                     }
                  
                     foreach(Habitant h in enemyTribe.habitants) {
-
                         if(h.Alive && CoordConvertions.AgentPosToTile(h.pos) == cell) {
                             _enemies.Add(h);
                         }
@@ -406,9 +405,9 @@ public partial class WorldInfo : MonoBehaviour {
                     foreach(Habitat hab in habitats) {
                         foreach(Animal a in hab.animals) {
                             if(CoordConvertions.AgentPosToTile(a.pos) == cell) {
-                                if(a.HasFood) {
+                                if(a.HasFood && !a.Alive) {
                                     _food.Add (a);
-                                } else {
+                                } else if (a.Alive) {
                                     _animals.Add(a);
                                 }
                             }

@@ -638,6 +638,7 @@ public class StartAttack : Attitude {
             plan.addFollowPath(habitant, beliefs, neighbor);
         }
         catch (System.Exception) {
+            Debug.Log("#### NO PATH TO NEIGHBOR");
             plan.clear();
             plan.add(Action.WalkRandomly(habitant));
             return plan;

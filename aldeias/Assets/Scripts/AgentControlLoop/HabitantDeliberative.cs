@@ -110,11 +110,21 @@ public class HabitantDeliberative : AgentImplementation {
     //
     // Note that the next perception is already available when doAction() is called.
     public void doAction() {
-        // If we are trapped, we need to backtrack
+        // We are trapped!
         if (habitant.sensorData.AdjacentCells.Count == 0) {
             plan.clear();
-            /*Action a = Action.RunAwayOrWalkRandomly(habitant);*/
-            Action a = new TurnOppositeDirection(habitant, Vector2I.INVALID);
+
+            Action a;
+
+            // We could be surrounded by food, so pick it up
+            if (beliefs.PickableFood.RelevantCells.Count > 0) {
+                a = new PickupFood(habitant, habitant.closestCell(beliefs.PickableFood.RelevantCells));
+            }
+            // Dead end? Then turn back
+            else {
+                /* a = Action.RunAwayOrWalkRandomly(habitant);*/
+                 a = new TurnOppositeDirection(habitant, Vector2I.INVALID);
+            }
             a.apply();
             ActionExecuted = true;
 
