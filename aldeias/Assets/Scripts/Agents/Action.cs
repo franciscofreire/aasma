@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 // An Action is always performed by an Agent and target a tile (Vector2I is its coordinate) of the Agent's WorldInfo.
 //    Actions can be specific to a type of Agent (ex: action of Habitants or action of Animals).
@@ -86,7 +87,19 @@ public abstract class AnyAgentAction : Action {
 public class Walk : AnyAgentAction {
     private const int WALK_DECREMENT = 2;
 	public override void apply () {
-		//Change the Agent's position and reorient him so he faces the same direction in which he moved.
+		// test if there are any agent at target
+        IEnumerable<Habitant> aliveHabitantsInTarget = 
+            agent.worldInfo.AliveHabitants.Where (c=>c.WorldPos==target);
+        if(aliveHabitantsInTarget.Count() > 0) {
+            return;
+        }
+        IEnumerable<Animal> aliveAnimalsInTarget =
+            agent.worldInfo.AllAnimals.Where (a=>a.Alive && a.WorldPos==target);
+        if(aliveAnimalsInTarget.Count() > 0) {
+            return;
+        }
+
+        //Change the Agent's position and reorient him so he faces the same direction in which he moved.
 		Vector2I origin = CoordConvertions.AgentPosToTile(agent.pos);
 		agent.ChangePosition(CoordConvertions.TileToAgentPos(target));
 		// Orientation
