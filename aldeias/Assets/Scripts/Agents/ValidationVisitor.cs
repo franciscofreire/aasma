@@ -59,7 +59,8 @@ public class ValidationVisitor {
 
     public bool isPlaceFlagValid(PlaceFlag a) {
         // Target is a unclaimed cell.
-        return beliefs.TribeTerritories.Territories[a.target] == null;
+        return beliefs.TribeTerritories.Territories[a.target] == null &&
+            beliefs.TribeHasFewFlags.flagsCountInLastPercept > 0;
     }
 
     public bool isRemoveFlagValid (RemoveFlag a) {
