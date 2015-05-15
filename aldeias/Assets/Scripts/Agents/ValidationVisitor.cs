@@ -5,20 +5,22 @@ using System.Collections.Generic;
 
 public class ValidationVisitor {
     private Attitude attitude;
+    private Beliefs beliefs;
 
-    public ValidationVisitor(Attitude attitude) {
+    public ValidationVisitor(Attitude attitude, Beliefs beliefs) {
         this.attitude = attitude;
+        this.beliefs = beliefs;
     }
 
     public bool isWalkValid(Walk a) {
-        return !a.performer.worldInfo.worldTiles.WorldTileInfoAtCoord(a.target).HasAgent
-            && (!a.performer.worldInfo.worldTiles.WorldTileInfoAtCoord(a.target).HasTree ||
-                !a.performer.worldInfo.worldTiles.WorldTileInfoAtCoord(a.target).Tree.HasWood);
+        return beliefs.KnownObstacles.ObstacleMap[a.target] != KnownObstacles.ObstacleMapEntry.Obstacle;
     }
 
     public bool isAttackValid(Attack a) {
-        return a.performer.worldInfo.worldTiles.WorldTileInfoAtCoord(a.target).HasAgent
-            && a.performer.worldInfo.worldTiles.WorldTileInfoAtCoord(a.target).Agent.Alive;
+        //valid if attack points to a position that I believe there is an animal or enemy habitant
+        var attackingAnimal = beliefs.AnimalsAreNear.RelevantCells.Contains(a.target);
+        var attackingEnemy = beliefs.EnemiesAreNear.RelevantCells.Contains(a.target);
+        return attackingAnimal || attackingEnemy;
     }
     
     /**********/
@@ -38,47 +40,54 @@ public class ValidationVisitor {
     /************/
 
     public bool isCutTreeValid(CutTree a) {
-        return a.Habitant.AliveTree(a.target);
+        // Target has a tree that is alive.
+        var knownWoodAtTarget = beliefs.KnownWood.Map[a.target];
+        return knownWoodAtTarget.HasValue && knownWoodAtTarget.Value.Alive;
     }
 
     public bool isChopTreeValid(ChopTree a) {
-        //return a.performer.StumpWithWood(a.target);
-        Agent fulano = a.performer;
-        WorldTileInfo tile = fulano.worldInfo.worldTiles.WorldTileInfoAtCoord(a.target);
-        Tree t = tile.Tree;
-        return t.HasWood;
+        // Target has a tree that is not alive and that has wood.
+        var knownWoodAtTarget = beliefs.KnownWood.Map[a.target];
+        return knownWoodAtTarget.HasValue && 
+            !knownWoodAtTarget.Value.Alive && knownWoodAtTarget.Value.HasWood();
     }
 
     public bool isDropTreeValid(DropTree a) {
-        return true;
+        // Target position is a known meeting point?
+        return beliefs.NearMeetingPoint.Map[a.target];
     }
 
     public bool isPlaceFlagValid(PlaceFlag a) {
-        return !a.performer.worldInfo.worldTiles.WorldTileInfoAtCoord(a.target)
-                 .tribeTerritory.IsClaimed; // TODO: Enemy flag case
+        // Target is a unclaimed cell.
+        return beliefs.TribeTerritories.Territories[a.target] == null;
     }
 
     public bool isRemoveFlagValid (RemoveFlag a) {
-        WorldTileInfo wti = a.performer.worldInfo.worldTiles.WorldTileInfoAtCoord(a.target);
-        return wti.tribeTerritory.IsClaimed && 
-            !wti.tribeTerritory.Flag.Value.Tribe.Equals(a.Habitant.tribe);
-
+        // Target has enemy flag.
+        var territoryOwner = beliefs.TribeTerritories.Territories[a.target];
+        return territoryOwner != null && territoryOwner != a.Habitant.tribe;
     }
 
     public bool isPickupFoodValid(PickupFood a) {
-        return true;
+        // Target contains food.
+        return beliefs.PickableFood.Map[a.target];
     }
 
     public bool isDropFoodValid(DropFood a) {
-        return true;
+        // Target is in meeting point.
+        return beliefs.NearMeetingPoint.Map[a.target];
     }
 
     public bool isEatCarriedFoodValid(EatCarriedFood a) {
-        return true;
+        // Self is carrying food.
+        return beliefs.SelfState.CarriedFood != FoodQuantity.Zero;
     }
 
     public bool isEatInTribeValid(EatInTribe a) {
-        return true;
+        // Self is in tribe territory and tribe has food.
+        var foodInTribe = beliefs.SelfState.Tribe.FoodStock != FoodQuantity.Zero;
+        var inTribeTerritory = beliefs.TribeTerritories.Territories[beliefs.SelfState.Position] == beliefs.SelfState.Tribe;
+        return foodInTribe && inTribeTerritory;
     }
 
     public bool isTurnLeftValid(TurnLeft a) {
