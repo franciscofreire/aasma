@@ -120,6 +120,7 @@ public class Beliefs {
     public KnownObstacles KnownObstacles;
     public TribeTerritories TribeTerritories;
     public CellSeenOrders CellSeenOrders;
+    public SelfState SelfState;
 
     public IEnumerable<Belief> AllBeliefs {
         get {
@@ -138,13 +139,14 @@ public class Beliefs {
             yield return KnownObstacles;
             yield return TribeTerritories;
             yield return CellSeenOrders;
+            yield return SelfState;
         }
     }
 
     public Beliefs(Habitant h) {
         WorldInfo = h.worldInfo;
 
-        NearMeetingPoint=new NearMeetingPoint();
+        NearMeetingPoint=new NearMeetingPoint(h);
         TribeIsBeingAttacked=new TribeIsBeingAttacked(h);
         TribeHasLowFoodLevel=new TribeHasLowFoodLevel();
         TribeHasFewFlags=new TribeHasFewFlags();
@@ -159,6 +161,7 @@ public class Beliefs {
         KnownObstacles=new KnownObstacles(h);
         TribeTerritories=new TribeTerritories(h);
         CellSeenOrders=new CellSeenOrders(h);
+        SelfState=new SelfState(h);
     }
 }
 
@@ -170,13 +173,21 @@ public class NearMeetingPoint : Belief {
     // satisfies the condition (Agent saw meeting point cells)
     // Found meeting point cells are saved in Relevant Cells
     // even when belief is inactive
+    public Matrix<bool> Map;
     public override void UpdateBelief (Percept p) {
         foreach(var cell in p.SensorData.MeetingPointCells) {
             addRelevantCell(cell);
+            Map[cell] = true;
         }
+        /*if(p.SensorData.MeetingPointCells.Any()) {
+            EnableBelief();// "I'm seeing meeting point cells."
+        } else {
+            DisableBelief();// "I'm not seeing meeting point cells."
+        }*/
     }
 
-    public NearMeetingPoint() {
+    public NearMeetingPoint(Habitant h) {
+        Map = new Matrix<bool>(h.worldInfo.Size);
         EnableBelief ();
     }
 }
@@ -309,8 +320,8 @@ public class NearEnemyTribe : Belief {
 
 public class KnownWood : Belief {
     public struct KnownWoodEntry {
-        WoodQuantity Wood;
-        bool Alive;
+        public WoodQuantity Wood;
+        public bool Alive;
         public KnownWoodEntry(WoodQuantity wood, bool alive) {
             this.Wood = wood;
             this.Alive = alive;
@@ -527,6 +538,24 @@ public class CellSeenOrders : Belief {
         foreach(var seenCoord in p.SensorData.Cells) {//FIXME: Make sure these are all the seen cells.
             LastSeenOrders[seenCoord] = CurrentOrder;
         }
+    }
+}
+
+public class SelfState : Belief {
+    public Vector2I Position;
+    public Orientation Orientation;
+    public Tribe Tribe;
+    public FoodQuantity CarriedFood;
+    public WoodQuantity CarriedWood;
+    public SelfState(Habitant h) {
+        this.Tribe = h.tribe;
+    }
+    public override void UpdateBelief (Percept p) {
+        base.UpdateBelief(p);
+        this.Position = CoordConvertions.AgentPosToTile(p.Habitant.pos);
+        this.Orientation = p.Habitant.orientation;
+        this.CarriedFood = p.Habitant.carriedFood;
+        this.CarriedWood = p.Habitant.carriedWood;
     }
 }
 

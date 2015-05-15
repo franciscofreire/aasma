@@ -48,7 +48,6 @@ public class Attitudes {
 public abstract class Attitude {
     public Habitant habitant;
     public Plan plan;
-    protected ValidationVisitor vv;
 
     // Used by the Filter method
     // The bigger the value, the bigger the chance of being an Intention
@@ -59,7 +58,6 @@ public abstract class Attitude {
     public Attitude(Habitant habitant) {
         this.habitant = habitant;
         this.plan     = new Plan(this);
-        this.vv       = new ValidationVisitor(this);
     }
 
     protected bool habitantIsInMeetingPoint() {
@@ -116,6 +114,7 @@ public class Explore : Attitude {
     }
     
     public override bool isSound(Beliefs beliefs) {
+        var vv = new ValidationVisitor(this, beliefs);
         return plan.peek().acceptValidationVisitor(vv);
     }
 
@@ -162,6 +161,7 @@ public class ExpandTribe : Attitude {
     }
     
     public override bool isSound(Beliefs beliefs) {
+        var vv = new ValidationVisitor(this, beliefs);
         return plan.peek().acceptValidationVisitor(vv);
         /*
         if (!plan.peek().acceptValidationVisitor(vv)) {
@@ -203,6 +203,7 @@ public class ConquerTribe : Attitude {
     }
 
     public override bool isSound(Beliefs beliefs) {
+        var vv = new ValidationVisitor(this, beliefs);
         return plan.peek().acceptValidationVisitor(vv);
     }
 
@@ -249,6 +250,7 @@ public class MaintainEnergy : Attitude {
     }
     
     public override bool isSound(Beliefs beliefs) {
+        var vv = new ValidationVisitor(this, beliefs);
         return plan.peek().acceptValidationVisitor(vv);
     }
 
@@ -391,6 +393,7 @@ public class IncreaseFoodStock : Attitude {
     }
     
     public override bool isSound(Beliefs beliefs) {
+        var vv = new ValidationVisitor(this, beliefs);
         return plan.peek().acceptValidationVisitor(vv);
     }
 
@@ -479,6 +482,7 @@ public class IncreaseWoodStock : Attitude {
     }
     
     public override bool isSound(Beliefs beliefs) {
+        var vv = new ValidationVisitor(this, beliefs);
         return plan.peek().acceptValidationVisitor(vv);
         /*
         if (!plan.peek().acceptValidationVisitor(vv)) {
@@ -545,6 +549,7 @@ public class DropResources : Attitude {
     }
     
     public override bool isSound(Beliefs beliefs) {
+        var vv = new ValidationVisitor(this, beliefs);
         return plan.peek().acceptValidationVisitor(vv);
 /*
         if (!plan.peek().acceptValidationVisitor(vv)) {
@@ -605,6 +610,7 @@ public class StartAttack : Attitude {
     }
     
     public override bool isSound(Beliefs beliefs) {
+        var vv = new ValidationVisitor(this, beliefs);
         return plan.peek().acceptValidationVisitor(vv);
     }
     
