@@ -263,17 +263,30 @@ public class TribeHasLowFoodLevel : Belief {
 }
 
 public class TribeHasFewFlags : Belief {
-    public int flagsCount;
+    public int flagsCountInLastPercept = -1;
 
     public override void UpdateBelief (Percept p) {
-        base.UpdateBelief(p);
-        this.flagsCount = p.SensorData.TribeFlags;
-        if(p.SensorData.TribeFlags < Tribe.CRITICAL_FLAG_QUANTITY) {
-            EnableBelief(2);
-        } else if(IsActive && timesToBeActive-- == 0){
-            DisableBelief();
+        // 1st update
+        if(flagsCountInLastPercept == -1) {
+            if(p.SensorData.TribeCellCount < Tribe.CRITICAL_FLAG_QUANTITY) {
+                EnableBelief();
+            }
+        } else {
+            const int threshold = 5;
+            if(IsActive) {
+                if(!(p.SensorData.TribeCellCount < Tribe.CRITICAL_FLAG_QUANTITY) &&
+                   p.SensorData.TribeCellCount > (flagsCountInLastPercept+threshold)) {
+                    DisableBelief();
+                }
+            } else {
+                if(p.SensorData.TribeCellCount < Tribe.CRITICAL_FLAG_QUANTITY) {
+                    EnableBelief();
+                }
+            } 
         }
+        flagsCountInLastPercept = p.SensorData.TribeCellCount;
     }
+
 }
 
 public class AnimalsAreNear : Belief {
