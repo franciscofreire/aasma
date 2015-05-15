@@ -98,4 +98,8 @@ public class ValidationVisitor {
     public bool isTurnOppositeDirectionValid(TurnOppositeDirection a) {
         return true;
     }
+
+    public bool isTurnToDirectionValid (TurnToDirection turnToDirection) {
+        return true;
+    }
 }

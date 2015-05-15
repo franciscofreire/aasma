@@ -395,3 +395,20 @@ public class TurnOppositeDirection : HabitantAction {
     
     public TurnOppositeDirection(Habitant habitant, Vector2I target) : base(habitant, target) {}
 }
+
+public class TurnToDirection : HabitantAction {
+    private Orientation newOrientation;
+    
+    public override void apply () {
+        habitant.orientation = newOrientation;
+    }
+    
+    public override bool acceptValidationVisitor(ValidationVisitor vv) {
+        return vv.isTurnToDirectionValid(this);
+    }
+    
+    public TurnToDirection(Habitant habitant, Orientation newOrientation) 
+        : base(habitant, Vector2I.INVALID) {
+        this.newOrientation = newOrientation;
+    }
+}
