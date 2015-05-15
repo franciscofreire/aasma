@@ -267,24 +267,16 @@ public class TribeHasFewFlags : Belief {
 
     public override void UpdateBelief (Percept p) {
         // 1st update
-        if(flagsCountInLastPercept == -1) {
-            if(p.SensorData.TribeCellCount < Tribe.CRITICAL_FLAG_QUANTITY) {
-                EnableBelief();
+        const int threshold = 5;
+        if(IsActive) {
+            if(!(p.SensorData.TribeFlags < Tribe.CRITICAL_FLAG_QUANTITY) &&
+               p.SensorData.TribeCellCount > (flagsCountInLastPercept+threshold)) {
+                DisableBelief();
             }
-        } else {
-            const int threshold = 5;
-            if(IsActive) {
-                if(!(p.SensorData.TribeCellCount < Tribe.CRITICAL_FLAG_QUANTITY) &&
-                   p.SensorData.TribeCellCount > (flagsCountInLastPercept+threshold)) {
-                    DisableBelief();
-                }
-            } else {
-                if(p.SensorData.TribeCellCount < Tribe.CRITICAL_FLAG_QUANTITY) {
-                    EnableBelief();
-                }
-            } 
+        } else if(p.SensorData.TribeFlags < Tribe.CRITICAL_FLAG_QUANTITY) {
+            EnableBelief();
         }
-        flagsCountInLastPercept = p.SensorData.TribeCellCount;
+        flagsCountInLastPercept = p.SensorData.TribeFlags;
     }
 
 }
